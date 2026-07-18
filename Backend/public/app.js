@@ -16,17 +16,17 @@
   btn.addEventListener('click', () => {
     theme = theme === 'dark' ? 'light' : 'dark';
     applyTheme(theme);
-    // Redraw gauge with new background colour if data is loaded
+    
     if (typeof currentScore !== 'undefined' && currentScore > 0) drawGauge(currentScore);
   });
 })();
 
-/* ─── STATE ──────────────────────────────────────────────────── */
+
 let priceChartInstance = null;
 let currentData  = null;
 let currentScore = 0;
 
-/* ─── ELEMENTS ───────────────────────────────────────────────── */
+
 const analyzeBtn  = document.getElementById('analyzeBtn');
 const asinInput   = document.getElementById('asinInput');
 const skeleton    = document.getElementById('skeleton');
@@ -34,13 +34,13 @@ const emptyState  = document.getElementById('emptyState');
 const dashboard   = document.getElementById('dashboard');
 const errorBanner = document.getElementById('errorBanner');
 
-/* ─── CHIP FILL ──────────────────────────────────────────────── */
+
 function fillAsin(asin) {
   asinInput.value = asin;
   asinInput.focus();
 }
 
-/* ─── ANALYZE ────────────────────────────────────────────────── */
+
 analyzeBtn.addEventListener('click', runAnalysis);
 asinInput.addEventListener('keydown', e => { if (e.key === 'Enter') runAnalysis(); });
 
@@ -104,7 +104,6 @@ function shake(el) {
   el.style.animation = 'shake .4s ease';
 }
 
-/* ─── ANIMATED COUNTER ───────────────────────────────────────── */
 function animateNumber(el, targetText, duration = 600) {
   const isPrice = targetText.includes('₹');
   const isPct   = targetText.includes('%');
@@ -128,12 +127,12 @@ function animateNumber(el, targetText, duration = 600) {
   requestAnimationFrame(update);
 }
 
-/* ─── FORMAT ─────────────────────────────────────────────────── */
+
 function fmt(n) {
   return '₹' + parseFloat(n).toLocaleString('en-IN', { maximumFractionDigits: 0 });
 }
 
-/* ─── RENDER ─────────────────────────────────────────────────── */
+
 function renderDashboard(d) {
   dashboard.style.display  = 'block';
   emptyState.style.display = 'none';
@@ -142,7 +141,7 @@ function renderDashboard(d) {
     dashboard.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, 120);
 
-  // Product
+ 
   document.getElementById('productImg').src              = d.productImage || '';
   document.getElementById('productTitle').textContent    = d.productTitle;
   document.getElementById('productPrice').textContent    = fmt(d.currentPrice);
@@ -151,11 +150,10 @@ function renderDashboard(d) {
     <span class="badge badge-neutral">Amazon India</span>
   `;
 
-  // ── Compute score FIRST — single source of truth for banner, gauge & savings ──
   const score = computeScore(d);
   currentScore = score;
 
-  // Recommendation banner — always derived from score, never contradicts gauge
+
   const banner = document.getElementById('recBanner');
   const icon   = document.getElementById('recIcon');
   const label  = document.getElementById('recLabel');
@@ -181,7 +179,7 @@ function renderDashboard(d) {
   }
   reason.textContent = d.reason + (d.sellerReliable ? ' Seller is trusted.' : ' Note: seller has limited reviews.');
 
-  // Stats — animated
+  
   const dev = parseFloat(d.deviation);
   animateNumber(document.getElementById('statAvg'),  fmt(d.avgPrice));
   animateNumber(document.getElementById('statHigh'), fmt(d.highPrice));
@@ -193,7 +191,7 @@ function renderDashboard(d) {
     devEl.style.color = dev < -10 ? '#16a34a' : dev > 10 ? '#dc2626' : '#d97706';
   }, 50);
 
-  // Seller
+
   document.getElementById('sellerRating').textContent  = d.sellerRating + ' / 5';
   document.getElementById('sellerReviews').textContent = d.reviewCount.toLocaleString('en-IN') + ' reviews';
   const stars = Math.round(d.sellerRating);
@@ -211,10 +209,10 @@ function renderDashboard(d) {
     rb.innerHTML = '❌ Low Trust';
   }
 
-  // Gauge — uses already-computed score
+  
   drawGauge(score);
 
-  // Savings — subtitle driven by score so it never contradicts the gauge
+  
   const saving = parseFloat(d.avgPrice) - d.currentPrice;
   const savEl  = document.getElementById('savingsAmt');
   const subEl  = document.getElementById('savingsSub');
@@ -238,7 +236,7 @@ function renderDashboard(d) {
     subEl.style.color = '#dc2626';
   }
 
-  // Prediction
+
   const pred = predictNextWeek(d.priceHistory, d.currentPrice);
   document.getElementById('predVal').textContent   = fmt(pred.lo) + ' – ' + fmt(pred.hi);
   document.getElementById('predTrend').textContent =
@@ -251,7 +249,7 @@ function renderDashboard(d) {
   document.getElementById('alertInput').value = Math.floor(d.currentPrice * 0.9);
 }
 
-/* ─── DEAL SCORE ─────────────────────────────────────────────── */
+
 function computeScore(d) {
   let score = 50;
   const dev = parseFloat(d.deviation);
@@ -296,7 +294,7 @@ function drawGauge(score) {
     score >= 70 ? '🟢 Great Deal' : score >= 45 ? '🟡 Fair Deal' : '🔴 Overpriced';
 }
 
-/* ─── PREDICTION ─────────────────────────────────────────────── */
+
 function predictNextWeek(history, currentPrice) {
   if (!history || history.length < 5) return { lo: currentPrice * 0.97, hi: currentPrice * 1.03, direction: 'stable' };
   const recent = history.slice(-7).map(h => h.price);
@@ -308,7 +306,7 @@ function predictNextWeek(history, currentPrice) {
   };
 }
 
-/* ─── CHART ──────────────────────────────────────────────────── */
+
 function buildChart(history, avg) {
   const labels = history.map(h => {
     const d = new Date(h.date);
@@ -366,7 +364,7 @@ function buildChart(history, avg) {
   });
 }
 
-/* ─── ALERT ──────────────────────────────────────────────────── */
+
 document.getElementById('alertBtn').addEventListener('click', () => {
   const val = document.getElementById('alertInput').value;
   if (!val) return;

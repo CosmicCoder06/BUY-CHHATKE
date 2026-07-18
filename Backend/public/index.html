@@ -10,7 +10,7 @@
 </head>
 <body>
 
-<!-- ═══ NAVBAR ═══════════════════════════════════════════════════ -->
+
 <nav class="navbar">
   <div class="nav-inner">
     <div class="nav-logo">
@@ -31,10 +31,10 @@
   </div>
 </nav>
 
-<!-- ═══ HERO ══════════════════════════════════════════════════════ -->
+
 <section class="hero">
 
-  <!-- decorative dots & crosses -->
+
   <div class="hero-deco">
     <span class="deco-dot" style="top:18%;left:9%"></span>
     <span class="deco-cross" style="top:35%;left:6%">+</span>
@@ -48,21 +48,21 @@
     <span class="deco-ring" style="top:30%;right:30%"></span>
   </div>
 
-  <!-- left floating products -->
+ 
   <div class="float-group float-left">
     <div class="float-item fi-laptop" style="--delay:0s">💻</div>
     <div class="float-item fi-cart"   style="--delay:.4s">🛒</div>
     <div class="float-item fi-shoe"   style="--delay:.8s">👟</div>
   </div>
 
-  <!-- right floating products -->
+
   <div class="float-group float-right">
     <div class="float-item fi-phone"    style="--delay:.2s">📱</div>
     <div class="float-item fi-headset"  style="--delay:.6s">🎧</div>
     <div class="float-item fi-tag"      style="--delay:1s">🏷️</div>
   </div>
 
-  <!-- centre content -->
+
   <div class="hero-content">
     <p class="hero-eyebrow">✦ Price History &amp; Tracker</p>
     <h1 class="hero-heading">
@@ -73,7 +73,7 @@
       Track genuine price drops, analyse sellers, and shop smarter every day.
     </p>
 
-    <!-- search bar -->
+
     <div class="hero-search">
       <span class="hs-icon">🔍</span>
       <input id="asinInput" class="hs-input" type="text"
@@ -82,8 +82,7 @@
     </div>
 </section>
 
-<!-- ═══ TIP STRIP ══════════════════════════════════════════════ -->
-<div class="tip-strip">
+
   <span class="tip-icon">✨</span>
   <strong>Magic Trick for Online Shopping</strong>
   <span class="tip-sep">✦</span>
@@ -92,7 +91,7 @@
   &nbsp;before ANY product link
 </div>
 
-<!-- ═══ CATEGORY PILLS ═══════════════════════════════════════════ -->
+
 <div class="cat-bar">
   <div class="cat-inner">
     <a href="#" class="cat-pill">↗ Amazon Price History Tracker</a>
@@ -102,13 +101,12 @@
   </div>
 </div>
 
-<!-- ═══ MAIN CONTENT (results live here) ════════════════════════ -->
+
 <div class="main-wrap">
 
-  <!-- ERROR -->
   <div class="error-banner" id="errorBanner"></div>
 
-  <!-- SKELETON -->
+
   <div class="skeleton-dashboard" id="skeleton">
     <div class="card" style="padding:18px;display:grid;grid-template-columns:110px 1fr;gap:20px;align-items:center">
       <div class="skeleton" style="width:110px;height:110px;border-radius:14px"></div>
@@ -132,17 +130,17 @@
     <div class="skeleton" style="height:290px;border-radius:16px"></div>
   </div>
 
-  <!-- EMPTY STATE -->
+
   <div class="empty-state" id="emptyState">
     <div class="empty-icon">📦</div>
     <div class="empty-title">Enter an Amazon ASIN above to see full price analysis</div>
     <div class="empty-sub">Deal score · Price history chart · Seller reliability · Smart buy/wait recommendation</div>
   </div>
 
-  <!-- DASHBOARD -->
+
   <div id="dashboard" style="display:none">
 
-    <!-- PRODUCT HEADER -->
+ 
     <div class="card" style="margin-bottom:20px">
       <div class="product-header">
         <div class="product-img-wrap">
@@ -156,7 +154,7 @@
       </div>
     </div>
 
-    <!-- RECOMMENDATION BANNER -->
+ 
     <div class="rec-banner" id="recBanner" style="margin-bottom:20px">
       <div class="rec-icon" id="recIcon"></div>
       <div>
@@ -167,7 +165,7 @@
       <div class="rec-ai-pill">✦ AI Analysis</div>
     </div>
 
-    <!-- STATS -->
+
     <div class="section-title">Price Stats</div>
     <div class="stats-grid" style="margin-bottom:20px">
       <div class="card">
@@ -192,7 +190,7 @@
       </div>
     </div>
 
-    <!-- SELLER + DEAL METER -->
+
     <div class="section-title">Seller &amp; Deal</div>
     <div class="mid-row">
       <div class="card" id="sellerCard">
@@ -230,7 +228,7 @@
       </div>
     </div>
 
-    <!-- SAVINGS + PREDICTION -->
+
     <div class="section-title">Savings &amp; Forecast</div>
     <div class="savings-row">
       <div class="card">
@@ -247,7 +245,7 @@
       </div>
     </div>
 
-    <!-- CHART -->
+
     <div class="section-title">Price History</div>
     <div class="card" style="margin-bottom:20px">
       <div class="chart-wrap">
@@ -255,7 +253,7 @@
       </div>
     </div>
 
-    <!-- ALERT -->
+  
     <div class="section-title">Price Alert</div>
     <div class="card alert-card">
       <div class="card-label">🔔 Set a Price Alert</div>
@@ -270,10 +268,10 @@
       <div class="alert-set-msg" id="alertMsg"></div>
     </div>
 
-  </div><!-- /dashboard -->
-</div><!-- /main-wrap -->
+  </div>
+</div>
 
-<!-- ═══ FOOTER STRIP ══════════════════════════════════════════════ -->
+
 <div class="footer-strip">
   Our AI analyses millions of data points to find the best prices, predict drops, and expose fake sales.
   Get the full story behind every deal and shop with total clarity.

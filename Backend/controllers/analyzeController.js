@@ -9,29 +9,29 @@ async function analyze(req, res) {
   if (!asin) return res.status(400).json({ error: 'ASIN required' });
 
   try {
-    // 1. Get product details
+  
     const product = await fetchProductDetails(asin);
 
-    // 2. Extract product fields
+   
     const currentPrice = parseFloat(product?.product_price?.replace(/[^0-9.]/g, '')) || 0;
     const sellerRating = parseFloat(product?.product_star_rating) || 0;
     const reviewCount  = parseInt(product?.product_num_ratings) || 0;
     const productTitle = product?.product_title || 'Unknown Product';
     const productImage = product?.product_photo || '';
 
-    // 3. Get price history
+   
     const historyData  = await fetchPriceHistory(asin);
     const priceHistory = historyData?.pricedata?.length > 0
       ? historyData.pricedata
       : generateMockHistory(currentPrice);
 
-    // 4. Calculate price stats
+   
     const prices    = priceHistory.map(p => parseFloat(p.currentprice) || 0);
     const avgPrice  = parseFloat(historyData?.averageprice) || (prices.reduce((a, b) => a + b, 0) / prices.length);
     const highPrice = parseFloat(historyData?.highprice)    || Math.max(...prices);
     const lowPrice  = parseFloat(historyData?.lowestprice)  || Math.min(...prices);
 
-    // 5. BUY / WAIT / FAIR logic
+   
     const avg       = avgPrice > 0 ? avgPrice : currentPrice;
     const deviation = ((currentPrice - avg) / avg) * 100;
 
@@ -47,10 +47,10 @@ async function analyze(req, res) {
       reason = `Price is within normal range (${deviation.toFixed(1)}% from average).`;
     }
 
-    // 6. Seller reliability
+   
     const sellerReliable = sellerRating >= 3.5 && reviewCount >= 50;
 
-    // 7. Format chart data
+   
     const chartData = priceHistory.slice(-30).map(p => ({
       date:  p.datec,
       price: parseFloat(p.currentprice) || 0
