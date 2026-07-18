@@ -1,5 +1,7 @@
 node_modules/
 
+.DB_Store
+
 .env
 
 *.log
