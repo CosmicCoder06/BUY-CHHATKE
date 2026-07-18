@@ -12,7 +12,6 @@
 
 Track genuine price drops, analyse sellers, and shop smarter — every day.
 
-[🚀 Live Demo](#) · [🐛 Report Bug](https://github.com/yourusername/buychhatke/issues) · [✨ Request Feature](https://github.com/yourusername/buychhatke/issues)
 
 </div>
 
@@ -222,15 +221,13 @@ Contributions are welcome! Please follow these steps:
 
 ---
 
-## 📄 License
 
-Distributed under the MIT License. See `LICENSE` for more information.
 
 ---
 
 ## 👨‍💻 Author
 
-**Abhi Yadav**
+**Abhinav Yadav**
 
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/abhiyadavv07/)
 [![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/yourusername)
