@@ -36,7 +36,7 @@ Track genuine price drops, analyse sellers, and shop smarter — every day.
 - **🔍 ASIN / URL Parser** — Paste any Amazon India product URL or raw ASIN (10-character code) and the app extracts the ASIN automatically
 - **📊 Price History Chart** — Interactive 30-day line chart (powered by Chart.js) with gradient fill, animated tooltips, and highlighted all-time high / low points
 - **🤖 AI Deal Score** — A 0–100 deal score computed from price deviation, seller reliability, and review count — rendered as a smooth canvas gauge (green / amber / red)
-- **💡 Smart Buy / Wait Recommendation** — Colour-coded banner (Buy Now · Fair Price · High Risk) with a plain-language reason
+- **💡 buySmartly / Wait Recommendation** — Colour-coded banner (Buy Now · Fair Price · High Risk) with a plain-language reason
 - **📈 Price Prediction** — 7-day next-week price range forecast based on recent trend slope
 - **🏪 Seller Analysis** — Star rating, review count, delivery type, returns policy, and a trust badge (Trusted / Moderate / Low)
 - **💰 Savings vs Average** — Shows how much cheaper (or more expensive) the current price is vs the 30-day average

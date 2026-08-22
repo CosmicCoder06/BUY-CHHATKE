@@ -7,61 +7,61 @@ let etherealAccount = null;
  * Initializes or returns the cached Nodemailer transport.
  */
 async function getTransporter() {
-    if (cachedTransporter) return cachedTransporter;
+  if (cachedTransporter) return cachedTransporter;
 
-    // Option 1: Gmail Service with App Password
-    const gmailUser = process.env.GMAIL_USER || process.env.EMAIL_USER;
-    const gmailPass = process.env.GMAIL_APP_PASSWORD || process.env.EMAIL_PASS;
+  // Option 1: Gmail Service with App Password
+  const gmailUser = process.env.GMAIL_USER || process.env.EMAIL_USER;
+  const gmailPass = process.env.GMAIL_APP_PASSWORD || process.env.EMAIL_PASS;
 
-    if (gmailUser && gmailPass) {
-        console.log(`[EMAIL SERVICE] Configured Gmail SMTP for ${gmailUser}`);
-        cachedTransporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-                user: gmailUser,
-                pass: gmailPass
-            }
-        });
-        return cachedTransporter;
+  if (gmailUser && gmailPass) {
+    console.log(`[EMAIL SERVICE] Configured Gmail SMTP for ${gmailUser}`);
+    cachedTransporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: gmailUser,
+        pass: gmailPass
+      }
+    });
+    return cachedTransporter;
+  }
+
+  // Option 2: Generic Custom SMTP (Brevo, SendGrid, Mailgun, AWS SES, etc.)
+  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+    const port = parseInt(process.env.SMTP_PORT || '587', 10);
+    console.log(`[EMAIL SERVICE] Configured Custom SMTP (${process.env.SMTP_HOST}:${port})`);
+    cachedTransporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: port,
+      secure: process.env.SMTP_SECURE === 'true' || port === 465,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS
+      }
+    });
+    return cachedTransporter;
+  }
+
+  // Option 3: Automated Ethereal Test Account fallback
+  console.log('[EMAIL SERVICE] No SMTP credentials in .env. Initializing test SMTP account...');
+  try {
+    if (!etherealAccount) {
+      etherealAccount = await nodemailer.createTestAccount();
     }
-
-    // Option 2: Generic Custom SMTP (Brevo, SendGrid, Mailgun, AWS SES, etc.)
-    if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
-        const port = parseInt(process.env.SMTP_PORT || '587', 10);
-        console.log(`[EMAIL SERVICE] Configured Custom SMTP (${process.env.SMTP_HOST}:${port})`);
-        cachedTransporter = nodemailer.createTransport({
-            host: process.env.SMTP_HOST,
-            port: port,
-            secure: process.env.SMTP_SECURE === 'true' || port === 465,
-            auth: {
-                user: process.env.SMTP_USER,
-                pass: process.env.SMTP_PASS
-            }
-        });
-        return cachedTransporter;
-    }
-
-    // Option 3: Automated Ethereal Test Account fallback
-    console.log('[EMAIL SERVICE] No SMTP credentials in .env. Initializing test SMTP account...');
-    try {
-        if (!etherealAccount) {
-            etherealAccount = await nodemailer.createTestAccount();
-        }
-        cachedTransporter = nodemailer.createTransport({
-            host: etherealAccount.smtp.host,
-            port: etherealAccount.smtp.port,
-            secure: etherealAccount.smtp.secure,
-            auth: {
-                user: etherealAccount.user,
-                pass: etherealAccount.pass
-            }
-        });
-        console.log(`[EMAIL SERVICE] Test SMTP ready. Account: ${etherealAccount.user}`);
-        return cachedTransporter;
-    } catch (err) {
-        console.error('[EMAIL SERVICE] Failed to create test account:', err.message);
-        throw err;
-    }
+    cachedTransporter = nodemailer.createTransport({
+      host: etherealAccount.smtp.host,
+      port: etherealAccount.smtp.port,
+      secure: etherealAccount.smtp.secure,
+      auth: {
+        user: etherealAccount.user,
+        pass: etherealAccount.pass
+      }
+    });
+    console.log(`[EMAIL SERVICE] Test SMTP ready. Account: ${etherealAccount.user}`);
+    return cachedTransporter;
+  } catch (err) {
+    console.error('[EMAIL SERVICE] Failed to create test account:', err.message);
+    throw err;
+  }
 }
 
 /**
@@ -72,16 +72,16 @@ async function getTransporter() {
  * @param {string} options.otp - 6-digit OTP verification code
  */
 async function sendOtpEmail({ to, name = 'Valued User', otp }) {
-    const transporter = await getTransporter();
-    const fromAddress = process.env.EMAIL_FROM || process.env.GMAIL_USER || process.env.SMTP_USER || '"Smart Buy Assistant" <no-reply@buychhatke.ai>';
+  const transporter = await getTransporter();
+  const fromAddress = process.env.EMAIL_FROM || process.env.GMAIL_USER || process.env.SMTP_USER || '"buySmarty" <no-reply@buychhatke.ai>';
 
-    const htmlContent = `
+  const htmlContent = `
     <!DOCTYPE html>
     <html lang="en">
     <head>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Email Verification - Smart Buy Assistant</title>
+      <title>Email Verification - buySmarty</title>
       <style>
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #0a0e17; color: #f8fafc; margin: 0; padding: 24px 12px; }
         .email-wrapper { max-width: 520px; margin: 0 auto; background: #0d1322; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 16px; overflow: hidden; box-shadow: 0 12px 36px rgba(0,0,0,0.5); }
@@ -101,11 +101,11 @@ async function sendOtpEmail({ to, name = 'Valued User', otp }) {
     <body>
       <div class="email-wrapper">
         <div class="email-header">
-          <h1 class="logo-title">SMART BUY <span class="logo-accent">ASSISTANT</span></h1>
+          <h1 class="logo-title">buySmartly <span class="logo-accent">AI ASSISTANT</span></h1>
         </div>
         <div class="email-body">
           <p class="greeting">Hello ${name},</p>
-          <p class="msg-text">Thank you for creating an account with Smart Buy Assistant. To complete your registration and activate automated price drop alerts, please use the 6-digit verification code below:</p>
+          <p class="msg-text">Thank you for creating an account with buySmarty. To complete your registration and activate automated price drop alerts, please use the 6-digit verification code below:</p>
           
           <div class="otp-container">
             <div class="otp-label">Verification Code</div>
@@ -117,41 +117,41 @@ async function sendOtpEmail({ to, name = 'Valued User', otp }) {
           </div>
         </div>
         <div class="email-footer">
-          &copy; ${new Date().getFullYear()} Smart Buy Assistant AI. Autonomous Price Tracking & Intelligence.
+          &copy; ${new Date().getFullYear()} buySmarty AI. Autonomous Price Tracking & Intelligence.
         </div>
       </div>
     </body>
     </html>
     `;
 
-    const mailOptions = {
-        from: fromAddress,
-        to: to,
-        subject: `${otp} is your Smart Buy Assistant Verification Code`,
-        text: `Hello ${name},\n\nYour 6-digit verification code for Smart Buy Assistant is: ${otp}\n\nThis code will expire in 10 minutes.\n\nThank you,\nSmart Buy Assistant Team`,
-        html: htmlContent
-    };
+  const mailOptions = {
+    from: fromAddress,
+    to: to,
+    subject: `${otp} is your buySmarty Verification Code`,
+    text: `Hello ${name},\n\nYour 6-digit verification code for buySmarty is: ${otp}\n\nThis code will expire in 10 minutes.\n\nThank you,\nbuySmarty Team`,
+    html: htmlContent
+  };
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log(`[EMAIL DISPATCH] Email sent to: ${to} | Message ID: ${info.messageId}`);
+  const info = await transporter.sendMail(mailOptions);
+  console.log(`[EMAIL DISPATCH] Email sent to: ${to} | Message ID: ${info.messageId}`);
 
-    let previewUrl = null;
-    const isRealInbox = Boolean(process.env.GMAIL_USER || process.env.SMTP_USER);
+  let previewUrl = null;
+  const isRealInbox = Boolean(process.env.GMAIL_USER || process.env.SMTP_USER);
 
-    if (!isRealInbox && nodemailer.getTestMessageUrl(info)) {
-        previewUrl = nodemailer.getTestMessageUrl(info);
-        console.log(`[EMAIL PREVIEW] View dispatched test email here: ${previewUrl}`);
-    }
+  if (!isRealInbox && nodemailer.getTestMessageUrl(info)) {
+    previewUrl = nodemailer.getTestMessageUrl(info);
+    console.log(`[EMAIL PREVIEW] View dispatched test email here: ${previewUrl}`);
+  }
 
-    return {
-        success: true,
-        messageId: info.messageId,
-        previewUrl,
-        sentToRealInbox: isRealInbox
-    };
+  return {
+    success: true,
+    messageId: info.messageId,
+    previewUrl,
+    sentToRealInbox: isRealInbox
+  };
 }
 
 module.exports = {
-    sendOtpEmail,
-    getTransporter
+  sendOtpEmail,
+  getTransporter
 };

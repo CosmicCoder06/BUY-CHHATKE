@@ -18,7 +18,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.get('/api/health', (req, res) => {
     res.json({
         status: 'ok',
-        service: 'Smart Buy Assistant API',
+        service: 'buySmarty API',
         timestamp: new Date().toISOString(),
         rapidApiConfigured: Boolean(process.env.RAPIDAPI_KEY),
         smtpConfigured: Boolean(process.env.GMAIL_USER || process.env.SMTP_USER || process.env.SMTP_HOST)
@@ -31,5 +31,5 @@ app.use('/api', authRoutes);
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-    console.log(`Smart Buy Assistant Server running at http://localhost:${PORT}`);
+    console.log(`buySmarty Server running at http://localhost:${PORT}`);
 });

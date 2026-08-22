@@ -1,16 +1,21 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Smart Buy Assistant — AI Price Intelligence & Deal Tracker</title>
+  <title>buySmarty — Price Intelligence & Deal Tracker</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✦</text></svg>">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✦</text></svg>">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-  <link rel="stylesheet" href="style.css?v=2.4.0" />
+  <link rel="stylesheet" href="style.css?v=2.5.0" />
 </head>
+
 <body>
 
   <!-- Ambient Glow Backdrop -->
@@ -21,15 +26,20 @@
   <!-- Live Marquee Ticker -->
   <div class="ticker-wrap">
     <div class="ticker-content">
-      <span class="ticker-item"><span class="ticker-badge badge-drop">🔥 -35% DROP</span> boAt Rockerz 450 @ ₹1,299 (Historical Low)</span>
+      <span class="ticker-item"><span class="ticker-badge badge-drop">🔥 -35% DROP</span> boAt Rockerz 450 @ ₹1,299
+        (Historical Low)</span>
       <span class="ticker-sep">✦</span>
-      <span class="ticker-item"><span class="ticker-badge badge-signal">⚡ BUY SIGNAL</span> Sony WH-1000XM5 active at optimal entry corridor</span>
+      <span class="ticker-item"><span class="ticker-badge badge-signal">⚡ BUY SIGNAL</span> Sony WH-1000XM5 active at
+        optimal entry corridor</span>
       <span class="ticker-sep">✦</span>
-      <span class="ticker-item"><span class="ticker-badge badge-spike">⚠️ FAKE SALE DETECTED</span> Artificial 18% markup detected on 14 Electronics</span>
+      <span class="ticker-item"><span class="ticker-badge badge-spike">⚠️ FAKE SALE DETECTED</span> Artificial 18%
+        markup detected on 14 Electronics</span>
       <span class="ticker-sep">✦</span>
-      <span class="ticker-item"><span class="ticker-badge badge-drop">🔥 -14% DROP</span> Apple iPhone 15 (128GB) @ ₹69,999</span>
+      <span class="ticker-item"><span class="ticker-badge badge-drop">🔥 -14% DROP</span> Apple iPhone 15 (128GB) @
+        ₹69,999</span>
       <span class="ticker-sep">✦</span>
-      <span class="ticker-item"><span class="ticker-badge badge-signal">⚡ LIVE TRACKER</span> Monitoring 4.2M+ Amazon India SKUs in real-time</span>
+      <span class="ticker-item"><span class="ticker-badge badge-signal">⚡ LIVE TRACKER</span> Monitoring 4.2M+ Amazon
+        India SKUs in real-time</span>
     </div>
   </div>
 
@@ -42,8 +52,8 @@
           <span class="brand-glyph">✦</span>
         </div>
         <div class="brand-info">
-          <div class="brand-title">SMART BUY <span class="brand-ai">ASSISTANT</span></div>
-          <div class="brand-status">AI PRICE INTELLIGENCE TERMINAL</div>
+          <div class="brand-title">buySmartly <span class="brand-ai">AI ASSISTANT</span></div>
+          <div class="brand-status"> PRICE INTELLIGENCE TERMINAL</div>
         </div>
       </div>
 
@@ -95,23 +105,21 @@
       </h1>
 
       <p class="portal-sub">
-        Real-time algorithmic analysis for Amazon products. Expose artificial markups, verify merchant trust scores, and time purchases with mathematical confidence.
+        Real-time algorithmic analysis for Amazon products. Expose artificial markups, verify merchant trust scores, and
+        time purchases with mathematical confidence.
       </p>
 
       <!-- Command Search Bar -->
       <div class="command-box">
-        <div class="command-prefix">
-          <span class="prompt-sym">&gt;</span>
+        <div class="command-input-group">
+          <div class="command-prefix">
+            <span class="prompt-sym">&gt;</span>
+          </div>
+          <input type="text" id="asinInput" class="command-input"
+            placeholder="Paste Amazon India link or ASIN..." autocomplete="off"
+            spellcheck="false" />
+          <button id="clearBtn" class="command-clear" title="Clear input" style="display:none">✕</button>
         </div>
-        <input 
-          type="text" 
-          id="asinInput" 
-          class="command-input" 
-          placeholder="Paste Amazon India product link or ASIN (e.g. B0CHX3QBCH)..." 
-          autocomplete="off" 
-          spellcheck="false" 
-        />
-        <button id="clearBtn" class="command-clear" title="Clear input" style="display:none">✕</button>
         <button id="analyzeBtn" class="command-exec-btn">
           <span class="btn-text">Execute Scan</span>
           <span class="btn-icon">↵</span>
@@ -119,7 +127,8 @@
       </div>
 
       <div class="quick-helpers">
-        <span class="helper-hint">💡 ProTip: Paste any direct Amazon product URL or 10-digit ASIN directly into the terminal</span>
+        <span class="helper-hint">💡 ProTip: Paste any direct Amazon product URL or 10-digit ASIN directly into the
+          terminal</span>
       </div>
     </section>
 
@@ -231,7 +240,7 @@
 
       <!-- SECTION 3: Merchant Trust & AI Score Surface -->
       <section class="diagnostics-split">
-        
+
         <!-- Left: Merchant Health & Authenticity -->
         <div class="diag-column merchant-column">
           <div class="diag-header">
@@ -280,8 +289,10 @@
           <div class="score-display-wrapper">
             <div class="gauge-container">
               <svg class="radial-gauge-svg" viewBox="0 0 200 120">
-                <path class="gauge-bg-arc" d="M 20 105 A 80 80 0 0 1 180 105" fill="none" stroke-width="14" stroke-linecap="round" />
-                <path id="gaugeProgressArc" class="gauge-val-arc" d="M 20 105 A 80 80 0 0 1 180 105" fill="none" stroke-width="14" stroke-linecap="round" stroke-dasharray="251.2" stroke-dashoffset="251.2" />
+                <path class="gauge-bg-arc" d="M 20 105 A 80 80 0 0 1 180 105" fill="none" stroke-width="14"
+                  stroke-linecap="round" />
+                <path id="gaugeProgressArc" class="gauge-val-arc" d="M 20 105 A 80 80 0 0 1 180 105" fill="none"
+                  stroke-width="14" stroke-linecap="round" stroke-dasharray="251.2" stroke-dashoffset="251.2" />
               </svg>
               <div class="gauge-center-content">
                 <div class="gauge-score-value" id="gaugeNum">—</div>
@@ -323,7 +334,8 @@
       <section class="alert-surface">
         <div class="alert-content-left">
           <div class="alert-title">AUTOMATED TARGET PRICE ALERT</div>
-          <div class="alert-desc">Configure a target threshold. We'll monitor real-time drops and alert you when price reaches or dips below your strike price.</div>
+          <div class="alert-desc">Configure a target threshold. We'll monitor real-time drops and alert you when price
+            reaches or dips below your strike price.</div>
           <div class="alert-user-status" id="alertUserStatus">
             <span class="user-status-dot"></span>
             <span id="alertUserText">Alerts will be delivered to your active session.</span>
@@ -433,32 +445,29 @@
         <div class="modal-header">
           <div class="modal-brand-icon verify-icon">✉️</div>
           <h3 class="modal-title">Verify Your Email</h3>
-          <p class="modal-sub">We sent a 6-digit verification code to <b id="verifyTargetEmail" class="highlight-email">user@domain.com</b></p>
+          <p class="modal-sub">We sent a 6-digit verification code to <b id="verifyTargetEmail"
+              class="highlight-email">user@domain.com</b></p>
         </div>
 
-        <div id="otpPreviewNotice" style="display: none; margin-bottom: 16px; padding: 10px 14px; background: rgba(99, 102, 241, 0.12); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 8px; font-size: 0.76rem; color: #a5b4fc; text-align: center;">
+        <div id="otpPreviewNotice"
+          style="display: none; margin-bottom: 16px; padding: 10px 14px; background: rgba(99, 102, 241, 0.12); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 8px; font-size: 0.76rem; color: #a5b4fc; text-align: center;">
           <span>📧 Test Inbox Preview: </span>
-          <a id="otpPreviewLink" href="#" target="_blank" rel="noopener" style="color: #38bdf8; font-weight: 700; text-decoration: underline;">Open Email in Browser ↗</a>
+          <a id="otpPreviewLink" href="#" target="_blank" rel="noopener"
+            style="color: #38bdf8; font-weight: 700; text-decoration: underline;">Open Email in Browser ↗</a>
         </div>
 
         <div class="otp-container">
           <label class="form-label text-center">Enter 6-Digit Verification Code</label>
-          <input 
-            type="text" 
-            id="otpCodeInput" 
-            class="otp-input" 
-            placeholder="• • • • • •" 
-            maxlength="6" 
-            autocomplete="one-time-code"
-            inputmode="numeric"
-          />
+          <input type="text" id="otpCodeInput" class="otp-input" placeholder="• • • • • •" maxlength="6"
+            autocomplete="one-time-code" inputmode="numeric" />
           <div class="otp-timer-row">
             <span id="otpTimerText">Resend code in <b id="otpCountdown">45</b>s</span>
             <button id="resendOtpBtn" class="resend-otp-btn" style="display: none;">Resend Code ↻</button>
           </div>
         </div>
 
-        <button type="button" class="modal-submit-btn verify-submit-btn" id="verifyOtpBtn">Verify &amp; Activate Account ↵</button>
+        <button type="button" class="modal-submit-btn verify-submit-btn" id="verifyOtpBtn">Verify &amp; Activate Account
+          ↵</button>
         <button type="button" class="back-auth-btn" id="backToRegisterBtn">← Back to Edit Details</button>
       </div>
 
@@ -544,34 +553,53 @@
   <!-- ─── RICH MULTI-COLUMN FOOTER (BUYHATKE REFERENCE DESIGN) ── -->
   <footer class="rich-footer">
     <div class="footer-container">
-      
+
       <!-- Top Row: Brand & Socials -->
       <div class="footer-top-row">
         <div class="footer-brand">
           <div class="fb-icon">
             <span class="fb-glyph">🛍️</span>
           </div>
-          <span class="fb-text">Smart Buy Assistant</span>
+          <span class="fb-text">buySmarty</span>
         </div>
 
         <div class="footer-socials">
           <a href="https://facebook.com" target="_blank" rel="noopener" class="social-btn" title="Facebook">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95z"/></svg>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+              <path
+                d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95z" />
+            </svg>
           </a>
           <a href="https://instagram.com" target="_blank" rel="noopener" class="social-btn" title="Instagram">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+              <path
+                d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+            </svg>
           </a>
           <a href="https://twitter.com" target="_blank" rel="noopener" class="social-btn" title="X (Twitter)">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+              <path
+                d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+            </svg>
           </a>
-          <a href="https://linkedin.com/in/abhiyadavv07/" target="_blank" rel="noopener" class="social-btn" title="LinkedIn">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+          <a href="https://linkedin.com/in/abhiyadavv07/" target="_blank" rel="noopener" class="social-btn"
+            title="LinkedIn">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+              <path
+                d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+            </svg>
           </a>
           <a href="https://youtube.com" target="_blank" rel="noopener" class="social-btn" title="YouTube">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+              <path
+                d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+            </svg>
           </a>
           <a href="https://telegram.org" target="_blank" rel="noopener" class="social-btn" title="Telegram">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.121l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.458c.538-.196 1.006.128.832.94z"/></svg>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+              <path
+                d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.121l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.458c.538-.196 1.006.128.832.94z" />
+            </svg>
           </a>
         </div>
       </div>
@@ -589,7 +617,8 @@
             </div>
             <div class="support-text-stack">
               <span class="support-badge">✦ SUPPORT US</span>
-              <p class="support-desc">Scan to support independent AI price intelligence &amp; keep our tracker free for everyone.</p>
+              <p class="support-desc">Scan to support independent AI price intelligence &amp; keep our tracker free for
+                everyone.</p>
               <div class="support-tags">
                 <span class="sup-tag">☕ Buy Us a Coffee</span>
                 <span class="sup-tag">⚡ UPI / Scan</span>
@@ -638,8 +667,10 @@
         <div class="footer-col">
           <h4 class="f-col-heading">Company</h4>
           <ul class="f-links-list">
-            <li><a href="https://www.linkedin.com/in/abhiyadavv07/" target="_blank" rel="noopener" class="f-link">About</a></li>
-            <li><a href="https://www.linkedin.com/in/abhiyadavv07/" target="_blank" rel="noopener" class="f-link">Contact Us</a></li>
+            <li><a href="https://www.linkedin.com/in/abhiyadavv07/" target="_blank" rel="noopener"
+                class="f-link">About</a></li>
+            <li><a href="https://www.linkedin.com/in/abhiyadavv07/" target="_blank" rel="noopener"
+                class="f-link">Contact Us</a></li>
             <li><a href="#" class="f-link">What We Do</a></li>
             <li><a href="#" class="f-link">How We Earn</a></li>
           </ul>
@@ -659,7 +690,7 @@
 
       <!-- Bottom Bar -->
       <div class="footer-bottom-bar">
-        <div class="f-copy">Smart Buy Assistant Internet Pvt Ltd. © 2012 - 2026</div>
+        <div class="f-copy">buySmarty Internet Pvt Ltd. © 2012 - 2026</div>
         <div class="f-legal-links">
           <a href="#" class="legal-link">Legal Terms</a>
           <span class="legal-dot">·</span>
@@ -674,4 +705,5 @@
 
   <script src="app.js?v=2.3.0"></script>
 </body>
+
 </html>

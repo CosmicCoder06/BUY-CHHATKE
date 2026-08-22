@@ -1,5 +1,5 @@
 /**
- * SMART BUY ASSISTANT — CLIENT CONTROLLER
+ * buySmarty — CLIENT CONTROLLER
  * AI Price Intelligence, User Auth, Wishlist & Deal Verification Protocol
  */
 
@@ -17,7 +17,7 @@ let otpCountdownInterval = null;
   const root = document.documentElement;
   const toggleBtn = document.getElementById('themeToggle');
   const themeIcon = document.getElementById('themeIcon');
-  
+
   const savedTheme = localStorage.getItem('sba_theme') || 'dark';
   applyTheme(savedTheme);
 
@@ -27,7 +27,7 @@ let otpCountdownInterval = null;
       themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
     }
     localStorage.setItem('sba_theme', theme);
-    
+
     if (typeof currentData !== 'undefined' && currentData && typeof renderChart === 'function') {
       renderChart(currentData.priceHistory, currentData.avgPrice);
     }
@@ -42,77 +42,77 @@ let otpCountdownInterval = null;
 })();
 
 // ─── DOM REFS ───────────────────────────────────────────────────
-const analyzeBtn   = document.getElementById('analyzeBtn');
-const asinInput    = document.getElementById('asinInput');
-const clearBtn     = document.getElementById('clearBtn');
-const skeleton     = document.getElementById('skeleton');
-const emptyState   = document.getElementById('emptyState');
-const dashboard    = document.getElementById('dashboard');
-const errorBanner  = document.getElementById('errorBanner');
-const alertBtn     = document.getElementById('alertBtn');
-const alertInput   = document.getElementById('alertInput');
-const alertMsg     = document.getElementById('alertMsg');
+const analyzeBtn = document.getElementById('analyzeBtn');
+const asinInput = document.getElementById('asinInput');
+const clearBtn = document.getElementById('clearBtn');
+const skeleton = document.getElementById('skeleton');
+const emptyState = document.getElementById('emptyState');
+const dashboard = document.getElementById('dashboard');
+const errorBanner = document.getElementById('errorBanner');
+const alertBtn = document.getElementById('alertBtn');
+const alertInput = document.getElementById('alertInput');
+const alertMsg = document.getElementById('alertMsg');
 
 // Wishlist & Drawer Elements
 const wishlistTriggerBtn = document.getElementById('wishlistTriggerBtn');
-const wishlistDrawer     = document.getElementById('wishlistDrawer');
-const wishlistOverlay    = document.getElementById('wishlistOverlay');
-const closeWishlistBtn   = document.getElementById('closeWishlistBtn');
-const clearWishlistBtn   = document.getElementById('clearWishlistBtn');
-const wishlistItemsList  = document.getElementById('wishlistItemsList');
-const wishlistCount      = document.getElementById('wishlistCount');
-const drawerWishlistBadge= document.getElementById('drawerWishlistBadge');
+const wishlistDrawer = document.getElementById('wishlistDrawer');
+const wishlistOverlay = document.getElementById('wishlistOverlay');
+const closeWishlistBtn = document.getElementById('closeWishlistBtn');
+const clearWishlistBtn = document.getElementById('clearWishlistBtn');
+const wishlistItemsList = document.getElementById('wishlistItemsList');
+const wishlistCount = document.getElementById('wishlistCount');
+const drawerWishlistBadge = document.getElementById('drawerWishlistBadge');
 const productWishlistToggleBtn = document.getElementById('productWishlistToggleBtn');
 
 // Auth & Verification Modal Elements
-const loginModalBtn      = document.getElementById('loginModalBtn');
-const authContainer      = document.getElementById('authContainer');
-const loginModalOverlay  = document.getElementById('loginModalOverlay');
+const loginModalBtn = document.getElementById('loginModalBtn');
+const authContainer = document.getElementById('authContainer');
+const loginModalOverlay = document.getElementById('loginModalOverlay');
 const closeLoginModalBtn = document.getElementById('closeLoginModalBtn');
-const demoLoginBtn       = document.getElementById('demoLoginBtn');
-const tabLoginBtn        = document.getElementById('tabLoginBtn');
-const tabRegisterBtn     = document.getElementById('tabRegisterBtn');
-const authForm           = document.getElementById('authForm');
-const authFormStep       = document.getElementById('authFormStep');
-const authVerifyStep     = document.getElementById('authVerifyStep');
-const nameGroup          = document.getElementById('nameGroup');
-const userNameInput      = document.getElementById('userNameInput');
-const userEmailInput     = document.getElementById('userEmailInput');
-const userPasswordInput  = document.getElementById('userPasswordInput');
-const emailHint          = document.getElementById('emailHint');
-const authSubmitBtn      = document.getElementById('authSubmitBtn');
-const modalTitle         = document.getElementById('modalTitle');
-const modalSub           = document.getElementById('modalSub');
-const alertUserText      = document.getElementById('alertUserText');
+const demoLoginBtn = document.getElementById('demoLoginBtn');
+const tabLoginBtn = document.getElementById('tabLoginBtn');
+const tabRegisterBtn = document.getElementById('tabRegisterBtn');
+const authForm = document.getElementById('authForm');
+const authFormStep = document.getElementById('authFormStep');
+const authVerifyStep = document.getElementById('authVerifyStep');
+const nameGroup = document.getElementById('nameGroup');
+const userNameInput = document.getElementById('userNameInput');
+const userEmailInput = document.getElementById('userEmailInput');
+const userPasswordInput = document.getElementById('userPasswordInput');
+const emailHint = document.getElementById('emailHint');
+const authSubmitBtn = document.getElementById('authSubmitBtn');
+const modalTitle = document.getElementById('modalTitle');
+const modalSub = document.getElementById('modalSub');
+const alertUserText = document.getElementById('alertUserText');
 
 // OTP Verification Step Elements
-const verifyTargetEmail  = document.getElementById('verifyTargetEmail');
-const otpCodeInput       = document.getElementById('otpCodeInput');
-const verifyOtpBtn       = document.getElementById('verifyOtpBtn');
-const otpCountdown       = document.getElementById('otpCountdown');
-const otpTimerText       = document.getElementById('otpTimerText');
-const resendOtpBtn       = document.getElementById('resendOtpBtn');
-const backToRegisterBtn  = document.getElementById('backToRegisterBtn');
-const otpPreviewNotice   = document.getElementById('otpPreviewNotice');
-const otpPreviewLink     = document.getElementById('otpPreviewLink');
+const verifyTargetEmail = document.getElementById('verifyTargetEmail');
+const otpCodeInput = document.getElementById('otpCodeInput');
+const verifyOtpBtn = document.getElementById('verifyOtpBtn');
+const otpCountdown = document.getElementById('otpCountdown');
+const otpTimerText = document.getElementById('otpTimerText');
+const resendOtpBtn = document.getElementById('resendOtpBtn');
+const backToRegisterBtn = document.getElementById('backToRegisterBtn');
+const otpPreviewNotice = document.getElementById('otpPreviewNotice');
+const otpPreviewLink = document.getElementById('otpPreviewLink');
 
 // My Account Modal Elements
-const accountModalOverlay   = document.getElementById('accountModalOverlay');
-const closeAccountModalBtn  = document.getElementById('closeAccountModalBtn');
-const accAvatarLarge        = document.getElementById('accAvatarLarge');
-const accDisplayName        = document.getElementById('accDisplayName');
-const accEmail              = document.getElementById('accEmail');
-const accMemberSince        = document.getElementById('accMemberSince');
-const accWishlistCount      = document.getElementById('accWishlistCount');
-const accAlertsCount        = document.getElementById('accAlertsCount');
-const accScansCount         = document.getElementById('accScansCount');
-const accWishlistStat       = document.getElementById('accWishlistStat');
-const editUserName          = document.getElementById('editUserName');
-const editAlertPref         = document.getElementById('editAlertPref');
-const saveProfileBtn        = document.getElementById('saveProfileBtn');
-const accAlertsList         = document.getElementById('accAlertsList');
-const activeAlertsCountNum  = document.getElementById('activeAlertsCountNum');
-const accountLogoutBtn      = document.getElementById('accountLogoutBtn');
+const accountModalOverlay = document.getElementById('accountModalOverlay');
+const closeAccountModalBtn = document.getElementById('closeAccountModalBtn');
+const accAvatarLarge = document.getElementById('accAvatarLarge');
+const accDisplayName = document.getElementById('accDisplayName');
+const accEmail = document.getElementById('accEmail');
+const accMemberSince = document.getElementById('accMemberSince');
+const accWishlistCount = document.getElementById('accWishlistCount');
+const accAlertsCount = document.getElementById('accAlertsCount');
+const accScansCount = document.getElementById('accScansCount');
+const accWishlistStat = document.getElementById('accWishlistStat');
+const editUserName = document.getElementById('editUserName');
+const editAlertPref = document.getElementById('editAlertPref');
+const saveProfileBtn = document.getElementById('saveProfileBtn');
+const accAlertsList = document.getElementById('accAlertsList');
+const activeAlertsCountNum = document.getElementById('activeAlertsCountNum');
+const accountLogoutBtn = document.getElementById('accountLogoutBtn');
 
 // API endpoint resolution
 const API_BASE = (location.port === '3000' || location.protocol === 'file:')
@@ -291,7 +291,7 @@ function renderTerminalDashboard(d) {
 
   document.getElementById('chipAsin').textContent = `ASIN: ${d.asin || asinInput.value.trim()}`;
   document.getElementById('productTitle').textContent = d.productTitle || 'Amazon Product';
-  
+
   // Format Prices
   animatePrice(document.getElementById('productPrice'), d.currentPrice);
   animatePrice(document.getElementById('statAvg'), d.avgPrice);
@@ -387,7 +387,7 @@ function updateRadialGauge(score) {
 
   const maxDash = 251.2;
   const progressOffset = maxDash - (score / 100) * maxDash;
-  
+
   if (gaugeArc) {
     gaugeArc.style.strokeDashoffset = progressOffset;
 
@@ -472,13 +472,13 @@ function renderChart(history, avgPrice) {
     gradient.addColorStop(1, 'rgba(99, 102, 241, 0)');
   }
 
-  const pointBg = prices.map((_, i) => 
+  const pointBg = prices.map((_, i) =>
     i === minIndex ? '#10b981' : (i === maxIndex ? '#ef4444' : 'transparent')
   );
-  const pointBorder = prices.map((_, i) => 
+  const pointBorder = prices.map((_, i) =>
     (i === minIndex || i === maxIndex) ? '#ffffff' : 'transparent'
   );
-  const pointRadii = prices.map((_, i) => 
+  const pointRadii = prices.map((_, i) =>
     (i === minIndex || i === maxIndex) ? 6 : 2
   );
 
@@ -897,7 +897,7 @@ function openAccountModal() {
   // Populate metadata
   const initial = (currentUser.name || 'U').charAt(0).toUpperCase();
   if (accAvatarLarge) accAvatarLarge.textContent = initial;
-  if (accDisplayName) accDisplayName.textContent = currentUser.name || 'Smart Buyer';
+  if (accDisplayName) accDisplayName.textContent = currentUser.name || 'buySmartlyer';
   if (accEmail) accEmail.textContent = currentUser.email;
 
   const joinDate = new Date(currentUser.loggedInAt || Date.now());
@@ -1193,4 +1193,4 @@ function animatePrice(element, targetValue, duration = 600) {
     }
   }
   requestAnimationFrame(update);
-}
+}

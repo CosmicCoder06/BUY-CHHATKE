@@ -1,13 +1,13 @@
 /* ═════════════════════════════════════════════════════════════════
    SMART BUY ASSISTANT — ULTRA-RESPONSIVE AI INTELLIGENCE STREAM
-   Mobile-First & Fluid Responsive for Phones, iPhones, iPads, Tablets & Desktops
+   Fluid & Flawless on Phones, iPhones, iPads, Tablets & Desktops
    ═════════════════════════════════════════════════════════════════ */
 
 /* ─── COLOR SYSTEM & DESIGN TOKENS ──────────────────────────── */
 :root {
   /* Surface colors (Dark mode default) */
   --bg-core: #0a0e17;
-  --bg-header: rgba(10, 14, 23, 0.92);
+  --bg-header: rgba(10, 14, 23, 0.94);
   --bg-subtle: rgba(255, 255, 255, 0.035);
   --bg-subtle-hover: rgba(255, 255, 255, 0.07);
   --bg-input: rgba(255, 255, 255, 0.05);
@@ -55,7 +55,7 @@
 /* ─── LIGHT THEME OVERRIDES ─────────────────────────────────── */
 [data-theme="light"] {
   --bg-core: #f8fafc;
-  --bg-header: rgba(248, 250, 252, 0.94);
+  --bg-header: rgba(248, 250, 252, 0.96);
   --bg-subtle: rgba(0, 0, 0, 0.035);
   --bg-subtle-hover: rgba(0, 0, 0, 0.065);
   --bg-input: #ffffff;
@@ -210,28 +210,31 @@ body {
 
 .header-inner {
   max-width: 1560px;
-  width: 95%;
+  width: 100%;
   margin: 0 auto;
   padding: 0 16px;
   height: 60px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
+  box-sizing: border-box;
 }
 
 .brand-block {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   text-decoration: none;
-  flex-shrink: 0;
+  min-width: 0;
+  flex-shrink: 1;
 }
 
 .brand-icon {
   position: relative;
   width: 34px;
   height: 34px;
+  min-width: 34px;
   border-radius: var(--rad-sm);
   background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(6, 182, 212, 0.2));
   border: 1px solid var(--border-hairline-strong);
@@ -261,9 +264,11 @@ body {
 
 .brand-glyph { font-size: 0.95rem; }
 
-.brand-text-stack {
+.brand-info {
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .brand-title {
@@ -273,6 +278,9 @@ body {
   letter-spacing: -0.02em;
   color: var(--text-main);
   line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .brand-ai {
@@ -288,6 +296,7 @@ body {
   font-weight: 500;
   color: var(--text-muted);
   letter-spacing: 0.06em;
+  white-space: nowrap;
 }
 
 /* Quick Samples Presets in Header */
@@ -337,7 +346,7 @@ body {
 .header-controls {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   flex-shrink: 0;
 }
 
@@ -345,7 +354,7 @@ body {
   display: flex;
   align-items: center;
   gap: 5px;
-  padding: 5px 12px;
+  padding: 5px 11px;
   min-height: 36px;
   border-radius: var(--rad-full);
   border: 1px solid var(--border-hairline);
@@ -356,6 +365,7 @@ body {
   cursor: pointer;
   outline: none;
   transition: all 0.2s var(--ease-smooth);
+  white-space: nowrap;
 }
 
 .header-btn:hover {
@@ -400,6 +410,7 @@ body {
   border: 1px solid var(--border-hairline-strong);
   cursor: pointer;
   transition: all 0.2s;
+  max-width: 170px;
 }
 
 .user-profile-badge:hover {
@@ -411,6 +422,7 @@ body {
 .user-avatar {
   width: 24px;
   height: 24px;
+  min-width: 24px;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--brand-cyan), var(--brand-indigo));
   display: flex;
@@ -419,14 +431,30 @@ body {
   font-size: 0.72rem;
   font-weight: 800;
   color: #ffffff;
+  flex-shrink: 0;
 }
 
-.user-name { font-size: 0.78rem; font-weight: 600; color: var(--text-main); }
-.account-tag-hint { font-size: 0.62rem; color: var(--brand-cyan); font-weight: 700; }
+.user-name {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.account-tag-hint {
+  font-size: 0.62rem;
+  color: var(--brand-cyan);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
 
 .theme-toggle-btn {
   width: 36px;
   height: 36px;
+  min-width: 36px;
   border-radius: var(--rad-sm);
   background: var(--bg-subtle);
   border: 1px solid var(--border-hairline);
@@ -447,7 +475,7 @@ body {
   transform: scale(1.05);
 }
 
-/* ─── EXPANSIVE FULL-WIDTH MAIN STAGE ───────────────────────── */
+/* ─── EXPANSIVE MAIN STAGE ──────────────────────────────────── */
 .terminal-stage {
   max-width: 1560px;
   width: 95%;
@@ -461,7 +489,7 @@ body {
 .portal-section {
   text-align: center;
   max-width: 920px;
-  margin: 0 auto 44px;
+  margin: 0 auto 40px;
   animation: fadeInDown 0.6s var(--ease-smooth);
 }
 
@@ -485,7 +513,7 @@ body {
 .portal-tag-bracket { color: var(--text-muted); }
 
 .portal-headline {
-  font-size: clamp(1.85rem, 5.2vw, 3.4rem);
+  font-size: clamp(1.8rem, 5vw, 3.4rem);
   font-weight: 800;
   letter-spacing: -0.03em;
   line-height: 1.18;
@@ -499,7 +527,7 @@ body {
 }
 
 .portal-sub {
-  font-size: clamp(0.92rem, 2.4vw, 1.08rem);
+  font-size: clamp(0.9rem, 2.2vw, 1.08rem);
   color: var(--text-dim);
   line-height: 1.55;
   max-width: 720px;
@@ -524,6 +552,14 @@ body {
 .command-box:focus-within {
   border-color: var(--brand-indigo);
   box-shadow: 0 0 0 3px var(--border-accent);
+}
+
+.command-input-group {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
 }
 
 .command-prefix {
@@ -556,8 +592,8 @@ body {
   border: 1px solid var(--border-hairline);
   border-radius: var(--rad-full);
   color: var(--text-muted);
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2268,75 +2304,144 @@ body {
 /* ─── PHONES & IPHONES (Portrait & Small Tablets < 768px) ────── */
 @media (max-width: 768px) {
   .header-inner {
-    padding: 0 12px;
+    padding: 0 10px;
     height: 56px;
+    gap: 6px;
   }
 
-  .brand-title { font-size: 0.86rem; }
-  .brand-status { display: none; }
+  .brand-title {
+    font-size: 0.86rem;
+  }
 
-  .header-btn .btn-label { display: none; }
-  .header-btn { padding: 6px 10px; }
+  .brand-status {
+    display: none;
+  }
+
+  .header-controls {
+    gap: 4px;
+  }
+
+  .header-btn .btn-label {
+    display: none;
+  }
+
+  .header-btn {
+    padding: 5px 8px;
+    min-height: 34px;
+  }
+
+  .user-profile-badge {
+    padding: 3px 6px;
+    min-height: 34px;
+    gap: 4px;
+    max-width: 120px;
+  }
+
+  .account-tag-hint {
+    display: none;
+  }
+
+  .user-name {
+    font-size: 0.74rem;
+    max-width: 65px;
+  }
+
+  .theme-toggle-btn {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    font-size: 0.85rem;
+  }
 
   .terminal-stage {
-    padding: 24px 12px 60px;
+    padding: 20px 10px 60px;
     width: 100%;
   }
 
   .portal-section {
-    margin-bottom: 32px;
+    margin-bottom: 28px;
   }
 
   .portal-headline {
-    font-size: clamp(1.7rem, 6.8vw, 2.25rem);
+    font-size: clamp(1.6rem, 6.2vw, 2.2rem);
     margin-bottom: 10px;
   }
 
   .portal-sub {
-    font-size: 0.88rem;
-    margin-bottom: 20px;
+    font-size: 0.86rem;
+    margin-bottom: 18px;
+    padding: 0 6px;
   }
 
+  /* Command Search Bar on Mobile */
   .command-box {
     border-radius: var(--rad-md);
-    padding: 10px 12px;
+    padding: 8px 10px;
     flex-direction: column;
     align-items: stretch;
-    gap: 10px;
+    gap: 8px;
+  }
+
+  .command-input-group {
+    width: 100%;
+    gap: 8px;
+    padding: 2px 0;
+  }
+
+  .command-prefix {
+    font-size: 1rem;
   }
 
   .command-input {
     width: 100%;
     padding: 4px 0;
+    font-size: 15px;
   }
 
   .command-exec-btn {
     width: 100%;
     justify-content: center;
-    padding: 12px;
+    padding: 11px;
+    min-height: 42px;
+    border-radius: var(--rad-sm);
   }
 
   /* Product Spotlight */
   .intel-spotlight-panel {
     grid-template-columns: 1fr;
     text-align: center;
-    gap: 20px;
-    padding-bottom: 24px;
+    gap: 18px;
+    padding-bottom: 20px;
   }
 
   .spotlight-media {
     margin: 0 auto;
     width: 100%;
-    max-width: 220px;
+    max-width: 180px;
+  }
+
+  .spotlight-img-frame {
+    width: 130px;
+    height: 130px;
   }
 
   .spotlight-details {
     align-items: center;
   }
 
+  .spotlight-title {
+    font-size: clamp(1.05rem, 4vw, 1.3rem);
+    text-align: center;
+  }
+
   .price-action-row {
     justify-content: center;
     width: 100%;
+    gap: 12px;
+  }
+
+  .price-mega {
+    font-size: clamp(1.8rem, 6vw, 2.6rem);
   }
 
   .decision-reason-box {
@@ -2348,7 +2453,7 @@ body {
   .telemetry-ribbon {
     grid-template-columns: 1fr 1fr;
     gap: 6px;
-    padding: 12px 0;
+    padding: 10px 0;
   }
 
   .telemetry-cell {
@@ -2366,7 +2471,7 @@ body {
   }
 
   .cell-val {
-    font-size: 1.3rem;
+    font-size: 1.25rem;
   }
 
   /* Diagnostics & Score */
@@ -2375,23 +2480,24 @@ body {
   }
 
   .gauge-container {
-    width: 180px;
-    height: 105px;
+    width: 170px;
+    height: 98px;
   }
 
   .gauge-score-value {
-    font-size: 2rem;
+    font-size: 1.9rem;
   }
 
   /* Price Alert */
   .alert-form-row {
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
   }
 
   .alert-submit-btn {
     width: 100%;
     justify-content: center;
+    min-height: 42px;
   }
 
   .quick-discount-buttons {
@@ -2401,7 +2507,7 @@ body {
   /* Footer */
   .footer-grid {
     grid-template-columns: 1fr;
-    gap: 22px;
+    gap: 20px;
   }
 
   .col-app {
@@ -2422,12 +2528,13 @@ body {
 
   /* Modals */
   .modal-overlay {
-    padding: 10px;
+    padding: 8px;
   }
 
   .modal-card {
-    padding: 20px 14px;
+    padding: 18px 14px;
     border-radius: var(--rad-md);
+    max-height: calc(100dvh - 20px);
   }
 
   .acc-form-grid {
@@ -2439,35 +2546,53 @@ body {
   }
 }
 
-/* ─── ULTRA COMPACT MOBILES (< 400px, iPhone SE, Galaxy S) ──── */
-@media (max-width: 400px) {
+/* ─── ULTRA COMPACT MOBILES (< 440px, iPhone 16/15/SE, Galaxy S) ──── */
+@media (max-width: 440px) {
   .header-inner {
     padding: 0 8px;
   }
 
+  .brand-title .brand-ai {
+    display: none;
+  }
+
   .brand-title {
-    font-size: 0.8rem;
+    font-size: 0.84rem;
+  }
+
+  .brand-icon {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
   }
 
   .user-name {
     display: none;
   }
 
-  .account-tag-hint {
-    display: none;
+  .user-profile-badge {
+    padding: 2px 4px;
+    min-height: 32px;
+    border: none;
+    background: transparent;
+  }
+
+  .header-btn {
+    padding: 4px 6px;
+    min-height: 32px;
   }
 
   .portal-headline {
-    font-size: 1.6rem;
+    font-size: 1.55rem;
   }
 
   .price-mega {
-    font-size: 1.9rem;
+    font-size: 1.85rem;
   }
 
   .decision-pill {
     padding: 6px 12px;
-    gap: 8px;
+    gap: 6px;
   }
 
   .decision-main {
@@ -2475,11 +2600,7 @@ body {
   }
 
   .telemetry-ribbon {
-    grid-template-columns: 1fr;
-  }
-
-  .telemetry-cell:last-child {
-    grid-column: auto;
+    grid-template-columns: 1fr 1fr;
   }
 
   .account-stats-strip {
@@ -2487,7 +2608,7 @@ body {
   }
 
   .acc-stat-box {
-    padding: 6px 4px;
+    padding: 6px 3px;
   }
 
   .acc-stat-num {
