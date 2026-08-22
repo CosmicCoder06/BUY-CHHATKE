@@ -58,14 +58,14 @@ async function analyze(req, res) {
         return res.status(404).json({ error: `Could not retrieve Flipkart product data for ID ${pid}` });
       }
 
-      const priceStr = String(product.product_price || '').replace(/[^0-9.]/g, '');
+      const priceStr = String(product.product_price || product.productPrice || '').replace(/[^0-9.]/g, '');
       let currentPrice = parseFloat(priceStr) || 1399;
-      const sellerRating = parseFloat(product.product_star_rating) || 4.3;
-      const reviewCount = parseInt(String(product.product_num_ratings || '0').replace(/[^0-9]/g, '')) || 2400;
-      const productTitle = product.product_title || 'Flipkart Verified Product';
-      const productImage = product.product_photo || '';
-      const sellerName = product.seller_name || 'Flipkart Verified Seller';
-      const isAssured = Boolean(product.is_assured);
+      const sellerRating = parseFloat(product.product_star_rating || product.productStarRating) || 4.3;
+      const reviewCount = parseInt(String(product.product_num_ratings || product.productNumRatings || '0').replace(/[^0-9]/g, '')) || 2400;
+      const productTitle = product.product_title || product.productTitle || 'Flipkart Verified Product';
+      const productImage = product.product_photo || product.productImage || '';
+      const sellerName = product.seller_name || product.sellerName || 'Flipkart Verified Seller';
+      const isAssured = Boolean(product.is_assured !== false && product.isAssured !== false);
 
       // Price History Calculation
       const rawHistory = generateFlipkartPriceHistory(currentPrice);
@@ -150,18 +150,18 @@ async function analyze(req, res) {
       // AMAZON INDIA PRODUCT INTELLIGENCE PIPELINE
       // ═══════════════════════════════════════════════════════════════
       const asin = amazonAsin || 'B0CHX3QBCH';
-      const product = await fetchAmazonProductDetails(asin);
+      const product = await fetchAmazonProductDetails(asin, rawInput);
 
       if (!product) {
         return res.status(404).json({ error: `Could not retrieve Amazon product data for ASIN ${asin}` });
       }
 
-      const priceStr = String(product.product_price || '').replace(/[^0-9.]/g, '');
+      const priceStr = String(product.product_price || product.productPrice || '').replace(/[^0-9.]/g, '');
       let currentPrice = parseFloat(priceStr) || 1299;
-      const sellerRating = parseFloat(product.product_star_rating) || 4.2;
-      const reviewCount = parseInt(String(product.product_num_ratings || '0').replace(/[^0-9]/g, '')) || 1200;
-      const productTitle = product.product_title || 'Amazon Product';
-      const productImage = product.product_photo || '';
+      const sellerRating = parseFloat(product.product_star_rating || product.productStarRating) || 4.2;
+      const reviewCount = parseInt(String(product.product_num_ratings || product.productNumRatings || '0').replace(/[^0-9]/g, '')) || 1200;
+      const productTitle = product.product_title || product.productTitle || 'Amazon Product';
+      const productImage = product.product_photo || product.productImage || '';
 
       const historyData = await fetchAmazonPriceHistory(asin);
       let rawHistory = [];

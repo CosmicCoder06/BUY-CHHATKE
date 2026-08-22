@@ -1,44 +1,53 @@
+const { scrapeLiveProduct } = require('./metadataScraper');
+
 function getApiKey() {
   return process.env.RAPIDAPI_KEY || '';
 }
 
-async function fetchProductDetails(asin) {
-  const apiKey = getApiKey();
-  if (!apiKey) {
-    console.warn('[amazonService] RAPIDAPI_KEY is not configured in environment. Using demo fallback.');
-    return generateMockProduct(asin);
+async function fetchProductDetails(asin, originalUrl = '') {
+  // 1. If full URL is provided, try live metadata scraping first
+  if (originalUrl && originalUrl.startsWith('http')) {
+    const liveData = await scrapeLiveProduct(originalUrl);
+    if (liveData && liveData.productTitle) {
+      return {
+        ...liveData,
+        asin: asin
+      };
+    }
   }
 
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000);
+  // 2. Try RapidAPI Amazon Endpoint
+  const apiKey = getApiKey();
+  if (apiKey) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
 
-    const res = await fetch(
-      `https://real-time-amazon-data.p.rapidapi.com/product-details?asin=${encodeURIComponent(asin)}&country=IN`,
-      {
-        signal: controller.signal,
-        headers: {
-          'X-RapidAPI-Key': apiKey,
-          'X-RapidAPI-Host': 'real-time-amazon-data.p.rapidapi.com'
+      const res = await fetch(
+        `https://real-time-amazon-data.p.rapidapi.com/product-details?asin=${encodeURIComponent(asin)}&country=IN`,
+        {
+          signal: controller.signal,
+          headers: {
+            'X-RapidAPI-Key': apiKey,
+            'X-RapidAPI-Host': 'real-time-amazon-data.p.rapidapi.com'
+          }
+        }
+      );
+      clearTimeout(timeoutId);
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.data && data.data.product_title) {
+          return data.data;
         }
       }
-    );
-    clearTimeout(timeoutId);
-
-    if (!res.ok) {
-      console.warn(`[amazonService] Product API error: HTTP ${res.status}. Falling back to demo data.`);
-      return generateMockProduct(asin);
+    } catch (err) {
+      console.warn('[amazonService] fetchProductDetails failed:', err.message);
     }
-
-    const data = await res.json();
-    if (data && data.data && data.data.product_title) {
-      return data.data;
-    }
-    return generateMockProduct(asin);
-  } catch (err) {
-    console.warn('[amazonService] fetchProductDetails failed:', err.message);
-    return generateMockProduct(asin);
   }
+
+  // 3. Fallback to mock catalog
+  return generateMockProduct(asin);
 }
 
 async function fetchPriceHistory(asin) {
@@ -77,7 +86,6 @@ async function fetchPriceHistory(asin) {
 }
 
 function generateMockProduct(asin) {
-  // Return realistic demo products depending on hash of ASIN
   const demoCatalog = [
     {
       product_title: 'Sony WH-1000XM5 Wireless Noise Cancelling Headphones - Platinum Silver',
@@ -130,12 +138,10 @@ function generateMockHistory(currentPrice) {
     const d = new Date(today);
     d.setDate(d.getDate() - i);
     
-    // Simulate real market variations (mean-reverting random walk)
     const drift = (base - walkingPrice) * 0.1;
     const noise = (Math.random() - 0.5) * (base * 0.04);
     walkingPrice = Math.round(walkingPrice + drift + noise);
     
-    // Day 0 (today) should match currentPrice
     const priceVal = (i === 0) ? base : Math.max(Math.round(base * 0.65), walkingPrice);
 
     history.push({
