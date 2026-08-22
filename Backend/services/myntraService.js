@@ -74,7 +74,7 @@ async function fetchMyntraProductDetails(styleId, rawUrl) {
       product_original_price: liveMatch.product_original_price || '₹1,999',
       product_star_rating: liveMatch.product_star_rating || '4.2',
       product_num_ratings: liveMatch.product_num_ratings || '4,500',
-      product_photo: liveMatch.product_photo,
+      product_photo: liveMatch.product_photo || getDefaultImageForTitle(parsedTitle),
       product_url: rawUrl || `https://www.myntra.com/product/${styleId}`,
       seller_name: 'Myntra Verified Partner',
       is_insider: true

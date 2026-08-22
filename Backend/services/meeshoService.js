@@ -63,7 +63,7 @@ async function fetchMeeshoProductDetails(productId, rawUrl) {
       product_original_price: liveMatch.product_original_price || '₹1,299',
       product_star_rating: liveMatch.product_star_rating || '4.0',
       product_num_ratings: liveMatch.product_num_ratings || '6,200',
-      product_photo: liveMatch.product_photo,
+      product_photo: liveMatch.product_photo || getDefaultImageForTitle(parsedTitle),
       product_url: rawUrl || `https://www.meesho.com/p/${productId}`,
       seller_name: 'Meesho Trusted Supplier',
       is_trusted: true

@@ -201,6 +201,10 @@ function extractQueryTarget(raw) {
   return clean.length >= 4 ? clean : null;
 }
 
+function extractAsin(raw) {
+  return extractQueryTarget(raw) || (raw ? String(raw).trim() : '');
+}
+
 // ─── MAIN MULTI-STORE ANALYSIS DISPATCHER ───────────────────────
 async function executeAnalysis() {
   const raw = asinInput.value.trim();
@@ -1115,8 +1119,8 @@ function updateWishlistUI() {
 
 function updateProductWishlistBtnState() {
   if (!productWishlistToggleBtn || !currentData) return;
-  const asin = currentData.asin || extractAsin(asinInput.value);
-  const exists = wishlist.some(item => item.asin === asin);
+  const itemKey = currentData.productId || currentData.asin || extractAsin(asinInput.value);
+  const exists = wishlist.some(item => (item.productId || item.asin) === itemKey);
   const pwIcon = document.getElementById('pwIcon');
   const pwText = document.getElementById('pwText');
 
@@ -1134,18 +1138,20 @@ function updateProductWishlistBtnState() {
 if (productWishlistToggleBtn) {
   productWishlistToggleBtn.addEventListener('click', () => {
     if (!currentData) return;
-    const asin = currentData.asin || extractAsin(asinInput.value);
-    const index = wishlist.findIndex(item => item.asin === asin);
+    const itemKey = currentData.productId || currentData.asin || extractAsin(asinInput.value);
+    const index = wishlist.findIndex(item => (item.productId || item.asin) === itemKey);
 
     if (index > -1) {
       wishlist.splice(index, 1);
       showToast('Removed from Wishlist', '💔');
     } else {
       wishlist.unshift({
-        asin,
+        productId: itemKey,
+        asin: itemKey,
         title: currentData.productTitle,
         price: currentData.currentPrice,
         image: currentData.productImage,
+        platform: currentData.platform,
         savedAt: new Date().toISOString()
       });
       showToast('Saved to Wishlist!', '❤️');

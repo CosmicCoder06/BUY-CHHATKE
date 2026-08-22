@@ -63,7 +63,7 @@ async function fetchAjioProductDetails(itemCode, rawUrl) {
       product_original_price: liveMatch.product_original_price || '₹2,999',
       product_star_rating: liveMatch.product_star_rating || '4.3',
       product_num_ratings: liveMatch.product_num_ratings || '5,100',
-      product_photo: liveMatch.product_photo,
+      product_photo: liveMatch.product_photo || getDefaultImageForTitle(parsedTitle),
       product_url: rawUrl || `https://www.ajio.com/p/${itemCode}`,
       seller_name: 'Reliance Retail (Ajio Verified)',
       is_luxe: true
