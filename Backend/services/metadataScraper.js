@@ -137,23 +137,35 @@ function parseHtmlDetails(html, url, isFlipkart, isAmazon) {
   let mrp = 0;
   let rating = 4.3;
   let reviews = 1500;
-  let seller = isFlipkart ? 'Flipkart Assured Seller' : 'Amazon Verified Merchant';
 
-  // 1. Title Extraction
-  const ogTitle = html.match(/<meta\s+property=["']og:title["']\s+content=["']([^"']+)["']/i) ||
-                  html.match(/<meta\s+name=["']twitter:title["']\s+content=["']([^"']+)["']/i) ||
+  const isMyntra = url.toLowerCase().includes('myntra.com');
+  const isMeesho = url.toLowerCase().includes('meesho.com');
+  const isAjio = url.toLowerCase().includes('ajio.com');
+
+  let seller = isFlipkart ? 'Flipkart Assured Seller' :
+               isMyntra ? 'Myntra Verified Partner' :
+               isMeesho ? 'Meesho Trusted Supplier' :
+               isAjio ? 'Reliance Retail Limited' : 'Amazon Verified Merchant';
+
+  // 1. Title Extraction (Flexible tag attribute order)
+  const ogTitle = html.match(/<meta[^>]*property=["']og:title["'][^>]*content=["']([^"']+)["']/i) ||
+                  html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:title["']/i) ||
+                  html.match(/<meta[^>]*name=["']twitter:title["'][^>]*content=["']([^"']+)["']/i) ||
+                  html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*name=["']twitter:title["']/i) ||
                   html.match(/<title>([^<]+)<\/title>/i);
 
   if (ogTitle && ogTitle[1]) {
     title = ogTitle[1]
       .replace(/\s*\|\s*Flipkart.*$/i, '')
       .replace(/\s*:\s*Amazon\.in.*$/i, '')
-      .replace(/\s*Buy\s+/i, '')
+      .replace(/\s*-\s*Buy\s+.*$/i, '')
+      .replace(/^Buy\s+/i, '')
       .replace(/\s*Online at Best Price.*$/i, '')
+      .replace(/\s*-\s*Accessories for Women.*$/i, '')
       .trim();
   }
 
-  const genericKeywords = ['products', 'online shopping site', 'flipkart', 'amazon.in', 'amazon.com'];
+  const genericKeywords = ['products', 'online shopping site', 'flipkart', 'amazon.in', 'amazon.com', 'myntra', 'meesho', 'ajio'];
   const isGeneric = !title || genericKeywords.some(g => title.toLowerCase().includes(g)) || title.length < 5;
 
   if (isGeneric) {
@@ -161,20 +173,68 @@ function parseHtmlDetails(html, url, isFlipkart, isAmazon) {
     if (slugTitle) {
       title = slugTitle;
     } else {
-      title = isFlipkart ? 'Flipkart Verified Item' : 'Amazon Verified Item';
+      title = isFlipkart ? 'Flipkart Verified Item' : (isMyntra ? 'Myntra Fashion Item' : 'Verified Product');
     }
   }
 
-  // 2. Image Extraction
-  const ogImage = html.match(/<meta\s+property=["']og:image["']\s+content=["']([^"']+)["']/i) ||
-                  html.match(/<meta\s+name=["']twitter:image["']\s+content=["']([^"']+)["']/i) ||
-                  html.match(/<meta\s+property=["']og:image:secure_url["']\s+content=["']([^"']+)["']/i);
+  // 2. Image Extraction (Flexible tag attribute order & CDN patterns)
+  const ogImage = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i) ||
+                  html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i) ||
+                  html.match(/<meta[^>]*name=["']twitter:image["'][^>]*content=["']([^"']+)["']/i) ||
+                  html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*name=["']twitter:image["']/i) ||
+                  html.match(/<meta[^>]*property=["']og:image:secure_url["'][^>]*content=["']([^"']+)["']/i) ||
+                  html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image:secure_url["']/i);
 
-  if (ogImage && ogImage[1] && !ogImage[1].includes('flipkart-plus') && !ogImage[1].includes('favicon')) {
+  if (ogImage && ogImage[1] && !ogImage[1].includes('flipkart-plus') && !ogImage[1].includes('favicon') && !ogImage[1].includes('logo')) {
     image = ogImage[1];
   }
 
-  // 3. Price Extraction (JSON-LD or Regex)
+  // Check store CDNs if ogImage not found
+  if (!image) {
+    if (isMyntra) {
+      const myntraImg = html.match(/https:\/\/assets\.myntassets\.com\/[a-zA-Z0-9_\-\/\.]+\.(?:jpg|jpeg|png|webp)/i);
+      if (myntraImg) image = myntraImg[0];
+    } else if (isMeesho) {
+      const meeshoImg = html.match(/https:\/\/images\.meesho\.com\/[a-zA-Z0-9_\-\/\.]+\.(?:jpg|jpeg|png|webp)/i);
+      if (meeshoImg) image = meeshoImg[0];
+    } else if (isAjio) {
+      const ajioImg = html.match(/https:\/\/assets\.ajio\.com\/[a-zA-Z0-9_\-\/\.]+\.(?:jpg|jpeg|png|webp)/i);
+      if (ajioImg) image = ajioImg[0];
+    }
+  }
+
+  // 3. Price & Ratings Extraction (Myntra/Meesho/Ajio JSON & DOM)
+  const discPriceMatch = html.match(/"discountedPrice"\s*:\s*(\d+)/i) ||
+                         html.match(/"discounted_price"\s*:\s*(\d+)/i) ||
+                         html.match(/"price"\s*:\s*"?(\d+)"?/i) ||
+                         html.match(/"offerPrice"\s*:\s*(\d+)/i);
+  if (discPriceMatch && discPriceMatch[1]) {
+    price = parseFloat(discPriceMatch[1]);
+  }
+
+  const mrpPriceMatch = html.match(/"mrp"\s*:\s*(\d+)/i) ||
+                        html.match(/"originalPrice"\s*:\s*(\d+)/i) ||
+                        html.match(/"strikePrice"\s*:\s*(\d+)/i);
+  if (mrpPriceMatch && mrpPriceMatch[1]) {
+    mrp = parseFloat(mrpPriceMatch[1]);
+  }
+
+  const ratingMatch = html.match(/"rating"\s*:\s*([\d\.]+)/i) ||
+                      html.match(/"averageRating"\s*:\s*([\d\.]+)/i) ||
+                      html.match(/class=["'][^"']*_3LWZlK[^"']*["']>([0-9.]+)/) ||
+                      html.match(/class=["'][^"']*XQDdHH[^"']*["']>([0-9.]+)/);
+  if (ratingMatch && ratingMatch[1]) {
+    rating = parseFloat(ratingMatch[1]);
+  }
+
+  const reviewCountMatch = html.match(/"ratingCount"\s*:\s*(\d+)/i) ||
+                           html.match(/"reviewsCount"\s*:\s*(\d+)/i) ||
+                           html.match(/"totalRatings"\s*:\s*(\d+)/i);
+  if (reviewCountMatch && reviewCountMatch[1]) {
+    reviews = parseInt(reviewCountMatch[1], 10);
+  }
+
+  // JSON-LD fallback
   const jsonLdMatches = html.matchAll(/<script\s+type=["']application\/ld\+json["']>([^<]+)<\/script>/gi);
   for (const match of jsonLdMatches) {
     try {
@@ -182,15 +242,15 @@ function parseHtmlDetails(html, url, isFlipkart, isAmazon) {
       const target = Array.isArray(parsed) ? parsed[0] : parsed;
       if (target.offers) {
         const offer = Array.isArray(target.offers) ? target.offers[0] : target.offers;
-        if (offer.price) price = parseFloat(offer.price);
+        if (offer.price && !price) price = parseFloat(offer.price);
       }
       if (target.aggregateRating) {
-        if (target.aggregateRating.ratingValue) rating = parseFloat(target.aggregateRating.ratingValue);
+        if (target.aggregateRating.ratingValue && rating === 4.3) rating = parseFloat(target.aggregateRating.ratingValue);
         if (target.aggregateRating.reviewCount) reviews = parseInt(target.aggregateRating.reviewCount, 10);
       }
-      if (target.image) {
+      if (target.image && !image) {
         const img = Array.isArray(target.image) ? target.image[0] : target.image;
-        if (typeof img === 'string') image = image || img;
+        if (typeof img === 'string') image = img;
       }
     } catch (e) {}
   }
@@ -198,7 +258,6 @@ function parseHtmlDetails(html, url, isFlipkart, isAmazon) {
   // Regex Price Fallback
   if (!price || price <= 0) {
     const rawPriceMatch = html.match(/₹\s*([0-9,]+)/) ||
-                          html.match(/"price":\s*"?([0-9.]+)"?/) ||
                           html.match(/class=["'][^"']*_30jeq3[^"']*["']>₹?([0-9,]+)/) ||
                           html.match(/class=["'][^"']*Nx9daj[^"']*["']>₹?([0-9,]+)/) ||
                           html.match(/class=["'][^"']*a-price-whole[^"']*["']>([0-9,]+)/);
@@ -208,18 +267,8 @@ function parseHtmlDetails(html, url, isFlipkart, isAmazon) {
     }
   }
 
-  // Regex Rating Fallback
-  if (!rating || rating === 4.3) {
-    const ratingMatch = html.match(/class=["'][^"']*_3LWZlK[^"']*["']>([0-9.]+)/) ||
-                        html.match(/class=["'][^"']*XQDdHH[^"']*["']>([0-9.]+)/) ||
-                        html.match(/([0-9.]+) out of 5 stars/i);
-    if (ratingMatch && ratingMatch[1]) {
-      rating = parseFloat(ratingMatch[1]);
-    }
-  }
-
   // Default Price estimation if not found
-  if (!price || price < 100) {
+  if (!price || price < 50) {
     price = estimatePriceFromTitle(title);
   }
 
@@ -228,14 +277,23 @@ function parseHtmlDetails(html, url, isFlipkart, isAmazon) {
   }
 
   return {
+    product_title: title,
     productTitle: title,
+    product_photo: image,
     productImage: image,
+    product_price: `₹${Math.round(price).toLocaleString('en-IN')}`,
     productPrice: `₹${Math.round(price).toLocaleString('en-IN')}`,
+    product_original_price: mrp > price ? `₹${Math.round(mrp).toLocaleString('en-IN')}` : '',
     productMrp: mrp > price ? `₹${Math.round(mrp).toLocaleString('en-IN')}` : '',
+    product_star_rating: String(Math.min(5, Math.max(3.5, rating))),
     productStarRating: String(Math.min(5, Math.max(3.5, rating))),
+    product_num_ratings: String(reviews || 2400),
     productNumRatings: String(reviews || 2400),
-    sellerName: isFlipkart ? 'RetailNet (Flipkart Assured)' : 'Appario Retail (Amazon Verified)',
+    seller_name: seller,
+    sellerName: seller,
+    is_assured: isFlipkart,
     isAssured: isFlipkart,
+    product_url: url,
     productUrl: url
   };
 }
@@ -261,22 +319,24 @@ async function searchProductFallback(title) {
     clearTimeout(timeoutId);
 
     if (res.ok) {
-      const json = await res.json();
-      const products = json?.data?.products;
-      if (Array.isArray(products) && products.length > 0) {
-        const top = products[0];
-        const priceStr = String(top.product_price || '').replace(/[^0-9.]/g, '');
-        const price = parseFloat(priceStr);
-
+      const data = await res.json();
+      const items = data?.data?.products || [];
+      if (items.length > 0) {
+        const top = items[0];
+        const priceNum = parseFloat(String(top.product_price || '').replace(/[^0-9.]/g, '')) || estimatePriceFromTitle(title);
         return {
-          productTitle: title,
-          productImage: top.product_photo || '',
-          productPrice: price > 0 ? `₹${Math.round(price).toLocaleString('en-IN')}` : '₹8,999',
-          productMrp: top.product_original_price || (price > 0 ? `₹${Math.round(price * 1.22).toLocaleString('en-IN')}` : ''),
-          productStarRating: String(top.product_star_rating || '4.3'),
-          productNumRatings: String(top.product_num_ratings || '150'),
-          sellerName: 'Flipkart SuperComNet (Assured)',
-          isAssured: true
+          product_title: top.product_title || title,
+          productTitle: top.product_title || title,
+          product_photo: top.product_photo || getDefaultImageForTitle(title),
+          productImage: top.product_photo || getDefaultImageForTitle(title),
+          product_price: `₹${Math.round(priceNum).toLocaleString('en-IN')}`,
+          productPrice: `₹${Math.round(priceNum).toLocaleString('en-IN')}`,
+          product_original_price: top.product_original_price || '',
+          productMrp: top.product_original_price || '',
+          product_star_rating: String(top.product_star_rating || '4.2'),
+          productStarRating: String(top.product_star_rating || '4.2'),
+          product_num_ratings: String(top.product_num_ratings || '1850'),
+          productNumRatings: String(top.product_num_ratings || '1850')
         };
       }
     }
@@ -302,16 +362,24 @@ function estimatePriceFromTitle(title) {
   if (t.includes('boat rockerz')) return 1299;
   if (t.includes('cycle') || t.includes('bicycle') || t.includes('mtb') || t.includes('gear cycle')) return 8999;
   if (t.includes('shoe') || t.includes('sneaker')) return 2999;
+  if (t.includes('handbag') || t.includes('bag') || t.includes('baguette') || t.includes('satchel') || t.includes('purse')) return 1299;
+  if (t.includes('shirt') || t.includes('tshirt') || t.includes('kurti') || t.includes('dress')) return 799;
   if (t.includes('laptop') || t.includes('macbook')) return 58990;
   if (t.includes('tv') || t.includes('television')) return 32990;
   if (t.includes('headphone') || t.includes('earbuds') || t.includes('tws')) return 2499;
   if (t.includes('refrigerator') || t.includes('fridge')) return 24990;
   if (t.includes('washing machine')) return 18990;
-  return 4999;
+  return 1499;
 }
 
 function getDefaultImageForTitle(title) {
   const t = (title || '').toLowerCase();
+  if (t.includes('bag') || t.includes('handbag') || t.includes('baguette') || t.includes('satchel') || t.includes('purse') || t.includes('caprese') || t.includes('wallet') || t.includes('tote')) {
+    return 'https://assets.myntassets.com/h_1440,q_75,w_1080/v1/assets/images/2026/JULY/11/3vvF9PAJ_313c6d88e3a241498a0a364377a3f69c.jpg';
+  }
+  if (t.includes('shirt') || t.includes('tshirt') || t.includes('kurti') || t.includes('dress') || t.includes('apparel') || t.includes('clothing') || t.includes('jeans')) {
+    return 'https://m.media-amazon.com/images/I/71eUwDk8z+L._AC_UY1100_.jpg';
+  }
   if (t.includes('cycle') || t.includes('bicycle') || t.includes('mtb') || t.includes('gear cycle')) {
     return 'https://m.media-amazon.com/images/I/714rxlagTnL._AC_UY654_QL65_.jpg';
   }
@@ -348,7 +416,7 @@ function getDefaultImageForTitle(title) {
   if (t.includes('phone') || t.includes('5g') || t.includes('mobile')) {
     return 'https://m.media-amazon.com/images/I/71jQQEp8bkL._AC_UY654_QL65_.jpg';
   }
-  return 'https://m.media-amazon.com/images/I/71657TiFeHL._SL1500_.jpg';
+  return 'https://m.media-amazon.com/images/I/71eUwDk8z+L._AC_UY1100_.jpg';
 }
 
 async function generateFallbackFromTitle(title, url, isFlipkart) {
