@@ -58,11 +58,12 @@
       </div>
 
       <div class="header-presets">
-        <span class="preset-label">Quick Samples:</span>
-        <button class="preset-pill" onclick="fillAndAnalyze('B09XS7JWHH')">Sony XM5</button>
-        <button class="preset-pill" onclick="fillAndAnalyze('B0CHX3QBCH')">iPhone 15</button>
-        <button class="preset-pill" onclick="fillAndAnalyze('B082WV1561')">boAt 450</button>
-        <button class="preset-pill" onclick="fillAndAnalyze('B0CC9LMWL6')">Galaxy Watch</button>
+        <span class="preset-label">Quick Scans:</span>
+        <button class="preset-pill" onclick="fillAndAnalyze('B09XS7JWHH')">🛍️ Sony XM5</button>
+        <button class="preset-pill" onclick="fillAndAnalyze('B0CHX3QBCH')">🛍️ iPhone 15</button>
+        <button class="preset-pill" onclick="fillAndAnalyze('MOBGXZ86HFKZUYZZ')">⚡ Nothing (2a)</button>
+        <button class="preset-pill" onclick="fillAndAnalyze('ACCG2ZYXZ9PQWVAB')">⚡ boAt 450</button>
+        <button class="preset-pill" onclick="fillAndAnalyze('MOBGWFXYZ99Q12AB')">⚡ POCO X6</button>
       </div>
 
       <div class="header-controls">
@@ -95,7 +96,7 @@
     <section class="portal-section">
       <div class="portal-tag">
         <span class="portal-tag-bracket">[</span>
-        <span class="portal-tag-text">MARKET ANOMALY DETECTION ENGINE</span>
+        <span class="portal-tag-text">MULTI-STORE PRICE INTELLIGENCE ENGINE</span>
         <span class="portal-tag-bracket">]</span>
       </div>
 
@@ -105,8 +106,7 @@
       </h1>
 
       <p class="portal-sub">
-        Real-time algorithmic analysis for Amazon products. Expose artificial markups, verify merchant trust scores, and
-        time purchases with mathematical confidence.
+        Real-time algorithmic analysis for Amazon India & Flipkart products. Expose artificial markups, verify merchant trust scores, and time purchases with mathematical confidence.
       </p>
 
       <!-- Command Search Bar -->
@@ -116,7 +116,7 @@
             <span class="prompt-sym">&gt;</span>
           </div>
           <input type="text" id="asinInput" class="command-input"
-            placeholder="Paste Amazon India link or ASIN..." autocomplete="off"
+            placeholder="Paste Amazon / Flipkart product link, ASIN, or PID..." autocomplete="off"
             spellcheck="false" />
           <button id="clearBtn" class="command-clear" title="Clear input" style="display:none">✕</button>
         </div>
@@ -127,8 +127,7 @@
       </div>
 
       <div class="quick-helpers">
-        <span class="helper-hint">💡 ProTip: Paste any direct Amazon product URL or 10-digit ASIN directly into the
-          terminal</span>
+        <span class="helper-hint">💡 ProTip: Supports direct Amazon links, ASINs (e.g. B0CHX3QBCH), and Flipkart URLs / PIDs (e.g. MOBGXZ86HFKZUYZZ)</span>
       </div>
     </section>
 
@@ -158,7 +157,7 @@
         <div class="radar-center">✦</div>
       </div>
       <div class="empty-status">Awaiting Target Input</div>
-      <div class="empty-desc">Enter an Amazon ASIN or product URL above to initiate market intelligence scan.</div>
+      <div class="empty-desc">Enter an Amazon ASIN or Flipkart product link/PID above to initiate market intelligence scan.</div>
     </div>
 
     <!-- Search Result Intelligence Showcase Card Frame -->
@@ -172,8 +171,8 @@
             <div class="media-glow"></div>
           </div>
           <div class="spotlight-chips">
-            <span class="chip chip-mono" id="chipAsin">ASIN: —</span>
-            <span class="chip chip-accent">AMAZON IN</span>
+            <span class="chip chip-mono" id="chipAsin">ID: —</span>
+            <span class="chip chip-accent" id="chipPlatform">🛍️ AMAZON IN</span>
           </div>
           <!-- Wishlist Toggle Button -->
           <button class="product-wishlist-btn" id="productWishlistToggleBtn">
@@ -703,7 +702,7 @@
     </div>
   </footer>
 
-  <script src="app.js?v=2.3.0"></script>
+  <script src="app.js?v=2.6.0"></script>
 </body>
 
 </html>

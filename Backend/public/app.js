@@ -156,9 +156,9 @@ if (alertBtn) {
 }
 
 // Global helper for sample buttons
-window.fillAndAnalyze = function (asin) {
+window.fillAndAnalyze = function (idOrUrl) {
   if (!asinInput) return;
-  asinInput.value = asin;
+  asinInput.value = idOrUrl;
   if (clearBtn) clearBtn.style.display = 'flex';
   executeAnalysis();
 };
@@ -173,42 +173,52 @@ window.applyDiscountAlert = function (rate) {
   }
 };
 
-// ─── ASIN & URL PARSER ──────────────────────────────────────────
-function extractAsin(raw) {
+// ─── MULTI-STORE ASIN / FLIPKART PID / URL PARSER ────────────────
+function extractQueryTarget(raw) {
   if (!raw || typeof raw !== 'string') return null;
   const clean = raw.trim();
 
-  // Match /dp/ASIN or /gp/product/ASIN or /d/ASIN or ?asin=ASIN
+  // 1. Flipkart URL or PID
+  if (clean.toLowerCase().includes('flipkart.com') || clean.toLowerCase().includes('dl.flipkart.com')) {
+    return clean;
+  }
+  const fkPidMatch = clean.match(/[?&]pid=([A-Za-z0-9]{12,20})/i);
+  if (fkPidMatch) return fkPidMatch[1].toUpperCase();
+  const itmMatch = clean.match(/\/p\/(itm[A-Za-z0-9]{10,20})/i);
+  if (itmMatch) return itmMatch[1];
+  const fsnMatch = clean.toUpperCase().match(/\b([A-Z0-9]{16})\b/);
+  if (fsnMatch && !clean.toUpperCase().startsWith('B0')) return fsnMatch[1];
+
+  // 2. Amazon URL or ASIN
   const urlPattern = /(?:\/dp\/|\/gp\/product\/|\/d\/|[?&]asin=)([A-Z0-9]{10})/i;
   const match = clean.match(urlPattern);
   if (match) return match[1].toUpperCase();
 
-  // Match standalone 10-char alphanumeric ASIN
   const plainMatch = clean.toUpperCase().match(/\b([B0-9][A-Z0-9]{9})\b/);
   if (plainMatch) return plainMatch[1];
 
-  return null;
+  // Return clean query if 4+ chars
+  return clean.length >= 4 ? clean : null;
 }
 
-// ─── MAIN ANALYSIS DISPATCHER ───────────────────────────────────
+// ─── MAIN MULTI-STORE ANALYSIS DISPATCHER ───────────────────────
 async function executeAnalysis() {
   const raw = asinInput.value.trim();
-  const asin = extractAsin(raw);
+  const queryTarget = extractQueryTarget(raw);
 
-  if (!asin) {
-    displayError('Please enter a valid 10-character Amazon ASIN or full product URL.');
+  if (!queryTarget) {
+    displayError('Please enter a valid Amazon ASIN/URL or Flipkart Product link/PID.');
     triggerShake(asinInput);
     return;
   }
 
-  asinInput.value = asin;
   if (clearBtn) clearBtn.style.display = 'flex';
 
   setLoadingState(true);
   hideError();
 
   try {
-    const url = `${API_BASE}/api/analyze?asin=${encodeURIComponent(asin)}`;
+    const url = `${API_BASE}/api/analyze?q=${encodeURIComponent(queryTarget)}&url=${encodeURIComponent(queryTarget)}`;
     const res = await fetch(url);
     const data = await res.json();
 
@@ -289,8 +299,26 @@ function renderTerminalDashboard(d) {
     productImg.alt = d.productTitle || 'Product Image';
   }
 
-  document.getElementById('chipAsin').textContent = `ASIN: ${d.asin || asinInput.value.trim()}`;
-  document.getElementById('productTitle').textContent = d.productTitle || 'Amazon Product';
+  // Update Platform & Product ID Badges
+  const chipAsin = document.getElementById('chipAsin');
+  if (chipAsin) {
+    chipAsin.textContent = (d.platform === 'flipkart' ? 'PID: ' : 'ASIN: ') + (d.asin || d.productId || '—');
+  }
+
+  const chipPlatform = document.getElementById('chipPlatform');
+  if (chipPlatform) {
+    if (d.platform === 'flipkart') {
+      chipPlatform.textContent = '⚡ FLIPKART' + (d.isAssured ? ' ASSURED' : '');
+      chipPlatform.style.background = 'rgba(234, 179, 8, 0.15)';
+      chipPlatform.style.color = '#facc15';
+    } else {
+      chipPlatform.textContent = '🛍️ AMAZON IN';
+      chipPlatform.style.background = 'rgba(99, 102, 241, 0.15)';
+      chipPlatform.style.color = '#818cf8';
+    }
+  }
+
+  document.getElementById('productTitle').textContent = d.productTitle || 'Product';
 
   // Format Prices
   animatePrice(document.getElementById('productPrice'), d.currentPrice);
