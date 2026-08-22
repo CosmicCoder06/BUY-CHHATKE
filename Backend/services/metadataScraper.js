@@ -72,17 +72,32 @@ function extractTitleFromUrl(url) {
   return null;
 }
 
+function decodeHtmlEntities(str) {
+  if (!str || typeof str !== 'string') return '';
+  return str
+    .replace(/&#x27;/g, "'")
+    .replace(/&#39;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(dec));
+}
+
 function formatSlugToTitle(slug) {
   if (!slug) return null;
-  return slug
-    .replace(/[-_]+/g, ' ')
-    .replace(/\b([a-z])/g, char => char.toUpperCase())
-    .replace(/\b5g\b/i, '5G')
-    .replace(/\b4g\b/i, '4G')
-    .replace(/\bgb\b/i, 'GB')
-    .replace(/\bram\b/i, 'RAM')
-    .replace(/\b(ai)\b/i, 'AI')
-    .trim();
+  return decodeHtmlEntities(
+    slug
+      .replace(/[-_]+/g, ' ')
+      .replace(/\b([a-z])/g, char => char.toUpperCase())
+      .replace(/\b5g\b/i, '5G')
+      .replace(/\b4g\b/i, '4G')
+      .replace(/\bgb\b/i, 'GB')
+      .replace(/\bram\b/i, 'RAM')
+      .replace(/\b(ai)\b/i, 'AI')
+      .trim()
+  );
 }
 
 /**
@@ -324,9 +339,10 @@ async function searchProductFallback(title) {
       if (items.length > 0) {
         const top = items[0];
         const priceNum = parseFloat(String(top.product_price || '').replace(/[^0-9.]/g, '')) || estimatePriceFromTitle(title);
+        const cleanTitle = decodeHtmlEntities(top.product_title || title);
         return {
-          product_title: top.product_title || title,
-          productTitle: top.product_title || title,
+          product_title: cleanTitle,
+          productTitle: cleanTitle,
           product_photo: top.product_photo || getDefaultImageForTitle(title),
           productImage: top.product_photo || getDefaultImageForTitle(title),
           product_price: `₹${Math.round(priceNum).toLocaleString('en-IN')}`,

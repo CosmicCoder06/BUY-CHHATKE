@@ -205,6 +205,19 @@ function extractAsin(raw) {
   return extractQueryTarget(raw) || (raw ? String(raw).trim() : '');
 }
 
+function decodeHtmlEntities(str) {
+  if (!str || typeof str !== 'string') return '';
+  return str
+    .replace(/&#x27;/g, "'")
+    .replace(/&#39;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(dec));
+}
+
 // ─── MAIN MULTI-STORE ANALYSIS DISPATCHER ───────────────────────
 async function executeAnalysis() {
   const raw = asinInput.value.trim();
@@ -358,7 +371,7 @@ function renderTerminalDashboard(d) {
     }
   }
 
-  document.getElementById('productTitle').textContent = d.productTitle || 'Product';
+  document.getElementById('productTitle').textContent = decodeHtmlEntities(d.productTitle || 'Product');
 
   const isUpcoming = Boolean(d.isUpcoming);
 
@@ -437,6 +450,38 @@ function renderTerminalDashboard(d) {
   starRow.innerHTML = Array(5).fill(0).map((_, i) =>
     `<span style="color: ${i < starCount ? '#f59e0b' : 'rgba(255,255,255,0.2)'}">★</span>`
   ).join('');
+
+  // Dynamic Fulfillment & Buyer Protection per Store
+  const fulfillEl = document.getElementById('fulfillmentBadge');
+  const protectEl = document.getElementById('buyerProtectionBadge');
+
+  if (fulfillEl) {
+    if (d.platform === 'myntra') {
+      fulfillEl.innerHTML = `<span class="status-tag tag-verified" style="color:#ff3f6c;border-color:rgba(255,63,108,0.3);background:rgba(255,63,108,0.1)">✓ Myntra Verified Delivery</span>`;
+    } else if (d.platform === 'meesho') {
+      fulfillEl.innerHTML = `<span class="status-tag tag-verified" style="color:#d946ef;border-color:rgba(217,70,239,0.3);background:rgba(217,70,239,0.1)">✓ Meesho Direct Supplier</span>`;
+    } else if (d.platform === 'ajio') {
+      fulfillEl.innerHTML = `<span class="status-tag tag-verified" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);background:rgba(56,189,248,0.1)">✓ Reliance Ajio Fulfilled (Luxe)</span>`;
+    } else if (d.platform === 'flipkart') {
+      fulfillEl.innerHTML = `<span class="status-tag tag-verified" style="color:#facc15;border-color:rgba(250,204,21,0.3);background:rgba(250,204,21,0.1)">⚡ Flipkart Assured</span>`;
+    } else {
+      fulfillEl.innerHTML = `<span class="status-tag tag-verified">✓ Amazon Fulfilled (Prime)</span>`;
+    }
+  }
+
+  if (protectEl) {
+    if (d.platform === 'myntra') {
+      protectEl.innerHTML = `<span class="status-tag tag-verified">✓ 14-Day Easy Returns &amp; Exchange</span>`;
+    } else if (d.platform === 'meesho') {
+      protectEl.innerHTML = `<span class="status-tag tag-verified">✓ 7-Day Easy Return Policy</span>`;
+    } else if (d.platform === 'ajio') {
+      protectEl.innerHTML = `<span class="status-tag tag-verified">✓ 100% Handpicked Quality Guarantee</span>`;
+    } else if (d.platform === 'flipkart') {
+      protectEl.innerHTML = `<span class="status-tag tag-verified">✓ Flipkart Buyer Protection</span>`;
+    } else {
+      protectEl.innerHTML = `<span class="status-tag tag-verified">✓ 100% Purchase Protection</span>`;
+    }
+  }
 
   const relBadge = document.getElementById('reliabilityBadge');
   if (isUpcoming) {
