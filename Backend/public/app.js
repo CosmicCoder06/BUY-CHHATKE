@@ -295,7 +295,21 @@ function renderTerminalDashboard(d) {
   // 1. Spotlight Product Details
   const productImg = document.getElementById('productImg');
   if (productImg) {
-    productImg.src = d.productImage || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400';
+    const rawImage = d.productImage || '';
+    productImg.dataset.triedProxy = 'false';
+    if (rawImage.startsWith('http')) {
+      productImg.src = rawImage;
+      productImg.onerror = function () {
+        if (this.dataset.triedProxy !== 'true') {
+          this.dataset.triedProxy = 'true';
+          this.src = `${API_BASE}/api/image-proxy?url=${encodeURIComponent(rawImage)}`;
+        } else {
+          this.src = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400';
+        }
+      };
+    } else {
+      productImg.src = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400';
+    }
     productImg.alt = d.productTitle || 'Product Image';
   }
 
@@ -1081,7 +1095,7 @@ function renderWishlistItems() {
   wishlistItemsList.innerHTML = wishlist.map(item => `
     <div class="wishlist-item-row">
       <div class="wi-img-frame">
-        <img src="${item.image || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100'}" alt="Product" />
+        <img src="${item.image || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100'}" alt="Product" referrerpolicy="no-referrer" />
       </div>
       <div class="wi-info">
         <div class="wi-title" title="${item.title}">${item.title}</div>

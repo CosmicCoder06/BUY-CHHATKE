@@ -10,6 +10,8 @@ const {
   generateFlipkartPriceHistory
 } = require('../services/flipkartService');
 
+const { estimatePriceFromTitle } = require('../services/metadataScraper');
+
 /**
  * Parses Amazon ASIN from URL or raw text
  */
@@ -156,12 +158,17 @@ async function analyze(req, res) {
         return res.status(404).json({ error: `Could not retrieve Amazon product data for ASIN ${asin}` });
       }
 
-      const priceStr = String(product.product_price || product.productPrice || '').replace(/[^0-9.]/g, '');
-      let currentPrice = parseFloat(priceStr) || 1299;
-      const sellerRating = parseFloat(product.product_star_rating || product.productStarRating) || 4.2;
-      const reviewCount = parseInt(String(product.product_num_ratings || product.productNumRatings || '0').replace(/[^0-9]/g, '')) || 1200;
       const productTitle = product.product_title || product.productTitle || 'Amazon Product';
       const productImage = product.product_photo || product.productImage || '';
+
+      const priceStr = String(product.product_price || product.productPrice || '').replace(/[^0-9.]/g, '');
+      let currentPrice = parseFloat(priceStr);
+      if (!currentPrice || (productTitle.toLowerCase().includes('iphone') && currentPrice < 10000 && !productTitle.toLowerCase().includes('case') && !productTitle.toLowerCase().includes('cover'))) {
+        currentPrice = estimatePriceFromTitle(productTitle);
+      }
+
+      const sellerRating = parseFloat(product.product_star_rating || product.productStarRating) || 4.2;
+      const reviewCount = parseInt(String(product.product_num_ratings || product.productNumRatings || '0').replace(/[^0-9]/g, '')) || 1200;
 
       const historyData = await fetchAmazonPriceHistory(asin);
       let rawHistory = [];

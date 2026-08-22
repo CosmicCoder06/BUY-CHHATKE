@@ -109,8 +109,16 @@ function parseHtmlDetails(html, url, isFlipkart, isAmazon) {
       .trim();
   }
 
-  if (!title) {
-    title = extractTitleFromUrl(url) || (isFlipkart ? 'Flipkart Verified Item' : 'Amazon Verified Item');
+  const genericKeywords = ['products', 'online shopping site', 'flipkart', 'amazon.in', 'amazon.com'];
+  const isGeneric = !title || genericKeywords.some(g => title.toLowerCase().includes(g)) || title.length < 5;
+
+  if (isGeneric) {
+    const slugTitle = extractTitleFromUrl(url);
+    if (slugTitle) {
+      title = slugTitle;
+    } else {
+      title = isFlipkart ? 'Flipkart Verified Item' : 'Amazon Verified Item';
+    }
   }
 
   // 2. Image Extraction
@@ -207,26 +215,32 @@ function estimatePriceFromTitle(title) {
 }
 
 function getDefaultImageForTitle(title) {
-  const t = title.toLowerCase();
-  if (t.includes('samsung') || t.includes('s25') || t.includes('s24') || t.includes('galaxy')) {
-    return 'https://rukminim2.flixcart.com/image/850/850/xif0q/mobile/8/c/8/-original-imahfvyfsggffc9h.jpeg';
+  const t = (title || '').toLowerCase();
+  if (t.includes('samsung') || t.includes('s25') || t.includes('s24') || t.includes('galaxy') || t.includes('android')) {
+    return 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=600&auto=format&fit=crop&q=80';
   }
-  if (t.includes('iphone') || t.includes('apple')) {
-    return 'https://rukminim2.flixcart.com/image/850/850/xif0q/mobile/k/l/l/-original-imagtc5fz9spysyk.jpeg';
+  if (t.includes('iphone') || t.includes('apple') || t.includes('ios')) {
+    return 'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=600&auto=format&fit=crop&q=80';
   }
-  if (t.includes('nothing')) {
-    return 'https://rukminim2.flixcart.com/image/850/850/xif0q/mobile/h/y/f/-original-imagx9pfkbhuy9zg.jpeg';
+  if (t.includes('boat') || t.includes('rockerz') || t.includes('headphone') || t.includes('sony') || t.includes('xm5') || t.includes('audio')) {
+    return 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80';
   }
-  if (t.includes('boat') || t.includes('rockerz') || t.includes('headphone')) {
-    return 'https://rukminim2.flixcart.com/image/850/850/k5lcvbk0/headphone/d/b/j/boat-rockerz-450-original-imafz8wbzfg9zzhh.jpeg';
+  if (t.includes('watch') || t.includes('smartwatch') || t.includes('band')) {
+    return 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&auto=format&fit=crop&q=80';
   }
-  if (t.includes('poco') || t.includes('redmi') || t.includes('xiaomi')) {
-    return 'https://rukminim2.flixcart.com/image/850/850/xif0q/mobile/4/b/0/-original-imagwn64t8hszghg.jpeg';
+  if (t.includes('laptop') || t.includes('macbook') || t.includes('computer') || t.includes('dell') || t.includes('hp')) {
+    return 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=600&auto=format&fit=crop&q=80';
   }
-  if (t.includes('sony') || t.includes('xm5')) {
-    return 'https://m.media-amazon.com/images/I/61+ElP4fQDL._SL1500_.jpg';
+  if (t.includes('tv') || t.includes('television') || t.includes('monitor') || t.includes('screen')) {
+    return 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=600&auto=format&fit=crop&q=80';
   }
-  return 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600';
+  if (t.includes('earbuds') || t.includes('tws') || t.includes('airpods')) {
+    return 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=600&auto=format&fit=crop&q=80';
+  }
+  if (t.includes('camera') || t.includes('dslr') || t.includes('lens')) {
+    return 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=600&auto=format&fit=crop&q=80';
+  }
+  return 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=600&auto=format&fit=crop&q=80';
 }
 
 function generateFallbackFromTitle(title, url, isFlipkart) {

@@ -88,35 +88,44 @@ async function fetchPriceHistory(asin) {
 function generateMockProduct(asin) {
   const demoCatalog = [
     {
+      asin: 'B09XS7JWHH',
       product_title: 'Sony WH-1000XM5 Wireless Noise Cancelling Headphones - Platinum Silver',
       product_price: '₹26,990',
       product_star_rating: '4.6',
       product_num_ratings: '4380',
-      product_photo: 'https://m.media-amazon.com/images/I/61+ElP4fQDL._SL1500_.jpg'
+      product_photo: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80'
     },
     {
+      asin: 'B0CHX1W1XY',
       product_title: 'Apple iPhone 15 (128 GB) - Black with Dynamic Island & 48MP Camera',
       product_price: '₹69,999',
       product_star_rating: '4.7',
       product_num_ratings: '9820',
-      product_photo: 'https://m.media-amazon.com/images/I/71657TiFeHL._SL1500_.jpg'
+      product_photo: 'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=600&auto=format&fit=crop&q=80'
     },
     {
+      asin: 'B07PR1CL3S',
       product_title: 'boAt Rockerz 450 Bluetooth On Ear Headphones with Mic (Luscious Black)',
       product_price: '₹1,299',
       product_star_rating: '4.2',
       product_num_ratings: '18540',
-      product_photo: 'https://m.media-amazon.com/images/I/61kWB+bJglL._SL1500_.jpg'
+      product_photo: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80'
     },
     {
+      asin: 'B0CC9LMWL6',
       product_title: 'Samsung Galaxy Watch6 Bluetooth (44mm, Graphite)',
       product_price: '₹19,499',
       product_star_rating: '4.4',
       product_num_ratings: '2150',
-      product_photo: 'https://m.media-amazon.com/images/I/61wP9w7bH4L._SL1500_.jpg'
+      product_photo: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&auto=format&fit=crop&q=80'
     }
   ];
 
+  // 1. Exact ASIN match
+  const exact = demoCatalog.find(item => item.asin.toUpperCase() === String(asin).toUpperCase());
+  if (exact) return exact;
+
+  // 2. Hash fallback
   let sum = 0;
   for (let i = 0; i < asin.length; i++) sum += asin.charCodeAt(i);
   const picked = demoCatalog[sum % demoCatalog.length];

@@ -119,7 +119,7 @@ function generateMockFlipkartProduct(pid) {
       product_mrp: '₹84,999',
       product_star_rating: '4.6',
       product_num_ratings: '6840',
-      product_photo: 'https://rukminim2.flixcart.com/image/850/850/xif0q/mobile/8/c/8/-original-imahfvyfsggffc9h.jpeg',
+      product_photo: 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=600&auto=format&fit=crop&q=80',
       seller_name: 'SuperComNet (Flipkart Assured)',
       is_assured: true
     },
@@ -130,7 +130,7 @@ function generateMockFlipkartProduct(pid) {
       product_mrp: '₹25,999',
       product_star_rating: '4.5',
       product_num_ratings: '48210',
-      product_photo: 'https://rukminim2.flixcart.com/image/850/850/xif0q/mobile/h/y/f/-original-imagx9pfkbhuy9zg.jpeg',
+      product_photo: 'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=600&auto=format&fit=crop&q=80',
       seller_name: 'RetailNet (Flipkart Assured)',
       is_assured: true
     },
@@ -141,7 +141,7 @@ function generateMockFlipkartProduct(pid) {
       product_mrp: '₹79,900',
       product_star_rating: '4.7',
       product_num_ratings: '38490',
-      product_photo: 'https://rukminim2.flixcart.com/image/850/850/xif0q/mobile/k/l/l/-original-imagtc5fz9spysyk.jpeg',
+      product_photo: 'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=600&auto=format&fit=crop&q=80',
       seller_name: 'SuperComNet (Flipkart Assured)',
       is_assured: true
     },
@@ -152,7 +152,7 @@ function generateMockFlipkartProduct(pid) {
       product_mrp: '₹3,990',
       product_star_rating: '4.3',
       product_num_ratings: '142800',
-      product_photo: 'https://rukminim2.flixcart.com/image/850/850/k5lcvbk0/headphone/d/b/j/boat-rockerz-450-original-imafz8wbzfg9zzhh.jpeg',
+      product_photo: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80',
       seller_name: 'CORSECA Brands (Flipkart Assured)',
       is_assured: true
     },
@@ -163,12 +163,23 @@ function generateMockFlipkartProduct(pid) {
       product_mrp: '₹30,999',
       product_star_rating: '4.4',
       product_num_ratings: '19840',
-      product_photo: 'https://rukminim2.flixcart.com/image/850/850/xif0q/mobile/4/b/0/-original-imagwn64t8hszghg.jpeg',
+      product_photo: 'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=600&auto=format&fit=crop&q=80',
       seller_name: 'Flashtech Retail (Flipkart Assured)',
       is_assured: true
     }
   ];
 
+  // 1. Direct exact ID lookup
+  const exact = catalog.find(item => item.id.toUpperCase() === String(pid).toUpperCase());
+  if (exact) {
+    return {
+      ...exact,
+      pid: pid,
+      product_url: `https://www.flipkart.com/product/p/itm?pid=${pid}`
+    };
+  }
+
+  // 2. Hash fallback
   let sum = 0;
   const str = String(pid || 'FLIPKART');
   for (let i = 0; i < str.length; i++) sum += str.charCodeAt(i);
