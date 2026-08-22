@@ -316,45 +316,86 @@ function renderTerminalDashboard(d) {
   // Update Platform & Product ID Badges
   const chipAsin = document.getElementById('chipAsin');
   if (chipAsin) {
-    chipAsin.textContent = (d.platform === 'flipkart' ? 'PID: ' : 'ASIN: ') + (d.asin || d.productId || '—');
+    let idPrefix = 'ASIN: ';
+    if (d.platform === 'flipkart') idPrefix = 'PID: ';
+    else if (d.platform === 'myntra') idPrefix = 'STYLE: ';
+    else if (d.platform === 'meesho') idPrefix = 'CODE: ';
+    else if (d.platform === 'ajio') idPrefix = 'ITEM: ';
+    chipAsin.textContent = idPrefix + (d.asin || d.productId || '—');
   }
 
   const chipPlatform = document.getElementById('chipPlatform');
   if (chipPlatform) {
-    if (d.platform === 'flipkart') {
+    if (d.platform === 'myntra') {
+      chipPlatform.textContent = '👗 MYNTRA INSIDER';
+      chipPlatform.style.background = 'rgba(255, 63, 108, 0.15)';
+      chipPlatform.style.color = '#ff3f6c';
+      chipPlatform.style.borderColor = 'rgba(255, 63, 108, 0.3)';
+    } else if (d.platform === 'meesho') {
+      chipPlatform.textContent = '🛍️ MEESHO TRUSTED';
+      chipPlatform.style.background = 'rgba(155, 44, 126, 0.15)';
+      chipPlatform.style.color = '#d946ef';
+      chipPlatform.style.borderColor = 'rgba(217, 70, 239, 0.3)';
+    } else if (d.platform === 'ajio') {
+      chipPlatform.textContent = '🏷️ AJIO LUXE';
+      chipPlatform.style.background = 'rgba(44, 65, 82, 0.25)';
+      chipPlatform.style.color = '#38bdf8';
+      chipPlatform.style.borderColor = 'rgba(56, 189, 248, 0.3)';
+    } else if (d.platform === 'flipkart') {
       chipPlatform.textContent = '⚡ FLIPKART' + (d.isAssured ? ' ASSURED' : '');
       chipPlatform.style.background = 'rgba(234, 179, 8, 0.15)';
       chipPlatform.style.color = '#facc15';
+      chipPlatform.style.borderColor = 'rgba(250, 204, 21, 0.3)';
     } else {
       chipPlatform.textContent = '🛍️ AMAZON IN';
       chipPlatform.style.background = 'rgba(99, 102, 241, 0.15)';
       chipPlatform.style.color = '#818cf8';
+      chipPlatform.style.borderColor = 'rgba(129, 140, 248, 0.3)';
     }
   }
 
   document.getElementById('productTitle').textContent = d.productTitle || 'Product';
 
-  // Format Prices
-  animatePrice(document.getElementById('productPrice'), d.currentPrice);
-  animatePrice(document.getElementById('statAvg'), d.avgPrice);
-  animatePrice(document.getElementById('statHigh'), d.highPrice);
-  animatePrice(document.getElementById('statLow'), d.lowPrice);
+  const isUpcoming = Boolean(d.isUpcoming);
 
-  // Deviation & Savings
-  const devEl = document.getElementById('statDev');
-  const devVal = parseFloat(d.deviation) || 0;
-  devEl.textContent = `${devVal > 0 ? '+' : ''}${devVal.toFixed(1)}%`;
-  devEl.className = `cell-val ${devVal < -5 ? 'val-green' : (devVal > 5 ? 'val-red' : '')}`;
+  const priceCaption = document.getElementById('priceCaption');
+  if (priceCaption) {
+    priceCaption.textContent = isUpcoming ? 'OFFICIAL LAUNCH PRICE' : 'CURRENT MARKET QUOTE';
+  }
 
-  const savEl = document.getElementById('savingsAmt');
-  if (d.savingsAmount > 0) {
-    savEl.className = 'cell-val val-emerald';
-    animatePrice(savEl, d.savingsAmount);
-    document.getElementById('savingsSub').textContent = 'Below 30-day mean';
+  const productPriceEl = document.getElementById('productPrice');
+  if (isUpcoming) {
+    productPriceEl.textContent = d.displayPrice || 'TBA on Launch';
+    document.getElementById('statAvg').textContent = 'TBA';
+    document.getElementById('statHigh').textContent = 'TBA';
+    document.getElementById('statLow').textContent = 'TBA';
+    document.getElementById('statDev').textContent = 'Pre-Launch';
+    document.getElementById('statDev').className = 'cell-val';
+    document.getElementById('savingsAmt').textContent = '🔔 Alert Ready';
+    document.getElementById('savingsAmt').className = 'cell-val val-emerald';
+    document.getElementById('savingsSub').textContent = 'Notification Armed';
   } else {
-    savEl.className = 'cell-val val-red';
-    savEl.textContent = `+${formatINR(Math.abs(d.currentPrice - d.avgPrice))}`;
-    document.getElementById('savingsSub').textContent = 'Above 30-day mean';
+    animatePrice(productPriceEl, d.currentPrice);
+    animatePrice(document.getElementById('statAvg'), d.avgPrice);
+    animatePrice(document.getElementById('statHigh'), d.highPrice);
+    animatePrice(document.getElementById('statLow'), d.lowPrice);
+
+    // Deviation & Savings
+    const devEl = document.getElementById('statDev');
+    const devVal = parseFloat(d.deviation) || 0;
+    devEl.textContent = `${devVal > 0 ? '+' : ''}${devVal.toFixed(1)}%`;
+    devEl.className = `cell-val ${devVal < -5 ? 'val-green' : (devVal > 5 ? 'val-red' : '')}`;
+
+    const savEl = document.getElementById('savingsAmt');
+    if (d.savingsAmount > 0) {
+      savEl.className = 'cell-val val-emerald';
+      animatePrice(savEl, d.savingsAmount);
+      document.getElementById('savingsSub').textContent = 'Below 30-day mean';
+    } else {
+      savEl.className = 'cell-val val-red';
+      savEl.textContent = `+${formatINR(Math.abs(d.currentPrice - d.avgPrice))}`;
+      document.getElementById('savingsSub').textContent = 'Above 30-day mean';
+    }
   }
 
   // 2. Buy / Wait Decision Banner
@@ -364,7 +405,11 @@ function renderTerminalDashboard(d) {
   const recReason = document.getElementById('recReason');
 
   recBanner.className = 'decision-pill';
-  if (d.recommendation === 'BUY') {
+  if (isUpcoming) {
+    recBanner.classList.add('upcoming');
+    recLabel.textContent = 'PRE-LAUNCH';
+    recTitle.textContent = d.decisionTitle || 'UPCOMING OFFICIAL LAUNCH';
+  } else if (d.recommendation === 'BUY') {
     recBanner.classList.add('buy');
     recLabel.textContent = 'OPTIMAL TIMING';
     recTitle.textContent = d.decisionTitle || 'STRONG BUY SIGNAL';
@@ -377,20 +422,22 @@ function renderTerminalDashboard(d) {
     recLabel.textContent = 'HIGH RESISTANCE';
     recTitle.textContent = d.decisionTitle || 'HOLD / WAIT FOR DIP';
   }
-  recReason.textContent = d.reason || 'Price stability verified across historical timeline.';
+  recReason.textContent = d.reason || (isUpcoming ? 'Launch event scheduled. Real-time price tracking activates upon official release.' : 'Price stability verified across historical timeline.');
 
   // 3. Merchant Metrics
-  document.getElementById('sellerRating').textContent = `${d.sellerRating || 4.2} / 5.0`;
-  document.getElementById('sellerReviews').textContent = `${(d.reviewCount || 1000).toLocaleString('en-IN')} verified`;
+  document.getElementById('sellerRating').textContent = isUpcoming ? '4.9 / 5.0' : `${d.sellerRating || 4.2} / 5.0`;
+  document.getElementById('sellerReviews').textContent = isUpcoming ? 'Brand Official' : `${(d.reviewCount || 1000).toLocaleString('en-IN')} verified`;
 
   const starRow = document.getElementById('starRow');
-  const starCount = Math.round(d.sellerRating || 4);
+  const starCount = Math.round(d.sellerRating || 5);
   starRow.innerHTML = Array(5).fill(0).map((_, i) =>
     `<span style="color: ${i < starCount ? '#f59e0b' : 'rgba(255,255,255,0.2)'}">★</span>`
   ).join('');
 
   const relBadge = document.getElementById('reliabilityBadge');
-  if (d.sellerReliable) {
+  if (isUpcoming) {
+    relBadge.innerHTML = `<span class="trust-badge-pill trust-high">✓ Official Launch Partner</span>`;
+  } else if (d.sellerReliable) {
     relBadge.innerHTML = `<span class="trust-badge-pill trust-high">✓ High Trust Merchant</span>`;
   } else if (d.sellerRating >= 3.0) {
     relBadge.innerHTML = `<span class="trust-badge-pill trust-mid">⚠ Moderate Merchant</span>`;
@@ -399,15 +446,17 @@ function renderTerminalDashboard(d) {
   }
 
   // 4. Deal Confidence Score & Radial SVG Gauge
-  updateRadialGauge(d.dealScore || 50);
+  updateRadialGauge(isUpcoming ? 88 : (d.dealScore || 50));
 
   // 5. 7-Day Forecast
   const forecast = computeForecast(d.priceHistory, d.currentPrice);
   document.getElementById('predVal').textContent = `${formatINR(forecast.low)} – ${formatINR(forecast.high)}`;
-  document.getElementById('predTrend').textContent = forecast.narrative;
+  document.getElementById('predTrend').textContent = isUpcoming
+    ? '🚀 Sales go live on launch day. Price tracking activates automatically.'
+    : forecast.narrative;
 
   // 6. Chart.js Price History Timeline
-  renderChart(d.priceHistory, d.avgPrice);
+  renderChart(d.priceHistory, d.avgPrice, isUpcoming);
 
   // 7. Initialize Price Alert Default Input (-10%)
   if (alertInput) {
@@ -482,9 +531,38 @@ function computeForecast(history, currentPrice) {
 }
 
 // ─── CHART.JS RENDERER ──────────────────────────────────────────
-function renderChart(history, avgPrice) {
+function renderChart(history, avgPrice, isUpcoming = false) {
   const canvas = document.getElementById('priceChart');
-  if (!canvas || !history) return;
+  const chartWrapper = document.querySelector('.chart-canvas-wrapper');
+  if (!canvas || !chartWrapper) return;
+
+  // Remove existing upcoming notice if any
+  const existingNotice = chartWrapper.querySelector('.upcoming-launch-card');
+  if (existingNotice) existingNotice.remove();
+
+  if (isUpcoming || !history || history.length === 0) {
+    canvas.style.display = 'none';
+    const notice = document.createElement('div');
+    notice.className = 'upcoming-launch-card';
+    notice.innerHTML = `
+      <div class="launch-radar-anim">
+        <span class="launch-emoji">🚀</span>
+      </div>
+      <div class="launch-card-content">
+        <h3 class="launch-card-title">Official Launch Event — Tracking Armed & Ready</h3>
+        <p class="launch-card-text">This device has not officially started retail sales yet (past transaction history does not exist prior to launch). <strong>buySmartly 24/7 scrapers</strong> will start recording and charting price trends the exact moment orders open on Flipkart.</p>
+        <button class="launch-alert-cta-btn" onclick="document.getElementById('alertInput').focus(); document.querySelector('.alerts-strip').scrollIntoView({behavior: 'smooth'})">🔔 Set Instant Launch Notification</button>
+      </div>
+    `;
+    chartWrapper.appendChild(notice);
+    if (chartInstance) {
+      chartInstance.destroy();
+      chartInstance = null;
+    }
+    return;
+  }
+
+  canvas.style.display = 'block';
 
   const isDark = (document.documentElement.getAttribute('data-theme') || 'dark') === 'dark';
   const ctx = canvas.getContext('2d');

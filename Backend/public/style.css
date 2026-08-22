@@ -501,23 +501,40 @@ body {
 .portal-tag {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 7px;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   font-weight: 600;
-  color: var(--brand-cyan);
-  letter-spacing: 0.1em;
-  margin-bottom: 12px;
+  color: var(--brand-indigo);
+  background: var(--brand-indigo-dim);
+  border: 1px solid var(--border-accent);
+  padding: 4px 14px;
+  border-radius: var(--rad-full);
+  letter-spacing: 0.08em;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.08);
 }
 
-.portal-tag-bracket { color: var(--text-muted); }
+.portal-tag-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--brand-cyan);
+  box-shadow: 0 0 8px var(--brand-cyan);
+  animation: pulseDot 2s infinite ease-in-out;
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.75); }
+}
 
 .portal-headline {
-  font-size: clamp(1.8rem, 5vw, 3.4rem);
+  font-size: clamp(2rem, 5.2vw, 3.4rem);
   font-weight: 800;
   letter-spacing: -0.03em;
-  line-height: 1.18;
-  margin-bottom: 14px;
+  line-height: 1.16;
+  margin-bottom: 28px;
 }
 
 .gradient-text {
@@ -527,11 +544,13 @@ body {
 }
 
 .portal-sub {
-  font-size: clamp(0.9rem, 2.2vw, 1.08rem);
+  font-size: clamp(0.95rem, 1.8vw, 1.05rem);
   color: var(--text-dim);
-  line-height: 1.55;
-  max-width: 720px;
-  margin: 0 auto 28px;
+  line-height: 1.6;
+  max-width: 600px;
+  margin: 0 auto 26px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
 }
 
 /* ─── COMMAND SEARCH BAR ────────────────────────────────────── */
@@ -945,6 +964,11 @@ body {
   border-color: rgba(245, 158, 11, 0.35);
 }
 
+.decision-pill.upcoming {
+  background: rgba(99, 102, 241, 0.12);
+  border-color: rgba(99, 102, 241, 0.4);
+}
+
 .decision-beacon {
   width: 9px;
   height: 9px;
@@ -955,6 +979,7 @@ body {
 .decision-pill.buy .decision-beacon { background: var(--signal-green); box-shadow: 0 0 8px var(--signal-green); }
 .decision-pill.wait .decision-beacon { background: var(--signal-red); box-shadow: 0 0 8px var(--signal-red); }
 .decision-pill.fair .decision-beacon { background: var(--signal-amber); box-shadow: 0 0 8px var(--signal-amber); }
+.decision-pill.upcoming .decision-beacon { background: var(--brand-cyan); box-shadow: 0 0 10px var(--brand-cyan); }
 
 .decision-text-group { display: flex; flex-direction: column; }
 
@@ -968,6 +993,63 @@ body {
 .decision-pill.buy .decision-sub { color: var(--signal-green); }
 .decision-pill.wait .decision-sub { color: var(--signal-red); }
 .decision-pill.fair .decision-sub { color: var(--signal-amber); }
+.decision-pill.upcoming .decision-sub { color: var(--brand-cyan); }
+
+/* Upcoming Launch Notice Card in Chart Area */
+.upcoming-launch-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 36px 20px;
+  background: var(--bg-surface);
+  border: 1px dashed var(--border-accent);
+  border-radius: var(--rad-lg);
+  margin: 10px 0;
+  width: 100%;
+}
+.launch-radar-anim {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--brand-indigo-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  margin-bottom: 14px;
+  box-shadow: 0 0 20px var(--brand-indigo-glow);
+  animation: pulseDot 2s infinite ease-in-out;
+}
+.launch-card-title {
+  font-size: 1.12rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-bottom: 8px;
+}
+.launch-card-text {
+  font-size: 0.9rem;
+  color: var(--text-dim);
+  max-width: 560px;
+  line-height: 1.6;
+  margin-bottom: 18px;
+}
+.launch-alert-cta-btn {
+  background: linear-gradient(135deg, var(--brand-indigo) 0%, var(--brand-violet) 100%);
+  color: #ffffff;
+  border: none;
+  padding: 10px 22px;
+  border-radius: var(--rad-full);
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+  box-shadow: 0 4px 16px var(--brand-indigo-glow);
+  transition: all 0.2s ease;
+}
+.launch-alert-cta-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+}
 
 .decision-main { font-size: 0.88rem; font-weight: 800; color: var(--text-main); }
 
