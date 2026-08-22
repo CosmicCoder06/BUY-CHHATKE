@@ -22,26 +22,48 @@ function parseMyntraId(raw) {
  * Mock Catalog for Instant Myntra Demos & High Reliability
  */
 const MYNTRA_CATALOG = {
+  '35719710': {
+    product_title: 'Caprese Croc-Textured Shoulder Bag',
+    product_price: '₹950',
+    product_original_price: '₹3,799',
+    product_star_rating: '4.5',
+    product_num_ratings: '8,420',
+    product_photo: 'https://m.media-amazon.com/images/I/61wZjWZC7IL._AC_UL960_QL65_.jpg',
+    product_url: 'https://www.myntra.com/handbags/caprese/caprese-croc-textured-baguette-shoulder-bag/35719710/buy',
+    seller_name: 'Caprese Official Flagship Store',
+    is_insider: true
+  },
   '13735160': {
-    product_title: 'Roadster Men Navy Blue Sustainable Casual Shirt',
+    product_title: 'Roadster Men Navy Blue Casual Solid Shirt',
     product_price: '₹799',
     product_original_price: '₹1,599',
     product_star_rating: '4.2',
     product_num_ratings: '14,200',
-    product_photo: 'https://m.media-amazon.com/images/I/71eUwDk8z+L._AC_UY1100_.jpg',
-    product_url: 'https://www.myntra.com/shirts/roadster/roadster-men-navy-blue-sustainable-casual-shirt/13735160/buy',
+    product_photo: 'https://m.media-amazon.com/images/I/51N7HxDG0UL._AC_UL960_QL65_.jpg',
+    product_url: 'https://www.myntra.com/shirts/roadster/roadster-men-casual-shirt/13735160/buy',
     seller_name: 'Omnitech Retail (Myntra Verified)',
     is_insider: true
   },
-  '1700944': {
-    product_title: 'HRX by Hrithik Roshan Men Yellow Printed Active T-shirt',
-    product_price: '₹449',
-    product_original_price: '₹999',
+  '19324022': {
+    product_title: 'HRX by Hrithik Roshan Men Running Shoes',
+    product_price: '₹1,299',
+    product_original_price: '₹3,499',
     product_star_rating: '4.3',
-    product_num_ratings: '28,900',
-    product_photo: 'https://m.media-amazon.com/images/I/71eUwDk8z+L._AC_UY1100_.jpg',
-    product_url: 'https://www.myntra.com/tshirts/hrx-by-hrithik-roshan/hrx-by-hrithik-roshan-men-yellow-printed-t-shirt/1700944/buy',
-    seller_name: 'HRX Official Store',
+    product_num_ratings: '19,300',
+    product_photo: 'https://m.media-amazon.com/images/I/51+ReOwmYJL._AC_UL960_QL65_.jpg',
+    product_url: 'https://www.myntra.com/shoes/hrx-by-hrithik-roshan/hrx-men-running-shoes/19324022/buy',
+    seller_name: 'HRX Activewear Flagship Store',
+    is_insider: true
+  },
+  '22819234': {
+    product_title: 'Anouk Women Printed Kurta with Palazzos',
+    product_price: '₹1,199',
+    product_original_price: '₹2,999',
+    product_star_rating: '4.4',
+    product_num_ratings: '6,180',
+    product_photo: 'https://m.media-amazon.com/images/I/61is4J+KZtL._AC_UL960_QL65_.jpg',
+    product_url: 'https://www.myntra.com/kurta-sets/anouk/anouk-women-printed-kurta-set/22819234/buy',
+    seller_name: 'Anouk Ethnic Store',
     is_insider: true
   }
 };

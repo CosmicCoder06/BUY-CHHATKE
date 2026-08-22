@@ -28,9 +28,42 @@ const AJIO_CATALOG = {
     product_original_price: '₹5,995',
     product_star_rating: '4.4',
     product_num_ratings: '3,200',
-    product_photo: 'https://m.media-amazon.com/images/I/71eUwDk8z+L._AC_UY1100_.jpg',
-    product_url: 'https://www.ajio.com/nike-air-max-sc-sneakers/p/469034298_white',
+    product_photo: 'https://m.media-amazon.com/images/I/61xi8pnZunL._AC_UL960_QL65_.jpg',
+    product_url: 'https://www.ajio.com/nike-air-max/p/469034298_white',
     seller_name: 'Reliance Retail (Ajio Luxe Verified)',
+    is_luxe: true
+  },
+  '610360303_005': {
+    product_title: "Steve Madden Men's Possess Chunky Sneakers",
+    product_price: '₹21,271',
+    product_original_price: '₹24,249',
+    product_star_rating: '4.6',
+    product_num_ratings: '1,420',
+    product_photo: 'https://m.media-amazon.com/images/I/51+ReOwmYJL._AC_UL960_QL65_.jpg',
+    product_url: 'https://www.ajio.com/steve-madden-men-possess-sneakers/p/610360303_005',
+    seller_name: 'Steve Madden Official Brand Store',
+    is_luxe: true
+  },
+  '469123847_black': {
+    product_title: 'Puma Men Electron E Pro Training Shoes',
+    product_price: '₹2,499',
+    product_original_price: '₹4,999',
+    product_star_rating: '4.3',
+    product_num_ratings: '4,650',
+    product_photo: 'https://m.media-amazon.com/images/I/61bVZVbcHJL._AC_UL960_QL65_.jpg',
+    product_url: 'https://www.ajio.com/puma-men-electron-e-pro-shoes/p/469123847_black',
+    seller_name: 'Puma Sports India (Ajio Luxe)',
+    is_luxe: true
+  },
+  '460839210_blue': {
+    product_title: "Levi's Men 511 Slim Fit Mid-Rise Jeans",
+    product_price: '₹1,999',
+    product_original_price: '₹3,999',
+    product_star_rating: '4.5',
+    product_num_ratings: '9,800',
+    product_photo: 'https://m.media-amazon.com/images/I/51H0teWFbfL._AC_UL960_QL65_.jpg',
+    product_url: 'https://www.ajio.com/levis-men-511-slim-fit-jeans/p/460839210_blue',
+    seller_name: 'Levis Strauss India (Ajio Verified)',
     is_luxe: true
   }
 };

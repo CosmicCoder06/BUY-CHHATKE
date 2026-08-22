@@ -28,9 +28,42 @@ const MEESHO_CATALOG = {
     product_original_price: '₹1,199',
     product_star_rating: '4.1',
     product_num_ratings: '9,450',
-    product_photo: 'https://m.media-amazon.com/images/I/71eUwDk8z+L._AC_UY1100_.jpg',
-    product_url: 'https://www.meesho.com/trendy-attractive-men-sneakers/p/57jkwf',
+    product_photo: 'https://m.media-amazon.com/images/I/71D9ImsvEtL._AC_UY695_.jpg',
+    product_url: 'https://www.meesho.com/trendy-sneakers/p/57jkwf',
     seller_name: 'Fashion Hub Direct (Meesho Trusted)',
+    is_trusted: true
+  },
+  '62mkpq': {
+    product_title: 'Classy Elegant Women Georgette Saree with Blouse',
+    product_price: '₹389',
+    product_original_price: '₹999',
+    product_star_rating: '4.2',
+    product_num_ratings: '12,800',
+    product_photo: 'https://m.media-amazon.com/images/I/818AenacwjL._AC_UL960_QL65_.jpg',
+    product_url: 'https://www.meesho.com/women-georgette-saree/p/62mkpq',
+    seller_name: 'Shree Balaji Textiles (Meesho Trusted)',
+    is_trusted: true
+  },
+  '48nxzt': {
+    product_title: 'Stylish Bluetooth Wireless Neckband Earphones',
+    product_price: '₹299',
+    product_original_price: '₹899',
+    product_star_rating: '4.0',
+    product_num_ratings: '24,100',
+    product_photo: 'https://m.media-amazon.com/images/I/61u1VALn6JL._SL1500_.jpg',
+    product_url: 'https://www.meesho.com/wireless-neckband/p/48nxzt',
+    seller_name: 'SoundPulse Audio Store',
+    is_trusted: true
+  },
+  '73krvw': {
+    product_title: 'Waterproof Canvas Men Laptop Backpack (30L)',
+    product_price: '₹449',
+    product_original_price: '₹1,299',
+    product_star_rating: '4.3',
+    product_num_ratings: '15,620',
+    product_photo: 'https://m.media-amazon.com/images/I/71Qw2yG6GJL._AC_UL960_QL65_.jpg',
+    product_url: 'https://www.meesho.com/men-laptop-backpack/p/73krvw',
+    seller_name: 'Urban Gear Luggage (Meesho Trusted)',
     is_trusted: true
   }
 };

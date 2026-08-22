@@ -390,49 +390,37 @@ function estimatePriceFromTitle(title) {
 
 function getDefaultImageForTitle(title) {
   const t = (title || '').toLowerCase();
-  if (t.includes('bag') || t.includes('handbag') || t.includes('baguette') || t.includes('satchel') || t.includes('purse') || t.includes('caprese') || t.includes('wallet') || t.includes('tote')) {
-    return 'https://assets.myntassets.com/h_1440,q_75,w_1080/v1/assets/images/2026/JULY/11/3vvF9PAJ_313c6d88e3a241498a0a364377a3f69c.jpg';
+  if (t.includes('shoe') || t.includes('sneaker') || t.includes('footwear') || t.includes('running') || t.includes('loafer') || t.includes('sandal') || t.includes('flip flop') || t.includes('crocs') || t.includes('nike')) {
+    return 'https://m.media-amazon.com/images/I/61xi8pnZunL._AC_UL960_QL65_.jpg';
   }
-  if (t.includes('shirt') || t.includes('tshirt') || t.includes('kurti') || t.includes('dress') || t.includes('apparel') || t.includes('clothing') || t.includes('jeans')) {
-    return 'https://m.media-amazon.com/images/I/71eUwDk8z+L._AC_UY1100_.jpg';
+  if (t.includes('bag') || t.includes('handbag') || t.includes('baguette') || t.includes('satchel') || t.includes('purse') || t.includes('caprese') || t.includes('wallet') || t.includes('tote') || t.includes('backpack')) {
+    return 'https://m.media-amazon.com/images/I/61wZjWZC7IL._AC_UL960_QL65_.jpg';
   }
-  if (t.includes('cycle') || t.includes('bicycle') || t.includes('mtb') || t.includes('gear cycle')) {
-    return 'https://m.media-amazon.com/images/I/714rxlagTnL._AC_UY654_QL65_.jpg';
+  if (t.includes('shirt') || t.includes('tshirt') || t.includes('t-shirt') || t.includes('kurti') || t.includes('dress') || t.includes('apparel') || t.includes('clothing') || t.includes('jeans') || t.includes('polo') || t.includes('saree')) {
+    return 'https://m.media-amazon.com/images/I/51N7HxDG0UL._AC_UL960_QL65_.jpg';
   }
-  if (t.includes('shoe') || t.includes('sneaker') || t.includes('footwear')) {
-    return 'https://m.media-amazon.com/images/I/61utX8BQ+BL._AC_UY695_.jpg';
+  if (t.includes('nothing')) {
+    return 'https://m.media-amazon.com/images/I/71dZBla7wUL._AC_UY654_QL65_.jpg';
   }
-  if (t.includes('realme') || t.includes('redmi') || t.includes('xiaomi') || t.includes('oneplus') || t.includes('oppo') || t.includes('vivo') || t.includes('poco') || t.includes('iqoo') || t.includes('moto')) {
-    return 'https://m.media-amazon.com/images/I/71jQQEp8bkL._AC_UY654_QL65_.jpg';
-  }
-  if (t.includes('samsung') || t.includes('s25') || t.includes('s24') || t.includes('galaxy') || t.includes('android')) {
-    return 'https://m.media-amazon.com/images/I/717Qo4MH97L._SL1500_.jpg';
+  if (t.includes('samsung') || t.includes('s25') || t.includes('s24') || t.includes('galaxy') || t.includes('ultra')) {
+    return 'https://m.media-amazon.com/images/I/717Q2swzhBL._AC_UY654_QL65_.jpg';
   }
   if (t.includes('iphone') || t.includes('apple') || t.includes('ios')) {
     return 'https://m.media-amazon.com/images/I/71657TiFeHL._SL1500_.jpg';
   }
-  if (t.includes('nothing')) {
-    return 'https://m.media-amazon.com/images/I/71yzJoE7WlL._SL1500_.jpg';
+  if (t.includes('macbook') || t.includes('laptop') || t.includes('computer')) {
+    return 'https://m.media-amazon.com/images/I/710TJuHTMhL._SL1500_.jpg';
   }
-  if (t.includes('boat') || t.includes('rockerz') || t.includes('headphone')) {
+  if (t.includes('boat') || t.includes('rockerz') || t.includes('headphone') || t.includes('earphone') || t.includes('neckband')) {
     return 'https://m.media-amazon.com/images/I/61u1VALn6JL._SL1500_.jpg';
   }
   if (t.includes('sony') || t.includes('xm5') || t.includes('wh-1000')) {
     return 'https://m.media-amazon.com/images/I/61O3iMlnJIL._SL1500_.jpg';
   }
-  if (t.includes('watch') || t.includes('smartwatch') || t.includes('band')) {
-    return 'https://m.media-amazon.com/images/I/61SSVxTSs3L._SL1500_.jpg';
+  if (t.includes('realme') || t.includes('poco') || t.includes('redmi') || t.includes('xiaomi') || t.includes('oneplus') || t.includes('phone') || t.includes('5g')) {
+    return 'https://m.media-amazon.com/images/I/717z2bNF6DL._AC_UY654_QL65_.jpg';
   }
-  if (t.includes('laptop') || t.includes('macbook') || t.includes('computer')) {
-    return 'https://m.media-amazon.com/images/I/71vFKBpKakL._SL1500_.jpg';
-  }
-  if (t.includes('earbuds') || t.includes('tws') || t.includes('airpods')) {
-    return 'https://m.media-amazon.com/images/I/61SUj2aKoEL._SL1500_.jpg';
-  }
-  if (t.includes('phone') || t.includes('5g') || t.includes('mobile')) {
-    return 'https://m.media-amazon.com/images/I/71jQQEp8bkL._AC_UY654_QL65_.jpg';
-  }
-  return 'https://m.media-amazon.com/images/I/71eUwDk8z+L._AC_UY1100_.jpg';
+  return 'https://m.media-amazon.com/images/I/61xi8pnZunL._AC_UL960_QL65_.jpg';
 }
 
 async function generateFallbackFromTitle(title, url, isFlipkart) {

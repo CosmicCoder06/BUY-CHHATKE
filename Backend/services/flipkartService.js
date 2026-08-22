@@ -122,42 +122,20 @@ async function fetchFlipkartProductDetails(pid, originalUrl = '') {
 function generateMockFlipkartProduct(pid) {
   const catalog = [
     {
-      id: 'MOBHB4H6MQBBHBRW',
-      product_title: 'Samsung Galaxy S25 5G (Icyblue, 128 GB) (8 GB RAM)',
-      product_price: '₹74,999',
-      product_mrp: '₹84,999',
-      product_star_rating: '4.6',
-      product_num_ratings: '6840',
-      product_photo: 'https://m.media-amazon.com/images/I/717Qo4MH97L._SL1500_.jpg',
-      seller_name: 'SuperComNet (Flipkart Assured)',
-      is_assured: true
-    },
-    {
       id: 'MOBGXZ86HFKZUYZZ',
-      product_title: 'Nothing Phone (2a) 5G (Black, 128 GB) (8 GB RAM)',
+      product_title: 'Nothing Phone (2a) 5G (Black, 128 GB, 8 GB RAM)',
       product_price: '₹23,999',
       product_mrp: '₹25,999',
       product_star_rating: '4.5',
       product_num_ratings: '48210',
-      product_photo: 'https://m.media-amazon.com/images/I/71yzJoE7WlL._SL1500_.jpg',
+      product_photo: 'https://m.media-amazon.com/images/I/71dZBla7wUL._AC_UY654_QL65_.jpg',
       seller_name: 'RetailNet (Flipkart Assured)',
       is_assured: true
     },
     {
-      id: 'MOBGTAGPTB3VS24W',
-      product_title: 'Apple iPhone 15 (Black, 128 GB) - Super Retina XDR, A16 Bionic',
-      product_price: '₹57,900',
-      product_mrp: '₹59,900',
-      product_star_rating: '4.6',
-      product_num_ratings: '247445',
-      product_photo: 'https://rukminim1.flixcart.com/image/1160/1160/xif0q/mobile/h/d/9/-original-imagtc2qzgnnuhxh.jpeg?q=90&crop=false',
-      seller_name: 'SuperComNet (Flipkart Assured)',
-      is_assured: true
-    },
-    {
       id: 'ACCG2ZYXZ9PQWVAB',
-      product_title: 'boAt Rockerz 450 Bluetooth Headset (Luscious Black, On the Ear)',
-      product_price: '₹1,249',
+      product_title: 'boAt Rockerz 450 Bluetooth On-Ear Headphone',
+      product_price: '₹1,299',
       product_mrp: '₹3,990',
       product_star_rating: '4.3',
       product_num_ratings: '142800',
@@ -167,13 +145,24 @@ function generateMockFlipkartProduct(pid) {
     },
     {
       id: 'MOBGWFXYZ99Q12AB',
-      product_title: 'POCO X6 Pro 5G (Spectre Black, 256 GB) (8 GB RAM)',
-      product_price: '₹24,999',
-      product_mrp: '₹30,999',
+      product_title: 'Poco X6 Pro 5G (Spectre Black, 256 GB, 8 GB RAM)',
+      product_price: '₹21,999',
+      product_mrp: '₹26,999',
       product_star_rating: '4.4',
       product_num_ratings: '19840',
-      product_photo: 'https://m.media-amazon.com/images/I/71d7rfSl0wL._SL1500_.jpg',
+      product_photo: 'https://m.media-amazon.com/images/I/717z2bNF6DL._AC_UY654_QL65_.jpg',
       seller_name: 'Flashtech Retail (Flipkart Assured)',
+      is_assured: true
+    },
+    {
+      id: 'MOBGTAGPTB3VS24W',
+      product_title: 'realme 12 Pro+ 5G (Submarine Blue, 256 GB, 8 GB RAM)',
+      product_price: '₹29,999',
+      product_mrp: '₹34,999',
+      product_star_rating: '4.5',
+      product_num_ratings: '24740',
+      product_photo: 'https://m.media-amazon.com/images/I/714DutH6IBL._AC_UY654_QL65_.jpg',
+      seller_name: 'SuperComNet (Flipkart Assured)',
       is_assured: true
     }
   ];

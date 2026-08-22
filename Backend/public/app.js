@@ -297,6 +297,41 @@ function triggerShake(el) {
   el.style.animation = 'shake 0.4s ease';
 }
 
+function getClientFallbackImage(title) {
+  const t = (title || '').toLowerCase();
+  if (t.includes('shoe') || t.includes('sneaker') || t.includes('footwear') || t.includes('running') || t.includes('nike')) {
+    return 'https://m.media-amazon.com/images/I/61xi8pnZunL._AC_UL960_QL65_.jpg';
+  }
+  if (t.includes('bag') || t.includes('handbag') || t.includes('purse') || t.includes('caprese') || t.includes('wallet') || t.includes('tote') || t.includes('backpack')) {
+    return 'https://m.media-amazon.com/images/I/61wZjWZC7IL._AC_UL960_QL65_.jpg';
+  }
+  if (t.includes('shirt') || t.includes('tshirt') || t.includes('t-shirt') || t.includes('kurti') || t.includes('dress') || t.includes('apparel') || t.includes('clothing') || t.includes('roadster') || t.includes('saree') || t.includes('jeans')) {
+    return 'https://m.media-amazon.com/images/I/51N7HxDG0UL._AC_UL960_QL65_.jpg';
+  }
+  if (t.includes('sony') || t.includes('xm5') || t.includes('wh-1000')) {
+    return 'https://m.media-amazon.com/images/I/61O3iMlnJIL._SL1500_.jpg';
+  }
+  if (t.includes('boat') || t.includes('rockerz') || t.includes('headphone') || t.includes('neckband')) {
+    return 'https://m.media-amazon.com/images/I/61u1VALn6JL._SL1500_.jpg';
+  }
+  if (t.includes('nothing')) {
+    return 'https://m.media-amazon.com/images/I/71dZBla7wUL._AC_UY654_QL65_.jpg';
+  }
+  if (t.includes('samsung') || t.includes('galaxy') || t.includes('s25') || t.includes('s24') || t.includes('ultra')) {
+    return 'https://m.media-amazon.com/images/I/717Q2swzhBL._AC_UY654_QL65_.jpg';
+  }
+  if (t.includes('iphone') || t.includes('apple') || t.includes('ios')) {
+    return 'https://m.media-amazon.com/images/I/71657TiFeHL._SL1500_.jpg';
+  }
+  if (t.includes('macbook') || t.includes('laptop')) {
+    return 'https://m.media-amazon.com/images/I/710TJuHTMhL._SL1500_.jpg';
+  }
+  if (t.includes('realme') || t.includes('poco') || t.includes('redmi') || t.includes('oneplus') || t.includes('5g') || t.includes('phone')) {
+    return 'https://m.media-amazon.com/images/I/717z2bNF6DL._AC_UY654_QL65_.jpg';
+  }
+  return 'https://m.media-amazon.com/images/I/61xi8pnZunL._AC_UL960_QL65_.jpg';
+}
+
 // ─── DASHBOARD RENDERER ─────────────────────────────────────────
 function renderTerminalDashboard(d) {
   if (!dashboard) return;
@@ -309,10 +344,21 @@ function renderTerminalDashboard(d) {
     dashboard.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, 100);
 
+  // Save to Last 4 Recent Searches
+  saveRecentSearch({
+    title: d.productTitle,
+    price: d.currentPrice,
+    platform: d.platform || 'amazon',
+    platformIcon: d.platformIcon || '🛍️',
+    image: d.productImage,
+    query: d.asin || d.productId || (asinInput ? asinInput.value.trim() : '')
+  });
+
   // 1. Spotlight Product Details
   const productImg = document.getElementById('productImg');
   if (productImg) {
     const rawImage = d.productImage || '';
+    const fallbackImage = getClientFallbackImage(d.productTitle);
     productImg.dataset.triedProxy = 'false';
     if (rawImage.startsWith('http')) {
       productImg.src = rawImage;
@@ -321,11 +367,11 @@ function renderTerminalDashboard(d) {
           this.dataset.triedProxy = 'true';
           this.src = `${API_BASE}/api/image-proxy?url=${encodeURIComponent(rawImage)}`;
         } else {
-          this.src = 'https://m.media-amazon.com/images/I/71657TiFeHL._SL1500_.jpg';
+          this.src = fallbackImage;
         }
       };
     } else {
-      productImg.src = 'https://m.media-amazon.com/images/I/71657TiFeHL._SL1500_.jpg';
+      productImg.src = fallbackImage;
     }
     productImg.alt = d.productTitle || 'Product Image';
   }
@@ -368,6 +414,35 @@ function renderTerminalDashboard(d) {
       chipPlatform.style.background = 'rgba(99, 102, 241, 0.15)';
       chipPlatform.style.color = '#818cf8';
       chipPlatform.style.borderColor = 'rgba(129, 140, 248, 0.3)';
+    }
+  }
+
+  // 1.1 Configure "Buy on Store" Direct External Action
+  const productBuyBtn = document.getElementById('productBuyBtn');
+  const pbsText = document.getElementById('pbsText');
+  const pbsIcon = document.getElementById('pbsIcon');
+  if (productBuyBtn && pbsText) {
+    const rawUrl = d.productUrl || (d.asin ? `https://www.amazon.in/dp/${d.asin}` : '#');
+    productBuyBtn.href = rawUrl;
+    pbsText.textContent = `Buy on ${d.platformName || 'Store'}`;
+    if (pbsIcon) pbsIcon.textContent = d.platformIcon || '🛍️';
+
+    // Skin with store colors
+    if (d.platform === 'flipkart') {
+      productBuyBtn.style.background = 'linear-gradient(135deg, #eab308, #ca8a04)';
+      productBuyBtn.style.boxShadow = '0 4px 14px rgba(234, 179, 8, 0.4)';
+    } else if (d.platform === 'myntra') {
+      productBuyBtn.style.background = 'linear-gradient(135deg, #ff3f6c, #e11d48)';
+      productBuyBtn.style.boxShadow = '0 4px 14px rgba(255, 63, 108, 0.4)';
+    } else if (d.platform === 'meesho') {
+      productBuyBtn.style.background = 'linear-gradient(135deg, #d946ef, #c026d3)';
+      productBuyBtn.style.boxShadow = '0 4px 14px rgba(217, 70, 239, 0.4)';
+    } else if (d.platform === 'ajio') {
+      productBuyBtn.style.background = 'linear-gradient(135deg, #0284c7, #0369a1)';
+      productBuyBtn.style.boxShadow = '0 4px 14px rgba(2, 132, 199, 0.4)';
+    } else {
+      productBuyBtn.style.background = 'linear-gradient(135deg, var(--brand-indigo), var(--brand-violet))';
+      productBuyBtn.style.boxShadow = '0 4px 14px var(--brand-indigo-glow)';
     }
   }
 
@@ -1365,3 +1440,480 @@ function animatePrice(element, targetValue, duration = 600) {
   }
   requestAnimationFrame(update);
 }
+
+// ─── LAST 4 RECENT SEARCHES MANAGER ─────────────────────────────
+const RECENT_KEY = 'buySmartly_recent_searches';
+const DEFAULT_RECENT_SEARCHES = [
+  {
+    title: 'Sony WH-1000XM5 ANC Headphones',
+    price: 26990,
+    platform: 'amazon',
+    platformIcon: '🛍️',
+    image: 'https://m.media-amazon.com/images/I/61O3iMlnJIL._SL1500_.jpg',
+    query: 'B09XS7JWHH'
+  },
+  {
+    title: 'iPhone 15 Pro Titanium Black',
+    price: 69999,
+    platform: 'amazon',
+    platformIcon: '🛍️',
+    image: 'https://m.media-amazon.com/images/I/71657TiFeHL._SL1500_.jpg',
+    query: 'B0CHX1W1XY'
+  },
+  {
+    title: 'Caprese Shyla Shoulder Bag',
+    price: 950,
+    platform: 'myntra',
+    platformIcon: '👗',
+    image: 'https://m.media-amazon.com/images/I/61wZjWZC7IL._AC_UL960_QL65_.jpg',
+    query: 'https://www.myntra.com/handbags/caprese/caprese-croc-textured-baguette-shoulder-bag/35719710/buy'
+  },
+  {
+    title: 'Nike Air Max SC Low-Top Sneakers',
+    price: 4495,
+    platform: 'ajio',
+    platformIcon: '🏷️',
+    image: 'https://m.media-amazon.com/images/I/61xi8pnZunL._AC_UL960_QL65_.jpg',
+    query: 'https://www.ajio.com/nike-air-max/p/469034298_white'
+  }
+];
+
+function getRecentSearches() {
+  try {
+    const raw = localStorage.getItem(RECENT_KEY);
+    if (!raw) return DEFAULT_RECENT_SEARCHES;
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) && parsed.length > 0 ? parsed : DEFAULT_RECENT_SEARCHES;
+  } catch (e) {
+    return DEFAULT_RECENT_SEARCHES;
+  }
+}
+
+function saveRecentSearch(item) {
+  if (!item || !item.query) return;
+  try {
+    let list = getRecentSearches();
+    list = list.filter(r => r.query !== item.query && r.title !== item.title);
+    list.unshift({
+      title: item.title || 'Tracked Product',
+      price: item.price || 0,
+      platform: item.platform || 'amazon',
+      platformIcon: item.platformIcon || '🛍️',
+      image: item.image || getClientFallbackImage(item.title),
+      query: item.query
+    });
+    list = list.slice(0, 4);
+    localStorage.setItem(RECENT_KEY, JSON.stringify(list));
+    renderRecentSearches();
+  } catch (e) {}
+}
+
+function renderRecentSearches() {
+  const rail = document.getElementById('recentTilesRail');
+  const container = document.getElementById('recentSearchesContainer');
+  if (!rail || !container) return;
+
+  const items = getRecentSearches();
+  if (items.length === 0) {
+    container.style.display = 'none';
+    return;
+  }
+
+  container.style.display = 'flex';
+  rail.innerHTML = items.map(item => {
+    const safeTitle = decodeHtmlEntities(item.title || 'Product');
+    const safeImg = item.image || getClientFallbackImage(item.title);
+    return `
+      <div class="recent-tile" onclick="fillAndAnalyze('${encodeURIComponent(item.query).replace(/'/g, "\\'")}')" title="${safeTitle}">
+        <img class="recent-tile-img" src="${safeImg}" alt="Thumb" referrerpolicy="no-referrer" onerror="this.src='${getClientFallbackImage(safeTitle)}'" />
+        <div class="recent-tile-info">
+          <div class="recent-tile-title">${safeTitle}</div>
+          <div class="recent-tile-meta">
+            <span class="recent-tile-price">${item.price > 0 ? formatINR(item.price) : 'Scan ⚡'}</span>
+            <span class="recent-tile-badge">${item.platformIcon || '🛍️'}</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+const clearRecentBtn = document.getElementById('clearRecentBtn');
+if (clearRecentBtn) {
+  clearRecentBtn.addEventListener('click', () => {
+    localStorage.setItem(RECENT_KEY, JSON.stringify([]));
+    renderRecentSearches();
+    showToast('Recent searches cleared', '🧹');
+  });
+}
+
+// ─── EVERYDAY TRENDING MULTI-STORE SHOWCASE ──────────────────
+const TRENDING_DEALS = [
+  // ─── AMAZON (4 Deals) ───
+  {
+    store: 'amazon',
+    storeName: 'Amazon',
+    storeIcon: '🛍️',
+    storeColor: '#818cf8',
+    title: 'Sony WH-1000XM5 Wireless ANC Headphones',
+    price: 26990,
+    mrp: 34990,
+    discount: '23% OFF',
+    signal: '🔥 All-Time Low',
+    image: 'https://m.media-amazon.com/images/I/61O3iMlnJIL._SL1500_.jpg',
+    url: 'https://www.amazon.in/dp/B09XS7JWHH',
+    query: 'B09XS7JWHH'
+  },
+  {
+    store: 'amazon',
+    storeName: 'Amazon',
+    storeIcon: '🛍️',
+    storeColor: '#818cf8',
+    title: 'Apple iPhone 15 (256 GB) - Black Titanium',
+    price: 69999,
+    mrp: 79900,
+    discount: '12% OFF',
+    signal: '⚡ Optimal Timing',
+    image: 'https://m.media-amazon.com/images/I/71657TiFeHL._SL1500_.jpg',
+    url: 'https://www.amazon.in/dp/B0CHX1W1XY',
+    query: 'B0CHX1W1XY'
+  },
+  {
+    store: 'amazon',
+    storeName: 'Amazon',
+    storeIcon: '🛍️',
+    storeColor: '#818cf8',
+    title: 'Samsung Galaxy S24 Ultra 5G AI Smartphone (Titanium Gray)',
+    price: 121999,
+    mrp: 134999,
+    discount: '10% OFF',
+    signal: '⚡ Flagship Deal',
+    image: 'https://m.media-amazon.com/images/I/717Q2swzhBL._AC_UY654_QL65_.jpg',
+    url: 'https://www.amazon.in/dp/B0CQYC21QY',
+    query: 'B0CQYC21QY'
+  },
+  {
+    store: 'amazon',
+    storeName: 'Amazon',
+    storeIcon: '🛍️',
+    storeColor: '#818cf8',
+    title: 'Apple MacBook Air M2 (13.6-inch, 8GB RAM, 256GB SSD)',
+    price: 84990,
+    mrp: 99900,
+    discount: '15% OFF',
+    signal: '🔥 Price Stabilized',
+    image: 'https://m.media-amazon.com/images/I/710TJuHTMhL._SL1500_.jpg',
+    url: 'https://www.amazon.in/dp/B0B3CQBRB4',
+    query: 'B0B3CQBRB4'
+  },
+
+  // ─── FLIPKART (4 Deals) ───
+  {
+    store: 'flipkart',
+    storeName: 'Flipkart',
+    storeIcon: '⚡',
+    storeColor: '#facc15',
+    title: 'Nothing Phone (2a) 5G (Black, 128 GB, 8 GB RAM)',
+    price: 23999,
+    mrp: 25999,
+    discount: '8% OFF',
+    signal: '⚡ Verified Deal',
+    image: 'https://m.media-amazon.com/images/I/71dZBla7wUL._AC_UY654_QL65_.jpg',
+    url: 'https://www.flipkart.com/nothing-phone-2a-5g-black-128-gb/p/itmd06869b2d88ad',
+    query: 'MOBGXZ86HFKZUYZZ'
+  },
+  {
+    store: 'flipkart',
+    storeName: 'Flipkart',
+    storeIcon: '⚡',
+    storeColor: '#facc15',
+    title: 'boAt Rockerz 450 Bluetooth On-Ear Headphone',
+    price: 1299,
+    mrp: 3990,
+    discount: '67% OFF',
+    signal: '🔥 Super Drop',
+    image: 'https://m.media-amazon.com/images/I/61u1VALn6JL._SL1500_.jpg',
+    url: 'https://www.flipkart.com/boat-rockerz-450-bluetooth-headset/p/itm12345678',
+    query: 'https://www.flipkart.com/boat-rockerz-450-bluetooth-headset/p/itm12345678'
+  },
+  {
+    store: 'flipkart',
+    storeName: 'Flipkart',
+    storeIcon: '⚡',
+    storeColor: '#facc15',
+    title: 'Poco X6 Pro 5G (Spectre Black, 256 GB, 8 GB RAM)',
+    price: 21999,
+    mrp: 26999,
+    discount: '19% OFF',
+    signal: '⚡ Gaming Value',
+    image: 'https://m.media-amazon.com/images/I/717z2bNF6DL._AC_UY654_QL65_.jpg',
+    url: 'https://www.flipkart.com/poco-x6-pro-5g-spectre-black-256-gb/p/itm5a8427f7dbbe4',
+    query: 'https://www.flipkart.com/poco-x6-pro-5g-spectre-black-256-gb/p/itm5a8427f7dbbe4'
+  },
+  {
+    store: 'flipkart',
+    storeName: 'Flipkart',
+    storeIcon: '⚡',
+    storeColor: '#facc15',
+    title: 'realme 12 Pro+ 5G (Submarine Blue, 256 GB, 8 GB RAM)',
+    price: 29999,
+    mrp: 34999,
+    discount: '14% OFF',
+    signal: '⚡ Periscope Camera',
+    image: 'https://m.media-amazon.com/images/I/714DutH6IBL._AC_UY654_QL65_.jpg',
+    url: 'https://www.flipkart.com/realme-12-pro-plus-5g-submarine-blue-256-gb/p/itm7e34d3d82a17f',
+    query: 'https://www.flipkart.com/realme-12-pro-plus-5g-submarine-blue-256-gb/p/itm7e34d3d82a17f'
+  },
+
+  // ─── MYNTRA (4 Deals) ───
+  {
+    store: 'myntra',
+    storeName: 'Myntra',
+    storeIcon: '👗',
+    storeColor: '#ff3f6c',
+    title: 'Caprese Croc-Textured Shoulder Bag',
+    price: 950,
+    mrp: 3799,
+    discount: '75% OFF',
+    signal: '👗 75% Flash Deal',
+    image: 'https://m.media-amazon.com/images/I/61wZjWZC7IL._AC_UL960_QL65_.jpg',
+    url: 'https://www.myntra.com/handbags/caprese/caprese-croc-textured-baguette-shoulder-bag/35719710/buy',
+    query: 'https://www.myntra.com/handbags/caprese/caprese-croc-textured-baguette-shoulder-bag/35719710/buy'
+  },
+  {
+    store: 'myntra',
+    storeName: 'Myntra',
+    storeIcon: '👗',
+    storeColor: '#ff3f6c',
+    title: 'Roadster Men Navy Blue Casual Solid Shirt',
+    price: 799,
+    mrp: 1599,
+    discount: '50% OFF',
+    signal: '👗 Best Seller',
+    image: 'https://m.media-amazon.com/images/I/51N7HxDG0UL._AC_UL960_QL65_.jpg',
+    url: 'https://www.myntra.com/shirts/roadster/roadster-men-casual-shirt/13735160/buy',
+    query: 'https://www.myntra.com/shirts/roadster/roadster-men-casual-shirt/13735160/buy'
+  },
+  {
+    store: 'myntra',
+    storeName: 'Myntra',
+    storeIcon: '👗',
+    storeColor: '#ff3f6c',
+    title: 'HRX by Hrithik Roshan Men Running Shoes',
+    price: 1299,
+    mrp: 3499,
+    discount: '63% OFF',
+    signal: '👗 Activewear Deal',
+    image: 'https://m.media-amazon.com/images/I/51+ReOwmYJL._AC_UL960_QL65_.jpg',
+    url: 'https://www.myntra.com/shoes/hrx-by-hrithik-roshan/hrx-men-running-shoes/19324022/buy',
+    query: 'https://www.myntra.com/shoes/hrx-by-hrithik-roshan/hrx-men-running-shoes/19324022/buy'
+  },
+  {
+    store: 'myntra',
+    storeName: 'Myntra',
+    storeIcon: '👗',
+    storeColor: '#ff3f6c',
+    title: 'Anouk Women Printed Kurta with Palazzos',
+    price: 1199,
+    mrp: 2999,
+    discount: '60% OFF',
+    signal: '👗 Ethnic Trend',
+    image: 'https://m.media-amazon.com/images/I/61is4J+KZtL._AC_UL960_QL65_.jpg',
+    url: 'https://www.myntra.com/kurta-sets/anouk/anouk-women-printed-kurta-set/22819234/buy',
+    query: 'https://www.myntra.com/kurta-sets/anouk/anouk-women-printed-kurta-set/22819234/buy'
+  },
+
+  // ─── MEESHO (4 Deals) ───
+  {
+    store: 'meesho',
+    storeName: 'Meesho',
+    storeIcon: '🛍️',
+    storeColor: '#d946ef',
+    title: 'Trendy Attractive Men White Casual Sneakers',
+    price: 489,
+    mrp: 1199,
+    discount: '59% OFF',
+    signal: '🛍️ Direct Supplier',
+    image: 'https://m.media-amazon.com/images/I/71D9ImsvEtL._AC_UY695_.jpg',
+    url: 'https://www.meesho.com/trendy-sneakers/p/57jkwf',
+    query: 'https://www.meesho.com/trendy-sneakers/p/57jkwf'
+  },
+  {
+    store: 'meesho',
+    storeName: 'Meesho',
+    storeIcon: '🛍️',
+    storeColor: '#d946ef',
+    title: 'Classy Elegant Women Georgette Saree with Blouse',
+    price: 389,
+    mrp: 999,
+    discount: '61% OFF',
+    signal: '🛍️ Hot Pick',
+    image: 'https://m.media-amazon.com/images/I/818AenacwjL._AC_UL960_QL65_.jpg',
+    url: 'https://www.meesho.com/women-georgette-saree/p/62mkpq',
+    query: 'https://www.meesho.com/women-georgette-saree/p/62mkpq'
+  },
+  {
+    store: 'meesho',
+    storeName: 'Meesho',
+    storeIcon: '🛍️',
+    storeColor: '#d946ef',
+    title: 'Stylish Bluetooth Wireless Neckband Earphones',
+    price: 299,
+    mrp: 899,
+    discount: '67% OFF',
+    signal: '🛍️ Budget King',
+    image: 'https://m.media-amazon.com/images/I/61u1VALn6JL._SL1500_.jpg',
+    url: 'https://www.meesho.com/wireless-neckband/p/48nxzt',
+    query: 'https://www.meesho.com/wireless-neckband/p/48nxzt'
+  },
+  {
+    store: 'meesho',
+    storeName: 'Meesho',
+    storeIcon: '🛍️',
+    storeColor: '#d946ef',
+    title: 'Waterproof Canvas Men Laptop Backpack (30L)',
+    price: 449,
+    mrp: 1299,
+    discount: '65% OFF',
+    signal: '🛍️ Top Rated',
+    image: 'https://m.media-amazon.com/images/I/71Qw2yG6GJL._AC_UL960_QL65_.jpg',
+    url: 'https://www.meesho.com/men-laptop-backpack/p/73krvw',
+    query: 'https://www.meesho.com/men-laptop-backpack/p/73krvw'
+  },
+
+  // ─── AJIO (4 Deals) ───
+  {
+    store: 'ajio',
+    storeName: 'Ajio',
+    storeIcon: '🏷️',
+    storeColor: '#38bdf8',
+    title: 'Nike Air Max SC Low-Top Lace-Up Sneakers',
+    price: 4495,
+    mrp: 5995,
+    discount: '25% OFF',
+    signal: '🏷️ Luxe Trend',
+    image: 'https://m.media-amazon.com/images/I/61xi8pnZunL._AC_UL960_QL65_.jpg',
+    url: 'https://www.ajio.com/nike-air-max/p/469034298_white',
+    query: 'https://www.ajio.com/nike-air-max/p/469034298_white'
+  },
+  {
+    store: 'ajio',
+    storeName: 'Ajio',
+    storeIcon: '🏷️',
+    storeColor: '#38bdf8',
+    title: "Steve Madden Men's Possess Chunky Sneakers",
+    price: 21271,
+    mrp: 24249,
+    discount: '12% OFF',
+    signal: '🏷️ Designer Pick',
+    image: 'https://m.media-amazon.com/images/I/51+ReOwmYJL._AC_UL960_QL65_.jpg',
+    url: 'https://www.ajio.com/steve-madden-men-possess-sneakers/p/610360303_005',
+    query: 'https://www.ajio.com/steve-madden-men-possess-sneakers/p/610360303_005'
+  },
+  {
+    store: 'ajio',
+    storeName: 'Ajio',
+    storeIcon: '🏷️',
+    storeColor: '#38bdf8',
+    title: 'Puma Men Electron E Pro Training Shoes',
+    price: 2499,
+    mrp: 4999,
+    discount: '50% OFF',
+    signal: '🏷️ Ajio Luxe 50%',
+    image: 'https://m.media-amazon.com/images/I/61bVZVbcHJL._AC_UL960_QL65_.jpg',
+    url: 'https://www.ajio.com/puma-men-electron-e-pro-shoes/p/469123847_black',
+    query: 'https://www.ajio.com/puma-men-electron-e-pro-shoes/p/469123847_black'
+  },
+  {
+    store: 'ajio',
+    storeName: 'Ajio',
+    storeIcon: '🏷️',
+    storeColor: '#38bdf8',
+    title: "Levi's Men 511 Slim Fit Mid-Rise Jeans",
+    price: 1999,
+    mrp: 3999,
+    discount: '50% OFF',
+    signal: '🏷️ Denim Special',
+    image: 'https://m.media-amazon.com/images/I/51H0teWFbfL._AC_UL960_QL65_.jpg',
+    url: 'https://www.ajio.com/levis-men-511-slim-fit-jeans/p/460839210_blue',
+    query: 'https://www.ajio.com/levis-men-511-slim-fit-jeans/p/460839210_blue'
+  }
+];
+
+function initTrendingDeals() {
+  const filterButtons = document.querySelectorAll('.store-filter-btn');
+  filterButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const store = btn.getAttribute('data-store') || 'all';
+      renderTrendingGrid(store);
+    });
+  });
+
+  renderTrendingGrid('all');
+}
+
+function renderTrendingGrid(storeFilter = 'all') {
+  const grid = document.getElementById('trendingGrid');
+  if (!grid) return;
+
+  const items = storeFilter === 'all'
+    ? TRENDING_DEALS
+    : TRENDING_DEALS.filter(d => d.store === storeFilter);
+
+  grid.innerHTML = items.map(deal => {
+    const safeTitle = decodeHtmlEntities(deal.title);
+    const safeUrl = deal.url || '#';
+    return `
+      <div class="trending-card">
+        <div class="tc-media">
+          <img class="tc-img" src="${deal.image}" alt="${safeTitle}" referrerpolicy="no-referrer" loading="lazy" onerror="this.src='${getClientFallbackImage(safeTitle)}'" />
+          <span class="tc-store-pill" style="background: rgba(0,0,0,0.65); color: ${deal.storeColor}; border: 1px solid ${deal.storeColor};">
+            ${deal.storeIcon} ${deal.storeName}
+          </span>
+          <span class="tc-discount-pill">${deal.discount}</span>
+        </div>
+        <div class="tc-body">
+          <div class="tc-signal-tag">${deal.signal}</div>
+          <h3 class="tc-title" title="${safeTitle}">${safeTitle}</h3>
+          <div class="tc-price-row">
+            <span class="tc-price">${formatINR(deal.price)}</span>
+            <span class="tc-mrp">${formatINR(deal.mrp)}</span>
+          </div>
+          <div class="tc-actions-stack" style="display: flex; flex-direction: column; gap: 6px; margin-top: auto;">
+            <button class="tc-scan-btn" onclick="fillAndAnalyze('${encodeURIComponent(deal.query).replace(/'/g, "\\'")}')">
+              <span>Verify Deal Price</span>
+              <span>⚡</span>
+            </button>
+            <a class="tc-buy-direct-btn" href="${safeUrl}" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; justify-content: center; gap: 5px; padding: 7px; border-radius: var(--rad-sm); background: var(--bg-surface); border: 1px solid var(--border-hairline); color: var(--text-dim); font-size: 0.76rem; font-weight: 600; text-decoration: none; transition: all 0.2s ease;">
+              <span>Buy on ${deal.storeName}</span>
+              <span>↗</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// Global helper for sample buttons and card clicks
+window.fillAndAnalyze = function (idOrUrl) {
+  if (!asinInput) return;
+  const decoded = decodeURIComponent(idOrUrl);
+  asinInput.value = decoded;
+  if (clearBtn) clearBtn.style.display = 'flex';
+  executeAnalysis();
+};
+
+// Initial calls on load
+document.addEventListener('DOMContentLoaded', () => {
+  renderRecentSearches();
+  initTrendingDeals();
+});
+
+// Immediate execution in case DOM is already ready
+renderRecentSearches();
+initTrendingDeals();
+
+

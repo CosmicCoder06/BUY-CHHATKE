@@ -14,7 +14,7 @@
   <link rel="icon"
     href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✦</text></svg>">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-  <link rel="stylesheet" href="style.css?v=2.6.0" />
+  <link rel="stylesheet" href="style.css?v=3.0.0" />
 </head>
 
 <body>
@@ -56,16 +56,6 @@
           <div class="brand-title">buySmartly <span class="brand-ai">AI ASSISTANT</span></div>
           <div class="brand-status"> PRICE INTELLIGENCE TERMINAL</div>
         </div>
-      </div>
-
-      <div class="header-presets">
-        <span class="preset-label">Quick Scans:</span>
-        <button class="preset-pill" onclick="fillAndAnalyze('B09XS7JWHH')">🛍️ Sony XM5</button>
-        <button class="preset-pill" onclick="fillAndAnalyze('B0CHX1W1XY')">🛍️ iPhone 15</button>
-        <button class="preset-pill" onclick="fillAndAnalyze('MOBGXZ86HFKZUYZZ')">⚡ Nothing (2a)</button>
-        <button class="preset-pill" onclick="fillAndAnalyze('https://www.myntra.com/shirts/roadster/roadster-men-casual-shirt/13735160/buy')">👗 Myntra Roadster</button>
-        <button class="preset-pill" onclick="fillAndAnalyze('https://www.ajio.com/nike-air-max/p/469034298_white')">🏷️ Ajio Nike</button>
-        <button class="preset-pill" onclick="fillAndAnalyze('https://www.meesho.com/trendy-sneakers/p/57jkwf')">🛍️ Meesho Sneakers</button>
       </div>
 
       <div class="header-controls">
@@ -127,16 +117,14 @@
         <span class="helper-hint">💡 ProTip: Paste any link or product ID from Amazon, Flipkart, Myntra, Meesho, or Ajio</span>
       </div>
 
-      <!-- Quick Preset Slider Rail for Mobile & Desktop -->
-      <div class="preset-slider-container">
-        <span class="preset-slider-label">Try Instant Scans:</span>
-        <div class="preset-slider-rail">
-          <button class="preset-slider-chip" onclick="fillAndAnalyze('B09XS7JWHH')">🛍️ Sony XM5</button>
-          <button class="preset-slider-chip" onclick="fillAndAnalyze('B0CHX1W1XY')">🛍️ iPhone 15</button>
-          <button class="preset-slider-chip" onclick="fillAndAnalyze('MOBGXZ86HFKZUYZZ')">⚡ Nothing (2a)</button>
-          <button class="preset-slider-chip" onclick="fillAndAnalyze('https://www.myntra.com/shirts/roadster/roadster-men-casual-shirt/13735160/buy')">👗 Myntra Roadster</button>
-          <button class="preset-slider-chip" onclick="fillAndAnalyze('https://www.ajio.com/nike-air-max/p/469034298_white')">🏷️ Ajio Nike</button>
-          <button class="preset-slider-chip" onclick="fillAndAnalyze('https://www.meesho.com/trendy-sneakers/p/57jkwf')">🛍️ Meesho Sneakers</button>
+      <!-- Last 4 Recent Searches Horizontal Bar -->
+      <div id="recentSearchesContainer" class="recent-searches-container">
+        <div class="recent-header">
+          <span class="recent-label">⏱️ Recent Searches:</span>
+          <button id="clearRecentBtn" class="recent-clear-btn" title="Clear History">Clear</button>
+        </div>
+        <div class="recent-tiles-rail" id="recentTilesRail">
+          <!-- Injected dynamically by JavaScript -->
         </div>
       </div>
     </section>
@@ -157,17 +145,28 @@
       <div class="skel-line skel-chart"></div>
     </div>
 
-    <!-- Empty Initial State -->
-    <div id="emptyState" class="empty-terminal">
-      <div class="terminal-radar">
-        <div class="radar-circle rc-1"></div>
-        <div class="radar-circle rc-2"></div>
-        <div class="radar-circle rc-3"></div>
-        <div class="radar-sweep"></div>
-        <div class="radar-center">✦</div>
+    <!-- Empty Initial State: Everyday Trending Multi-Store Showcase -->
+    <div id="emptyState" class="empty-terminal trending-terminal">
+      <div class="trending-header-bar">
+        <div class="trending-title-group">
+          <div class="trending-badge"><span class="badge-live-dot"></span> LIVE MARKET RADAR</div>
+          <h2 class="trending-heading">🔥 Everyday Trending Deals</h2>
+          <p class="trending-sub">Real-time algorithmic discounts detected across Amazon, Flipkart, Myntra, Meesho &amp; Ajio</p>
+        </div>
+        <div class="trending-store-filters" id="trendingFilters">
+          <button class="store-filter-btn active" data-store="all">🌟 All Stores</button>
+          <button class="store-filter-btn" data-store="amazon">🛍️ Amazon</button>
+          <button class="store-filter-btn" data-store="flipkart">⚡ Flipkart</button>
+          <button class="store-filter-btn" data-store="myntra">👗 Myntra</button>
+          <button class="store-filter-btn" data-store="meesho">🛍️ Meesho</button>
+          <button class="store-filter-btn" data-store="ajio">🏷️ Ajio</button>
+        </div>
       </div>
-      <div class="empty-status">Awaiting Target Input</div>
-      <div class="empty-desc">Enter an Amazon ASIN or Flipkart product link/PID above to initiate market intelligence scan.</div>
+
+      <!-- Trending Cards Grid -->
+      <div class="trending-grid" id="trendingGrid">
+        <!-- Rendered dynamically by JavaScript -->
+      </div>
     </div>
 
     <!-- Search Result Intelligence Showcase Card Frame -->
@@ -189,6 +188,13 @@
             <span class="pw-icon" id="pwIcon">🤍</span>
             <span class="pw-text" id="pwText">Save to Wishlist</span>
           </button>
+
+          <!-- Official Store Direct Link / Buy Button -->
+          <a id="productBuyBtn" class="product-buy-store-btn" href="#" target="_blank" rel="noopener noreferrer">
+            <span class="pbs-icon" id="pbsIcon">🛍️</span>
+            <span class="pbs-text" id="pbsText">Buy on Store</span>
+            <span class="pbs-arr">↗</span>
+          </a>
         </div>
 
         <div class="spotlight-details">
@@ -712,7 +718,7 @@
     </div>
   </footer>
 
-  <script src="app.js?v=2.6.0"></script>
+  <script src="app.js?v=3.0.0"></script>
 </body>
 
 </html>

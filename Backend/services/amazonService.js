@@ -89,35 +89,39 @@ function generateMockProduct(asin) {
   const demoCatalog = [
     {
       asin: 'B09XS7JWHH',
-      product_title: 'Sony WH-1000XM5 Wireless Noise Cancelling Headphones - Platinum Silver',
+      product_title: 'Sony WH-1000XM5 Wireless ANC Headphones',
       product_price: '₹26,990',
+      product_mrp: '₹34,990',
       product_star_rating: '4.6',
       product_num_ratings: '4380',
       product_photo: 'https://m.media-amazon.com/images/I/61O3iMlnJIL._SL1500_.jpg'
     },
     {
       asin: 'B0CHX1W1XY',
-      product_title: 'Apple iPhone 15 (128 GB) - Black with Dynamic Island & 48MP Camera',
+      product_title: 'Apple iPhone 15 (256 GB) - Black Titanium',
       product_price: '₹69,999',
+      product_mrp: '₹79,900',
       product_star_rating: '4.7',
       product_num_ratings: '9820',
       product_photo: 'https://m.media-amazon.com/images/I/71657TiFeHL._SL1500_.jpg'
     },
     {
-      asin: 'B07PR1CL3S',
-      product_title: 'boAt Rockerz 450 Bluetooth On Ear Headphones with Mic (Luscious Black)',
-      product_price: '₹1,299',
-      product_star_rating: '4.2',
-      product_num_ratings: '18540',
-      product_photo: 'https://m.media-amazon.com/images/I/61u1VALn6JL._SL1500_.jpg'
+      asin: 'B0CQYC21QY',
+      product_title: 'Samsung Galaxy S24 Ultra 5G AI Smartphone (Titanium Gray)',
+      product_price: '₹1,21,999',
+      product_mrp: '₹1,34,999',
+      product_star_rating: '4.8',
+      product_num_ratings: '5620',
+      product_photo: 'https://m.media-amazon.com/images/I/717Q2swzhBL._AC_UY654_QL65_.jpg'
     },
     {
-      asin: 'B0CC9LMWL6',
-      product_title: 'Samsung Galaxy Watch6 Bluetooth (44mm, Graphite)',
-      product_price: '₹19,499',
-      product_star_rating: '4.4',
-      product_num_ratings: '2150',
-      product_photo: 'https://m.media-amazon.com/images/I/61SSVxTSs3L._SL1500_.jpg'
+      asin: 'B0B3CQBRB4',
+      product_title: 'Apple MacBook Air M2 (13.6-inch, 8GB RAM, 256GB SSD)',
+      product_price: '₹84,990',
+      product_mrp: '₹99,900',
+      product_star_rating: '4.8',
+      product_num_ratings: '3450',
+      product_photo: 'https://m.media-amazon.com/images/I/710TJuHTMhL._SL1500_.jpg'
     }
   ];
 
