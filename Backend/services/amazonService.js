@@ -93,7 +93,7 @@ function generateMockProduct(asin) {
       product_price: '₹26,990',
       product_star_rating: '4.6',
       product_num_ratings: '4380',
-      product_photo: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80'
+      product_photo: 'https://m.media-amazon.com/images/I/61O3iMlnJIL._SL1500_.jpg'
     },
     {
       asin: 'B0CHX1W1XY',
@@ -101,7 +101,7 @@ function generateMockProduct(asin) {
       product_price: '₹69,999',
       product_star_rating: '4.7',
       product_num_ratings: '9820',
-      product_photo: 'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=600&auto=format&fit=crop&q=80'
+      product_photo: 'https://m.media-amazon.com/images/I/71657TiFeHL._SL1500_.jpg'
     },
     {
       asin: 'B07PR1CL3S',
@@ -109,7 +109,7 @@ function generateMockProduct(asin) {
       product_price: '₹1,299',
       product_star_rating: '4.2',
       product_num_ratings: '18540',
-      product_photo: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80'
+      product_photo: 'https://m.media-amazon.com/images/I/61u1VALn6JL._SL1500_.jpg'
     },
     {
       asin: 'B0CC9LMWL6',
@@ -117,7 +117,7 @@ function generateMockProduct(asin) {
       product_price: '₹19,499',
       product_star_rating: '4.4',
       product_num_ratings: '2150',
-      product_photo: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&auto=format&fit=crop&q=80'
+      product_photo: 'https://m.media-amazon.com/images/I/61SSVxTSs3L._SL1500_.jpg'
     }
   ];
 

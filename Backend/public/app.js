@@ -304,11 +304,11 @@ function renderTerminalDashboard(d) {
           this.dataset.triedProxy = 'true';
           this.src = `${API_BASE}/api/image-proxy?url=${encodeURIComponent(rawImage)}`;
         } else {
-          this.src = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400';
+          this.src = 'https://m.media-amazon.com/images/I/71657TiFeHL._SL1500_.jpg';
         }
       };
     } else {
-      productImg.src = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400';
+      productImg.src = 'https://m.media-amazon.com/images/I/71657TiFeHL._SL1500_.jpg';
     }
     productImg.alt = d.productTitle || 'Product Image';
   }

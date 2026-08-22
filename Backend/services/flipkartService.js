@@ -119,7 +119,7 @@ function generateMockFlipkartProduct(pid) {
       product_mrp: '₹84,999',
       product_star_rating: '4.6',
       product_num_ratings: '6840',
-      product_photo: 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=600&auto=format&fit=crop&q=80',
+      product_photo: 'https://m.media-amazon.com/images/I/717Qo4MH97L._SL1500_.jpg',
       seller_name: 'SuperComNet (Flipkart Assured)',
       is_assured: true
     },
@@ -130,7 +130,7 @@ function generateMockFlipkartProduct(pid) {
       product_mrp: '₹25,999',
       product_star_rating: '4.5',
       product_num_ratings: '48210',
-      product_photo: 'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=600&auto=format&fit=crop&q=80',
+      product_photo: 'https://m.media-amazon.com/images/I/71yzJoE7WlL._SL1500_.jpg',
       seller_name: 'RetailNet (Flipkart Assured)',
       is_assured: true
     },
@@ -141,7 +141,7 @@ function generateMockFlipkartProduct(pid) {
       product_mrp: '₹79,900',
       product_star_rating: '4.7',
       product_num_ratings: '38490',
-      product_photo: 'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=600&auto=format&fit=crop&q=80',
+      product_photo: 'https://m.media-amazon.com/images/I/71657TiFeHL._SL1500_.jpg',
       seller_name: 'SuperComNet (Flipkart Assured)',
       is_assured: true
     },
@@ -152,7 +152,7 @@ function generateMockFlipkartProduct(pid) {
       product_mrp: '₹3,990',
       product_star_rating: '4.3',
       product_num_ratings: '142800',
-      product_photo: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80',
+      product_photo: 'https://m.media-amazon.com/images/I/61u1VALn6JL._SL1500_.jpg',
       seller_name: 'CORSECA Brands (Flipkart Assured)',
       is_assured: true
     },
@@ -163,7 +163,7 @@ function generateMockFlipkartProduct(pid) {
       product_mrp: '₹30,999',
       product_star_rating: '4.4',
       product_num_ratings: '19840',
-      product_photo: 'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=600&auto=format&fit=crop&q=80',
+      product_photo: 'https://m.media-amazon.com/images/I/71d7rfSl0wL._SL1500_.jpg',
       seller_name: 'Flashtech Retail (Flipkart Assured)',
       is_assured: true
     }

@@ -217,30 +217,33 @@ function estimatePriceFromTitle(title) {
 function getDefaultImageForTitle(title) {
   const t = (title || '').toLowerCase();
   if (t.includes('samsung') || t.includes('s25') || t.includes('s24') || t.includes('galaxy') || t.includes('android')) {
-    return 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=600&auto=format&fit=crop&q=80';
+    return 'https://m.media-amazon.com/images/I/717Qo4MH97L._SL1500_.jpg';
   }
   if (t.includes('iphone') || t.includes('apple') || t.includes('ios')) {
-    return 'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=600&auto=format&fit=crop&q=80';
+    return 'https://m.media-amazon.com/images/I/71657TiFeHL._SL1500_.jpg';
   }
-  if (t.includes('boat') || t.includes('rockerz') || t.includes('headphone') || t.includes('sony') || t.includes('xm5') || t.includes('audio')) {
-    return 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80';
+  if (t.includes('nothing')) {
+    return 'https://m.media-amazon.com/images/I/71yzJoE7WlL._SL1500_.jpg';
+  }
+  if (t.includes('boat') || t.includes('rockerz') || t.includes('headphone')) {
+    return 'https://m.media-amazon.com/images/I/61u1VALn6JL._SL1500_.jpg';
+  }
+  if (t.includes('sony') || t.includes('xm5') || t.includes('wh-1000')) {
+    return 'https://m.media-amazon.com/images/I/61O3iMlnJIL._SL1500_.jpg';
+  }
+  if (t.includes('poco') || t.includes('redmi') || t.includes('xiaomi')) {
+    return 'https://m.media-amazon.com/images/I/71d7rfSl0wL._SL1500_.jpg';
   }
   if (t.includes('watch') || t.includes('smartwatch') || t.includes('band')) {
-    return 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&auto=format&fit=crop&q=80';
+    return 'https://m.media-amazon.com/images/I/61SSVxTSs3L._SL1500_.jpg';
   }
-  if (t.includes('laptop') || t.includes('macbook') || t.includes('computer') || t.includes('dell') || t.includes('hp')) {
-    return 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=600&auto=format&fit=crop&q=80';
-  }
-  if (t.includes('tv') || t.includes('television') || t.includes('monitor') || t.includes('screen')) {
-    return 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=600&auto=format&fit=crop&q=80';
+  if (t.includes('laptop') || t.includes('macbook') || t.includes('computer')) {
+    return 'https://m.media-amazon.com/images/I/71vFKBpKakL._SL1500_.jpg';
   }
   if (t.includes('earbuds') || t.includes('tws') || t.includes('airpods')) {
-    return 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=600&auto=format&fit=crop&q=80';
+    return 'https://m.media-amazon.com/images/I/61SUj2aKoEL._SL1500_.jpg';
   }
-  if (t.includes('camera') || t.includes('dslr') || t.includes('lens')) {
-    return 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=600&auto=format&fit=crop&q=80';
-  }
-  return 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=600&auto=format&fit=crop&q=80';
+  return 'https://m.media-amazon.com/images/I/71657TiFeHL._SL1500_.jpg';
 }
 
 function generateFallbackFromTitle(title, url, isFlipkart) {
