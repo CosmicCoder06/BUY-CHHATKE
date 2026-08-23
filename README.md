@@ -46,8 +46,8 @@ buySmartly helps shoppers scan product links, review price insights, save produc
 ## Run locally
 
 ```bash
-git clone https://github.com/CosmicCoder06/BUY-CHHATKE.git
-cd BUY-CHHATKE/Backend
+git clone https://github.com/CosmicCoder06/buySmartly.git
+cd buySmartly/Backend
 npm install
 npm start
 ```
