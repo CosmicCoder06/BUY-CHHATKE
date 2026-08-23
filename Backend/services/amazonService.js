@@ -1,22 +1,32 @@
 const { scrapeLiveProduct } = require('./metadataScraper');
+const { fetchRapidProductDetails } = require('./rapidProductService');
 
 function getApiKey() {
   return process.env.RAPIDAPI_KEY || '';
 }
 
-async function fetchProductDetails(asin, originalUrl = '') {
-  // 1. If full URL is provided, try live metadata scraping first
-  if (originalUrl && originalUrl.startsWith('http')) {
-    const liveData = await scrapeLiveProduct(originalUrl);
-    if (liveData && liveData.productTitle) {
-      return {
-        ...liveData,
-        asin: asin
-      };
-    }
-  }
+function isExactAmazonProduct(data, asin) {
+  const requestedAsin = String(asin || '').toUpperCase();
+  const returnedAsin = String(data?.asin || data?.product_asin || data?.product_id || '').toUpperCase();
+  const returnedUrl = String(data?.product_url || data?.url || '').toUpperCase();
 
-  // 2. Try RapidAPI Amazon Endpoint
+  // Product Details is already queried with the requested ASIN. Some valid
+  // RapidAPI responses omit both identifier fields, so do not reject them.
+  if (!returnedAsin && !returnedUrl) return true;
+  return returnedAsin === requestedAsin || returnedUrl.includes(`/DP/${requestedAsin}`) || returnedUrl.includes(`/GP/PRODUCT/${requestedAsin}`);
+}
+
+async function fetchProductDetails(asin, originalUrl = '') {
+  const targetUrl = (originalUrl && originalUrl.startsWith('http'))
+    ? originalUrl
+    : `https://www.amazon.in/dp/${asin}`;
+
+  // 1. Multi-store product API accepts the exact product URL.
+  const marketplaceProduct = await fetchRapidProductDetails(targetUrl);
+  if (marketplaceProduct) return { ...marketplaceProduct, asin };
+
+  // 2. Use the Amazon ASIN endpoint before attempting HTML. A search result or
+  // a storefront challenge must never be presented as this product.
   const apiKey = getApiKey();
   if (apiKey) {
     try {
@@ -37,8 +47,8 @@ async function fetchProductDetails(asin, originalUrl = '') {
 
       if (res.ok) {
         const data = await res.json();
-        if (data && data.data && data.data.product_title) {
-          return data.data;
+        if (data && data.data && data.data.product_title && isExactAmazonProduct(data.data, asin)) {
+          return { ...data.data, asin, product_url: targetUrl, productUrl: targetUrl };
         }
       }
     } catch (err) {
@@ -46,8 +56,14 @@ async function fetchProductDetails(asin, originalUrl = '') {
     }
   }
 
-  // 3. Fallback to mock catalog
-  return generateMockProduct(asin);
+  // 2. Accept HTML only when it contains genuine product metadata. The scraper
+  // deliberately returns null for anti-bot pages instead of inventing details.
+  const liveData = await scrapeLiveProduct(targetUrl);
+  if (liveData && liveData.productTitle && !liveData.productTitle.toLowerCase().includes('amazon sign in') && !liveData.productTitle.toLowerCase().includes('robot check')) {
+    return { ...liveData, asin, productUrl: targetUrl };
+  }
+
+  return null;
 }
 
 async function fetchPriceHistory(asin) {
@@ -209,5 +225,6 @@ module.exports = {
   fetchPriceHistory,
   generateMockHistory,
   generateMockProduct,
+  isExactAmazonProduct,
   fetchAmazonDeals
 };

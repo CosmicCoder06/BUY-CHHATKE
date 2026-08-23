@@ -34,6 +34,17 @@ async function initAuthState(tab) {
       const product = res.currentProduct;
       const targetProductUrl = product?.productUrl || product?.url || tab?.url || '';
       const encodedUrl = encodeURIComponent(targetProductUrl);
+      const dashboardUrl = () => {
+        if (!targetProductUrl) return 'http://localhost:3000/dashboard';
+        const p = new URLSearchParams({ product: targetProductUrl });
+        if (Number(product?.currentPrice) > 0) {
+          p.set('livePrice', product.currentPrice);
+          p.set('liveTitle', product.productTitle || product.title || '');
+          p.set('liveImage', product.productImage || product.image || '');
+          p.set('liveMrp', product.originalPrice || '');
+        }
+        return `http://localhost:3000/dashboard?${p.toString()}`;
+      };
 
       // Context detector text
       if (activeStoreTxt) {
@@ -63,7 +74,7 @@ async function initAuthState(tab) {
         if (logoutBtn) logoutBtn.style.display = 'block';
 
         authActionBtn.onclick = () => {
-          window.open(targetProductUrl ? `http://localhost:3000/dashboard?product=${encodedUrl}` : 'http://localhost:3000/dashboard', '_blank');
+          window.open(dashboardUrl(), '_blank');
         };
 
         if (logoutBtn) {
@@ -77,7 +88,7 @@ async function initAuthState(tab) {
         if (launchWebBtn) {
           launchBtnText.textContent = targetProductUrl ? 'Open buySmartly Dashboard' : 'Open buySmartly Dashboard';
           launchWebBtn.onclick = () => {
-            window.open(targetProductUrl ? `http://localhost:3000/dashboard?product=${encodedUrl}` : 'http://localhost:3000/dashboard', '_blank');
+            window.open(dashboardUrl(), '_blank');
           };
         }
       } else {

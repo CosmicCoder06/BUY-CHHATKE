@@ -77,6 +77,11 @@
         return null;
       }
 
+      if (host.includes('croma.com')) {
+        if (pathname.includes('/p/') || pathname.includes('/product/')) return 'Croma';
+        return null;
+      }
+
       return null;
     } catch (e) {
       return null;
@@ -95,10 +100,14 @@
   function parsePrice(str) {
     if (!str || typeof str !== 'string') return 0;
     // 1. Currency-preceded number: e.g. ₹94,968, Rs. 94,968
-    const rupeeMatches = str.match(/(?:₹|Rs\.?|INR)\s*([0-9]{1,3}(?:,[0-9]{2,3})*(?:\.[0-9]+)?)/gi);
+    // Accept both Indian-formatted values (₹3,249) and unformatted values
+    // rendered by Myntra (₹3249). The prior 3-digit limit turned ₹3249 into ₹324.
+    const rupeeMatches = str.match(/(?:₹|Rs\.?|INR)\s*([0-9][0-9,]*(?:\.[0-9]+)?)/gi);
     if (rupeeMatches && rupeeMatches.length > 0) {
-      const lastRupee = rupeeMatches[rupeeMatches.length - 1];
-      const numMatch = lastRupee.replace(/,/g, '').match(/([0-9]+(?:\.[0-9]+)?)/);
+      // Product-price containers normally render the selling price before MRP.
+      // Using the first value prevents an MRP/discount label from replacing it.
+      const firstRupee = rupeeMatches[0];
+      const numMatch = firstRupee.replace(/,/g, '').match(/([0-9]+(?:\.[0-9]+)?)/);
       if (numMatch) return parseFloat(numMatch[1]);
     }
     // 2. Generic number match without percentages
@@ -252,7 +261,7 @@
       const pName = document.querySelector('.pdp-name')?.innerText?.trim() || '';
       productTitle = `${bName} ${pName}`.trim() || document.querySelector('meta[property="og:title"]')?.content || document.title;
 
-      const pEl = document.querySelector('.pdp-price strong, .pdp-discountedPrice, span.pdp-price');
+      const pEl = document.querySelector('.pdp-price strong, .pdp-discountedPrice, .pdp-price .pdp-discountedPrice, span.pdp-price');
       if (pEl) currentPrice = parsePrice(pEl.innerText);
 
       const mEl = document.querySelector('.pdp-mrp');
@@ -280,7 +289,7 @@
         }
       }
 
-      const pEl = document.querySelector('h4[class*="Price"], span[class*="Price"], h4, div[class*="Price"]');
+      const pEl = document.querySelector('h4[class*="ProductPrice"], h4[class*="Price"], span[class*="Price"], div[class*="Price"]');
       if (pEl) currentPrice = parsePrice(pEl.innerText);
 
       const mEl = document.querySelector('p[class*="strike"], span[class*="strike"]');
@@ -297,7 +306,7 @@
     // E. AJIO
     else if (platform === 'Ajio') {
       productTitle = document.querySelector('.prod-name, .prod-title')?.innerText?.trim() || document.querySelector('meta[property="og:title"]')?.content || document.title;
-      const pEl = document.querySelector('.prod-sp, span.prod-sp, .price-special');
+      const pEl = document.querySelector('.prod-sp, span.prod-sp, .price-special, .price .price-sp, [class*="price"] [class*="special"]');
       if (pEl) currentPrice = parsePrice(pEl.innerText);
       const mEl = document.querySelector('.prod-cp');
       if (mEl) originalPrice = parsePrice(mEl.innerText);
@@ -306,14 +315,38 @@
       if (rEl) rating = parseFloat(rEl.innerText) || 4.4;
     }
 
-    if (currentPrice > 0 && originalPrice === 0) originalPrice = Math.round(currentPrice * 1.15);
+    // F. CROMA — JSON-LD is stable across the product-page variants.
+    else if (platform === 'Croma') {
+      const scripts = [...document.querySelectorAll('script[type="application/ld+json"]')];
+      for (const script of scripts) {
+        try {
+          const json = JSON.parse(script.textContent || '{}');
+          const product = Array.isArray(json) ? json.find(x => x['@type'] === 'Product') : json;
+          if (product?.['@type'] !== 'Product') continue;
+          productTitle = product.name || productTitle;
+          productImage = Array.isArray(product.image) ? product.image[0] : (product.image || productImage);
+          const offer = Array.isArray(product.offers) ? product.offers[0] : product.offers;
+          currentPrice = Number(offer?.price) || currentPrice;
+          originalPrice = Number(offer?.highPrice || offer?.price) || originalPrice;
+          rating = Number(product.aggregateRating?.ratingValue) || rating;
+          if (currentPrice > 0) break;
+        } catch (_) {}
+      }
+      productTitle ||= document.querySelector('h1')?.innerText?.trim() || document.title;
+      productImage ||= document.querySelector('meta[property="og:image"]')?.content || '';
+      if (!currentPrice) {
+        const price = document.querySelector('[class*="price"]')?.innerText || '';
+        currentPrice = parsePrice(price);
+      }
+    }
+
     if (originalPrice > currentPrice) discount = `${Math.round(((originalPrice - currentPrice) / originalPrice) * 100)}% OFF`;
 
     // EXACT REQUIRED PRODUCT OBJECT
     const productContext = {
       platform,
       productTitle: productTitle || document.title,
-      productImage: productImage || 'https://m.media-amazon.com/images/I/71dZBla7wUL._AC_UY654_QL65_.jpg',
+      productImage,
       currentPrice: currentPrice || 0,
       originalPrice: originalPrice || 0,
       discount: discount || '0% OFF',
@@ -822,8 +855,14 @@
 
     if (openDashBtn) {
       openDashBtn.addEventListener('click', () => {
-        const targetProductUrl = encodeURIComponent(window.location.href);
-        window.open(`http://localhost:3000/dashboard?product=${targetProductUrl}`, '_blank');
+        const p = new URLSearchParams({
+          product: prodContext.productUrl,
+          livePrice: String(prodContext.currentPrice || ''),
+          liveTitle: prodContext.productTitle || '',
+          liveImage: prodContext.productImage || '',
+          liveMrp: String(prodContext.originalPrice || '')
+        });
+        window.open(`http://localhost:3000/dashboard?${p.toString()}`, '_blank');
       });
     }
 

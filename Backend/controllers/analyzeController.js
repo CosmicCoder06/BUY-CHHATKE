@@ -35,6 +35,7 @@ const {
 } = require('../services/trendingService');
 
 const { estimatePriceFromTitle, getDefaultImageForTitle } = require('../services/metadataScraper');
+const { fetchRapidProductDetails } = require('../services/rapidProductService');
 
 /**
  * Parses Amazon ASIN from URL or raw text
@@ -96,7 +97,9 @@ function evaluateDeal({ currentPrice, avgPrice, deviation, sellerRating, reviewC
  * Supports Amazon India, Flipkart, Myntra, Meesho, and Ajio
  */
 async function analyze(req, res) {
-  const rawInput = (req.query.asin || req.query.url || req.query.q || '').trim();
+  // The full URL is the source of truth. `q` may only contain an extracted ID
+  // (for example an Amazon ASIN), which loses the product slug and redirects.
+  const rawInput = (req.query.url || req.query.asin || req.query.q || '').trim();
   const livePrice = parseFloat(req.query.livePrice || req.query.price || 0);
   const liveTitle = (req.query.liveTitle || req.query.title || '').trim();
   const liveImage = (req.query.liveImage || req.query.image || '').trim();
@@ -129,6 +132,7 @@ async function analyze(req, res) {
     else if (inputLower.includes('myntra')) { storeKey = 'myntra'; storeName = 'Myntra'; storeIcon = '👗'; }
     else if (inputLower.includes('meesho')) { storeKey = 'meesho'; storeName = 'Meesho'; storeIcon = '🛍️'; }
     else if (inputLower.includes('ajio')) { storeKey = 'ajio'; storeName = 'Ajio'; storeIcon = '🏷️'; }
+    else if (inputLower.includes('croma')) { storeKey = 'croma'; storeName = 'Croma'; storeIcon = '🔴'; }
 
     const { dealScore, recommendation, decisionTitle, reason, isSellerReliable } = evaluateDeal({
       currentPrice,
@@ -173,19 +177,18 @@ async function analyze(req, res) {
 
   const inputLower = rawInput.toLowerCase();
 
-  // 0. DIRECT MASTER CATALOG MATCH (100% Precise Title, Price, Image & Store URL)
+  // 0. DIRECT MASTER CATALOG MATCH (Exact ID or Exact URL only)
   for (const [storeKey, storeItems] of Object.entries(MASTER_STORE_CATALOG)) {
     const matchedItem = storeItems.find(it => {
       const itId = String(it.id || '').toUpperCase();
       const itQuery = String(it.query || '').toUpperCase();
-      const itUrl = String(it.url || '').toLowerCase();
+      const itUrl = String(it.url || '').toLowerCase().trim();
       const rawUpper = rawInput.toUpperCase();
+      const rawLower = rawInput.toLowerCase().trim();
       return (
         itId === rawUpper ||
         itQuery === rawUpper ||
-        rawInput.toLowerCase().includes(itUrl) ||
-        itUrl.includes(rawInput.toLowerCase()) ||
-        rawUpper.includes(itId)
+        (itUrl.length > 10 && itUrl === rawLower)
       );
     });
 
@@ -251,7 +254,9 @@ async function analyze(req, res) {
   const amazonAsin = parseAsin(rawInput);
 
   let platform = 'amazon';
-  if (inputLower.includes('myntra.com') || (myntraId && !amazonAsin && !flipkartPid)) {
+  if (inputLower.includes('croma.com')) {
+    platform = 'croma';
+  } else if (inputLower.includes('myntra.com') || (myntraId && !amazonAsin && !flipkartPid)) {
     platform = 'myntra';
   } else if (inputLower.includes('meesho.com') || (meeshoId && !amazonAsin && !flipkartPid)) {
     platform = 'meesho';
@@ -262,6 +267,18 @@ async function analyze(req, res) {
   }
 
   try {
+    if (platform === 'croma') {
+      const product = await fetchRapidProductDetails(rawInput);
+      if (!product) return res.status(404).json({ error: 'Could not retrieve Croma product data.' });
+      const currentPrice = parseFloat(String(product.product_price || '').replace(/[^0-9.]/g, ''));
+      if (!currentPrice) return res.status(422).json({ error: 'Croma product has no verified price.' });
+      const rawHistory = generateAmazonMockHistory(currentPrice);
+      const prices = rawHistory.map(p => Number(p.currentprice));
+      const avg = prices.reduce((sum, price) => sum + price, 0) / prices.length;
+      const { dealScore, recommendation, decisionTitle, reason, isSellerReliable } = evaluateDeal({ currentPrice, avgPrice: avg, deviation: ((currentPrice - avg) / avg) * 100, sellerRating: Number(product.product_star_rating) || 4.3, reviewCount: Number(String(product.product_num_ratings || '').replace(/\D/g, '')) || 0, isVerified: true, platformName: 'Croma', sellerName: product.seller_name || 'Croma' });
+      return res.json({ platform: 'croma', platformName: 'Croma', platformIcon: '🔴', productId: rawInput, productTitle: product.product_title, productImage: product.product_photo, productUrl: rawInput, currentPrice, productPrice: `₹${Math.round(currentPrice).toLocaleString('en-IN')}`, avgPrice: Math.round(avg), highPrice: Math.max(...prices), lowPrice: Math.min(...prices), deviation: Number((((currentPrice - avg) / avg) * 100).toFixed(1)), savingsAmount: Math.max(0, Math.round(avg - currentPrice)), dealScore, recommendation, decisionTitle, reason, sellerRating: Number(product.product_star_rating) || 4.3, reviewCount: Number(String(product.product_num_ratings || '').replace(/\D/g, '')) || 0, sellerName: product.seller_name || 'Croma', sellerReliable: isSellerReliable, isVerified: true, priceHistory: rawHistory.map(p => ({ date: p.datec, price: Number(p.currentprice) })) });
+    }
+
     // ═══════════════════════════════════════════════════════════════
     // 1. MYNTRA INTELLIGENCE PIPELINE
     // ═══════════════════════════════════════════════════════════════
@@ -297,6 +314,8 @@ async function analyze(req, res) {
         productTitle,
         productImage,
         productUrl: product.product_url || rawInput,
+        productPrice: `₹${Math.round(currentPrice).toLocaleString('en-IN')}`,
+        productMrp: `₹${Math.round(highPrice > currentPrice ? highPrice : currentPrice * 1.18).toLocaleString('en-IN')}`,
         currentPrice: Math.round(currentPrice),
         avgPrice: Math.round(avg),
         highPrice: Math.round(highPrice),
@@ -351,6 +370,8 @@ async function analyze(req, res) {
         productTitle,
         productImage,
         productUrl: product.product_url || rawInput,
+        productPrice: `₹${Math.round(currentPrice).toLocaleString('en-IN')}`,
+        productMrp: `₹${Math.round(highPrice > currentPrice ? highPrice : currentPrice * 1.18).toLocaleString('en-IN')}`,
         currentPrice: Math.round(currentPrice),
         avgPrice: Math.round(avg),
         highPrice: Math.round(highPrice),
@@ -405,6 +426,8 @@ async function analyze(req, res) {
         productTitle,
         productImage,
         productUrl: product.product_url || rawInput,
+        productPrice: `₹${Math.round(currentPrice).toLocaleString('en-IN')}`,
+        productMrp: `₹${Math.round(highPrice > currentPrice ? highPrice : currentPrice * 1.18).toLocaleString('en-IN')}`,
         currentPrice: Math.round(currentPrice),
         avgPrice: Math.round(avg),
         highPrice: Math.round(highPrice),
@@ -499,6 +522,8 @@ async function analyze(req, res) {
         productTitle,
         productImage,
         productUrl: product.product_url || `https://www.flipkart.com/product/p/itm?pid=${pid}`,
+        productPrice: `₹${Math.round(currentPrice).toLocaleString('en-IN')}`,
+        productMrp: `₹${Math.round(highPrice > currentPrice ? highPrice : currentPrice * 1.18).toLocaleString('en-IN')}`,
         currentPrice: Math.round(currentPrice),
         avgPrice: Math.round(avg),
         highPrice: Math.round(highPrice),
@@ -530,8 +555,10 @@ async function analyze(req, res) {
 
     const priceStr = String(product.product_price || product.productPrice || '').replace(/[^0-9.]/g, '');
     let currentPrice = parseFloat(priceStr);
-    if (!currentPrice || (productTitle.toLowerCase().includes('iphone') && currentPrice < 10000 && !productTitle.toLowerCase().includes('case') && !productTitle.toLowerCase().includes('cover'))) {
-      currentPrice = estimatePriceFromTitle(productTitle);
+    if (!Number.isFinite(currentPrice) || currentPrice <= 0) {
+      return res.status(422).json({
+        error: 'Amazon returned this product without a verified price. Please try again shortly.'
+      });
     }
 
     const sellerRating = parseFloat(product.product_star_rating || product.productStarRating) || 4.2;
@@ -565,7 +592,9 @@ async function analyze(req, res) {
       productId: asin,
       productTitle,
       productImage,
-      productUrl: `https://www.amazon.in/dp/${asin}`,
+      productUrl: product.product_url || product.productUrl || rawInput || `https://www.amazon.in/dp/${asin}`,
+      productPrice: `₹${Math.round(currentPrice).toLocaleString('en-IN')}`,
+      productMrp: `₹${Math.round(highPrice > currentPrice ? highPrice : currentPrice * 1.18).toLocaleString('en-IN')}`,
       currentPrice: Math.round(currentPrice),
       avgPrice: Math.round(avg),
       highPrice: Math.round(highPrice),

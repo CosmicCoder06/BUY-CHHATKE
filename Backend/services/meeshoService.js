@@ -85,7 +85,10 @@ async function fetchMeeshoProductDetails(productId, rawUrl) {
     }
   }
 
-  // 3. Extract title from URL slug & search live market data
+  // Do not substitute a search result or a title-based estimate for this URL.
+  return null;
+
+  /* Legacy fallback (intentionally disabled)
   const parsedTitle = extractTitleFromUrl(rawUrl) || (productId ? `Meesho Product #${productId}` : 'Meesho Verified Product');
   const liveMatch = await searchProductFallback(parsedTitle);
 
@@ -115,6 +118,7 @@ async function fetchMeeshoProductDetails(productId, rawUrl) {
     seller_name: 'Meesho Verified Supplier',
     is_trusted: true
   };
+  */
 }
 
 /**

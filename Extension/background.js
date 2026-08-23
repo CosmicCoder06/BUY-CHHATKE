@@ -1,6 +1,6 @@
 // buySmartly AI Assistant — Background Service Worker (Manifest V3)
 
-const SUPPORTED_HOSTS = ['flipkart.com', 'amazon.in', 'amazon.com', 'myntra.com', 'meesho.com', 'ajio.com'];
+const SUPPORTED_HOSTS = ['flipkart.com', 'amazon.in', 'amazon.com', 'myntra.com', 'meesho.com', 'ajio.com', 'croma.com'];
 
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({
@@ -78,7 +78,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'FETCH_PRICE_INTELLIGENCE') {
     (async () => {
       try {
-        const apiUrl = `http://localhost:3000/api/analyze?asin=${encodeURIComponent(message.url || message.query)}`;
+        const product = message.product || {};
+        const apiUrl = `http://localhost:3000/api/analyze?url=${encodeURIComponent(product.productUrl || message.url || message.query)}&livePrice=${encodeURIComponent(product.currentPrice || '')}&liveTitle=${encodeURIComponent(product.productTitle || '')}&liveImage=${encodeURIComponent(product.productImage || '')}&liveMrp=${encodeURIComponent(product.originalPrice || '')}`;
         const res = await fetch(apiUrl);
         if (!res.ok) throw new Error('API status: ' + res.status);
         const data = await res.json();

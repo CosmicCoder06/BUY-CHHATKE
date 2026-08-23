@@ -1,5 +1,6 @@
 require('dotenv').config();
 const { scrapeLiveProduct, extractTitleFromUrl, searchProductFallback, estimatePriceFromTitle, getDefaultImageForTitle } = require('./metadataScraper');
+const { fetchRapidProductDetails } = require('./rapidProductService');
 
 /**
  * Extracts Myntra Style ID or clean identifier from URL / input
@@ -77,6 +78,9 @@ async function fetchMyntraProductDetails(styleId, rawUrl) {
     return MYNTRA_CATALOG[styleId];
   }
 
+  const marketplaceProduct = await fetchRapidProductDetails(rawUrl);
+  if (marketplaceProduct) return marketplaceProduct;
+
   // 2. Live Page Scraper
   if (rawUrl && rawUrl.toLowerCase().includes('myntra.com')) {
     const scraped = await scrapeLiveProduct(rawUrl);
@@ -85,7 +89,12 @@ async function fetchMyntraProductDetails(styleId, rawUrl) {
     }
   }
 
-  // 3. Extract title from URL slug & search live market data
+  // Do not substitute a search result or a title-based estimate for this URL.
+  // A similarly named product is still the wrong product.
+  return null;
+
+  /*
+  // Legacy fallback (intentionally disabled)
   const parsedTitle = extractTitleFromUrl(rawUrl) || (styleId ? `Myntra Style #${styleId}` : 'Myntra Fashion Product');
   const liveMatch = await searchProductFallback(parsedTitle);
 
@@ -115,6 +124,7 @@ async function fetchMyntraProductDetails(styleId, rawUrl) {
     seller_name: 'Myntra Authentic Merchant',
     is_insider: true
   };
+  */
 }
 
 /**

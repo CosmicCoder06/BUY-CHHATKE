@@ -128,7 +128,7 @@ async function scrapeLiveProduct(url) {
     if (res.ok) {
       const html = await res.text();
       const extracted = parseHtmlDetails(html, url, isFlipkart, isAmazon);
-      if (extracted && extracted.productTitle) {
+      if (extracted && extracted.isVerifiedProduct) {
         return extracted;
       }
     }
@@ -136,12 +136,7 @@ async function scrapeLiveProduct(url) {
     console.warn('[metadataScraper] Direct fetch failed:', err.message);
   }
 
-  // Fallback to URL Slug Parsing if live fetch is blocked or captcha-gated
-  const slugTitle = extractTitleFromUrl(url);
-  if (slugTitle) {
-    return await generateFallbackFromTitle(slugTitle, url, isFlipkart);
-  }
-
+  // A blocked page is not evidence for a product. Never manufacture a result.
   return null;
 }
 
@@ -169,7 +164,8 @@ function parseHtmlDetails(html, url, isFlipkart, isAmazon) {
                   html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*name=["']twitter:title["']/i) ||
                   html.match(/<title>([^<]+)<\/title>/i);
 
-  if (ogTitle && ogTitle[1]) {
+  const hasPageTitle = Boolean(ogTitle && ogTitle[1]);
+  if (hasPageTitle) {
     title = ogTitle[1]
       .replace(/\s*\|\s*Flipkart.*$/i, '')
       .replace(/\s*:\s*Amazon\.in.*$/i, '')
@@ -206,15 +202,26 @@ function parseHtmlDetails(html, url, isFlipkart, isAmazon) {
 
   // Check store CDNs if ogImage not found
   if (!image) {
-    if (isMyntra) {
+    if (isAmazon) {
+      // Amazon product pages often omit OpenGraph metadata but embed the
+      // gallery URL in JSON (`colorImages`/`landingImage`).
+      const amazonImg = html.match(/https:\/\/m\.media-amazon\.com\/images\/I\/[^"'\s\\]+?\.(?:jpg|jpeg|png|webp)/i) ||
+                        html.match(/https:\\?\/\\?\/m\.media-amazon\.com\\?\/images\\?\/I\\?\/[^"'\s\\]+?\.(?:jpg|jpeg|png|webp)/i);
+      if (amazonImg) image = amazonImg[0].replace(/\\\//g, '/');
+      if (!image) {
+        const landingTag = html.match(/<img(?=[^>]*id=["']landingImage["'])[^>]*>/i);
+        const landingSrc = landingTag?.[0].match(/(?:data-old-hires|src)=["']([^"']+)/i);
+        if (landingSrc?.[1]) image = landingSrc[1];
+      }
+    } else if (isMyntra) {
       const myntraImg = html.match(/https:\/\/assets\.myntassets\.com\/[a-zA-Z0-9_\-\/\.]+\.(?:jpg|jpeg|png|webp)/i);
       if (myntraImg) image = myntraImg[0];
     } else if (isMeesho) {
       const meeshoImg = html.match(/https:\/\/images\.meesho\.com\/[a-zA-Z0-9_\-\/\.]+\.(?:jpg|jpeg|png|webp)/i);
       if (meeshoImg) image = meeshoImg[0];
     } else if (isAjio) {
-      const ajioImg = html.match(/https:\/\/assets\.ajio\.com\/[a-zA-Z0-9_\-\/\.]+\.(?:jpg|jpeg|png|webp)/i);
-      if (ajioImg) image = ajioImg[0];
+      const ajioImg = html.match(/https:\\?\/\\?\/assets\.ajio\.com\\?\/[a-zA-Z0-9_\-\\/\.]+\.(?:jpg|jpeg|png|webp)/i);
+      if (ajioImg) image = ajioImg[0].replace(/\\\//g, '/');
     }
   }
 
@@ -275,7 +282,8 @@ function parseHtmlDetails(html, url, isFlipkart, isAmazon) {
     const rawPriceMatch = html.match(/₹\s*([0-9,]+)/) ||
                           html.match(/class=["'][^"']*_30jeq3[^"']*["']>₹?([0-9,]+)/) ||
                           html.match(/class=["'][^"']*Nx9daj[^"']*["']>₹?([0-9,]+)/) ||
-                          html.match(/class=["'][^"']*a-price-whole[^"']*["']>([0-9,]+)/);
+                          html.match(/class=["'][^"']*a-price-whole[^"']*["']>([0-9,]+)/) ||
+                          html.match(/a-price-whole[^>]*>\s*([0-9,]+)/i);
 
     if (rawPriceMatch && rawPriceMatch[1]) {
       price = parseFloat(rawPriceMatch[1].replace(/,/g, ''));
@@ -283,6 +291,9 @@ function parseHtmlDetails(html, url, isFlipkart, isAmazon) {
   }
 
   // Default Price estimation if not found
+  const hasLivePrice = price >= 50;
+  const hasLiveImage = Boolean(image);
+
   if (!price || price < 50) {
     price = estimatePriceFromTitle(title);
   }
@@ -309,7 +320,10 @@ function parseHtmlDetails(html, url, isFlipkart, isAmazon) {
     is_assured: isFlipkart,
     isAssured: isFlipkart,
     product_url: url,
-    productUrl: url
+    productUrl: url,
+    // Do not let blocked pages, URL-slug parsing, or placeholder images become
+    // a successful product lookup. Callers may only use verified metadata.
+    isVerifiedProduct: hasPageTitle && !isGeneric && hasLiveImage && hasLivePrice
   };
 }
 
@@ -338,8 +352,23 @@ async function searchProductFallback(title) {
       const items = data?.data?.products || [];
       if (items.length > 0) {
         const top = items[0];
-        const priceNum = parseFloat(String(top.product_price || '').replace(/[^0-9.]/g, '')) || estimatePriceFromTitle(title);
-        const cleanTitle = decodeHtmlEntities(top.product_title || title);
+        let priceNum = parseFloat(String(top.product_price || '').replace(/[^0-9.]/g, ''));
+        // Smart price sanity: compare against our title-based estimate
+        // If RapidAPI price is < 30% of expected (catches USD→INR mismatch like $5 for Sony headphones)
+        const expectedPrice = estimatePriceFromTitle(title);
+        if (!priceNum || priceNum < 200 || priceNum < expectedPrice * 0.3) {
+          priceNum = expectedPrice;
+        }
+        // Clean excessively long titles: cut at first comma, '|', or ' - ' after 55 chars
+        let cleanTitle = decodeHtmlEntities(top.product_title || title);
+        if (cleanTitle.length > 80) {
+          const cutMatch = cleanTitle.match(/^(.{50,79})[,|]/) || cleanTitle.match(/^(.{50,79}) [-–] /);
+          if (cutMatch) {
+            cleanTitle = cutMatch[1].trim();
+          } else {
+            cleanTitle = cleanTitle.substring(0, 80).trim();
+          }
+        }
         return {
           product_title: cleanTitle,
           productTitle: cleanTitle,
@@ -365,17 +394,29 @@ async function searchProductFallback(title) {
 function estimatePriceFromTitle(title) {
   const t = (title || '').toLowerCase();
   if (t.includes('s25 ultra') || t.includes('s24 ultra')) return 124999;
+  if (t.includes('s25+') || t.includes('s25 plus')) return 99999;
   if (t.includes('s25') || t.includes('s24')) return 74999;
-  if (t.includes('iphone 16 pro') || t.includes('iphone 15 pro')) return 119900;
-  if (t.includes('iphone 16') || t.includes('iphone 15')) return 69999;
+  if (t.includes('iphone 16 pro max')) return 144900;
+  if (t.includes('iphone 16 pro') || t.includes('iphone 15 pro max')) return 134900;
+  if (t.includes('iphone 15 pro') || t.includes('iphone 16')) return 119900;
+  if (t.includes('iphone 15') || t.includes('iphone 14 pro')) return 79999;
   if (t.includes('iphone 14') || t.includes('iphone 13')) return 49999;
   if (t.includes('nothing phone (2a)') || t.includes('nothing phone 2a')) return 23999;
   if (t.includes('poco x6 pro') || t.includes('poco x6')) return 24999;
-  if (t.includes('realme') || t.includes('redmi') || t.includes('iqoo') || t.includes('oneplus') || t.includes('oppo') || t.includes('vivo') || t.includes('moto') || t.includes('xiaomi')) return 18999;
-  if (t.includes('5g') || t.includes('smartphone') || t.includes('phone') || t.includes('mobile')) return 16999;
   if (t.includes('sony wh-1000xm5') || t.includes('wh-1000xm5')) return 26990;
-  if (t.includes('galaxy watch')) return 18999;
+  if (t.includes('sony wh-1000xm4') || t.includes('wh-1000xm4')) return 19990;
+  if (t.includes('sony wf-1000xm5') || t.includes('wf-1000xm5')) return 16990;
+  if (t.includes('bose quietcomfort 45') || t.includes('bose qc45')) return 24990;
+  if (t.includes('bose quietcomfort') || t.includes('bose qc')) return 29990;
+  if (t.includes('airpods pro')) return 24900;
+  if (t.includes('airpods')) return 14900;
+  if (t.includes('galaxy watch') || t.includes('galaxy buds')) return 18999;
   if (t.includes('boat rockerz')) return 1299;
+  if (t.includes('boat airdopes') || t.includes('boat bassheads')) return 1499;
+  if (t.includes('jbl tune') || t.includes('jbl flip') || t.includes('jbl charge')) return 5999;
+  if (t.includes('realme') || t.includes('redmi') || t.includes('iqoo') || t.includes('oneplus') || t.includes('oppo') || t.includes('vivo') || t.includes('moto') || t.includes('xiaomi')) return 18999;
+  if (t.includes('tecno') || t.includes('infinix') || t.includes('itel')) return 8999;
+  if (t.includes('5g') || t.includes('smartphone') || t.includes('phone') || t.includes('mobile')) return 16999;
   if (t.includes('cycle') || t.includes('bicycle') || t.includes('mtb') || t.includes('gear cycle')) return 8999;
   if (t.includes('shoe') || t.includes('sneaker')) return 2999;
   if (t.includes('handbag') || t.includes('bag') || t.includes('baguette') || t.includes('satchel') || t.includes('purse')) return 1299;
@@ -424,11 +465,15 @@ function getDefaultImageForTitle(title) {
 }
 
 async function generateFallbackFromTitle(title, url, isFlipkart) {
-  // Try live RapidAPI search first for authentic image, price and rating
+  // Try live RapidAPI search for authentic image, price and rating
+  // but ALWAYS keep the URL-slug-derived title (slug is the ground truth for which product this is)
   const liveMatch = await searchProductFallback(title);
   if (liveMatch) {
     return {
       ...liveMatch,
+      // Pin the title from the URL slug — search result may return a similar but different product
+      product_title: title,
+      productTitle: title,
       productUrl: url
     };
   }

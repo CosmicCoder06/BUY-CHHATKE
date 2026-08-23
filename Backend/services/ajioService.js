@@ -1,5 +1,6 @@
 require('dotenv').config();
 const { scrapeLiveProduct, extractTitleFromUrl, searchProductFallback, estimatePriceFromTitle, getDefaultImageForTitle } = require('./metadataScraper');
+const { fetchRapidProductDetails } = require('./rapidProductService');
 
 /**
  * Extracts Ajio Item Code or clean identifier from URL / input
@@ -77,6 +78,9 @@ async function fetchAjioProductDetails(itemCode, rawUrl) {
     return AJIO_CATALOG[itemCode];
   }
 
+  const marketplaceProduct = await fetchRapidProductDetails(rawUrl);
+  if (marketplaceProduct) return marketplaceProduct;
+
   // 2. Live Page Scraper
   if (rawUrl && rawUrl.toLowerCase().includes('ajio.com')) {
     const scraped = await scrapeLiveProduct(rawUrl);
@@ -85,7 +89,10 @@ async function fetchAjioProductDetails(itemCode, rawUrl) {
     }
   }
 
-  // 3. Extract title from URL slug & search live market data
+  // Do not substitute a search result or a title-based estimate for this URL.
+  return null;
+
+  /* Legacy fallback (intentionally disabled)
   const parsedTitle = extractTitleFromUrl(rawUrl) || (itemCode ? `Ajio Item #${itemCode}` : 'Ajio Verified Product');
   const liveMatch = await searchProductFallback(parsedTitle);
 
@@ -115,6 +122,7 @@ async function fetchAjioProductDetails(itemCode, rawUrl) {
     seller_name: 'Reliance Retail Limited',
     is_luxe: true
   };
+  */
 }
 
 /**

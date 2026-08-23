@@ -115,79 +115,14 @@ async function fetchFlipkartProductDetails(pid, originalUrl = '') {
     }
   }
 
-  // 3. Fallback: match by known catalog or PID hash
-  return generateMockFlipkartProduct(pid);
+  // Do not return an invented listing when the storefront blocks retrieval.
+  return null;
 }
 
-function generateMockFlipkartProduct(pid) {
-  const catalog = [
-    {
-      id: 'MOBGXZ86HFKZUYZZ',
-      product_title: 'Nothing Phone (2a) 5G (Black, 128 GB, 8 GB RAM)',
-      product_price: '₹23,999',
-      product_mrp: '₹25,999',
-      product_star_rating: '4.5',
-      product_num_ratings: '48210',
-      product_photo: 'https://m.media-amazon.com/images/I/71dZBla7wUL._AC_UY654_QL65_.jpg',
-      seller_name: 'RetailNet (Flipkart Assured)',
-      is_assured: true
-    },
-    {
-      id: 'ACCG2ZYXZ9PQWVAB',
-      product_title: 'boAt Rockerz 450 Bluetooth On-Ear Headphone',
-      product_price: '₹1,299',
-      product_mrp: '₹3,990',
-      product_star_rating: '4.3',
-      product_num_ratings: '142800',
-      product_photo: 'https://m.media-amazon.com/images/I/61u1VALn6JL._SL1500_.jpg',
-      seller_name: 'CORSECA Brands (Flipkart Assured)',
-      is_assured: true
-    },
-    {
-      id: 'MOBGWFXYZ99Q12AB',
-      product_title: 'Poco X6 Pro 5G (Spectre Black, 256 GB, 8 GB RAM)',
-      product_price: '₹21,999',
-      product_mrp: '₹26,999',
-      product_star_rating: '4.4',
-      product_num_ratings: '19840',
-      product_photo: 'https://m.media-amazon.com/images/I/717z2bNF6DL._AC_UY654_QL65_.jpg',
-      seller_name: 'Flashtech Retail (Flipkart Assured)',
-      is_assured: true
-    },
-    {
-      id: 'MOBGTAGPTB3VS24W',
-      product_title: 'realme 12 Pro+ 5G (Submarine Blue, 256 GB, 8 GB RAM)',
-      product_price: '₹29,999',
-      product_mrp: '₹34,999',
-      product_star_rating: '4.5',
-      product_num_ratings: '24740',
-      product_photo: 'https://m.media-amazon.com/images/I/714DutH6IBL._AC_UY654_QL65_.jpg',
-      seller_name: 'SuperComNet (Flipkart Assured)',
-      is_assured: true
-    }
-  ];
-
-  // 1. Direct exact ID lookup
-  const exact = catalog.find(item => item.id.toUpperCase() === String(pid).toUpperCase());
-  if (exact) {
-    return {
-      ...exact,
-      pid: pid,
-      product_url: `https://www.flipkart.com/product/p/itm?pid=${pid}`
-    };
-  }
-
-  // 2. Hash fallback
-  let sum = 0;
-  const str = String(pid || 'FLIPKART');
-  for (let i = 0; i < str.length; i++) sum += str.charCodeAt(i);
-  const picked = catalog[sum % catalog.length];
-
-  return {
-    ...picked,
-    pid: pid,
-    product_url: `https://www.flipkart.com/product/p/itm?pid=${pid}`
-  };
+// Kept as a backwards-compatible export for existing callers. Product scans
+// must handle a missing result rather than showing an unrelated demo product.
+function generateMockFlipkartProduct() {
+  return null;
 }
 
 function generateFlipkartPriceHistory(currentPrice) {

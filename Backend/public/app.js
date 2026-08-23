@@ -235,7 +235,10 @@ async function executeAnalysis() {
   hideError();
 
   try {
-    const url = `${API_BASE}/api/analyze?q=${encodeURIComponent(queryTarget)}&url=${encodeURIComponent(queryTarget)}`;
+    const urlParam = raw.startsWith('http') ? raw : (queryTarget.startsWith('http') ? queryTarget : '');
+    const live = window.sbaLiveProduct || null;
+    const liveParams = live ? `&livePrice=${encodeURIComponent(live.price)}&liveTitle=${encodeURIComponent(live.title)}&liveImage=${encodeURIComponent(live.image)}&liveMrp=${encodeURIComponent(live.mrp)}&liveSeller=${encodeURIComponent(live.seller)}` : '';
+    const url = `${API_BASE}/api/analyze?q=${encodeURIComponent(queryTarget)}&url=${encodeURIComponent(urlParam || queryTarget)}${liveParams}`;
     const res = await fetch(url);
     const data = await res.json();
 
@@ -1911,6 +1914,16 @@ function handleExtensionAndQueryParams() {
     const cleanProductUrl = decodeURIComponent(rawProduct).trim();
     if (asinInput && cleanProductUrl) {
       asinInput.value = cleanProductUrl;
+      const livePrice = Number(params.get('livePrice') || 0);
+      if (livePrice > 0) {
+        window.sbaLiveProduct = {
+          price: livePrice,
+          title: params.get('liveTitle') || '',
+          image: params.get('liveImage') || '',
+          mrp: Number(params.get('liveMrp') || 0),
+          seller: params.get('liveSeller') || ''
+        };
+      }
       if (clearBtn) clearBtn.style.display = 'flex';
       currentData = null; // Flush stale cache
       setTimeout(() => {
