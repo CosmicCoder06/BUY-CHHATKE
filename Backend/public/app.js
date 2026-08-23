@@ -890,14 +890,6 @@ if (tabLoginBtn && tabRegisterBtn) {
   });
 }
 
-if (demoLoginBtn) {
-  demoLoginBtn.addEventListener('click', () => {
-    loginUser('avhiyadav@buychhatke.ai', 'Avhi Yadav');
-    closeLoginModal();
-    showToast('Signed in as Avhi Yadav (Demo Verified)', '🚀');
-  });
-}
-
 if (authForm) {
   authForm.addEventListener('submit', async (e) => {
     e.preventDefault();
