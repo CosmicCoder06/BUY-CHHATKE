@@ -390,7 +390,14 @@ function renderTerminalDashboard(d) {
     else if (d.platform === 'myntra') idPrefix = 'STYLE: ';
     else if (d.platform === 'meesho') idPrefix = 'CODE: ';
     else if (d.platform === 'ajio') idPrefix = 'ITEM: ';
-    chipAsin.textContent = idPrefix + (d.asin || d.productId || '—');
+    const rawId = String(d.asin || d.productId || '');
+    // Extension redirects include the full source URL as productId. Never
+    // render that URL in this compact badge.
+    const idFromUrl = rawId.match(/(?:\/dp\/|\/gp\/product\/)([A-Z0-9]{10})/i) ||
+      rawId.match(/\/p\/([A-Za-z0-9_\-]+)/i) ||
+      rawId.match(/\/(\d{6,12})(?:\/buy|\/|$)/);
+    const displayId = idFromUrl ? idFromUrl[1] : rawId;
+    chipAsin.textContent = idPrefix + (displayId || '—');
   }
 
   const chipPlatform = document.getElementById('chipPlatform');
@@ -1280,10 +1287,16 @@ function updateWishlistUI() {
 
 function updateProductWishlistBtnState() {
   if (!productWishlistToggleBtn || !currentData) return;
-  const itemKey = currentData.productId || currentData.asin || extractAsin(asinInput.value);
-  const exists = wishlist.some(item => (item.productId || item.asin) === itemKey);
   const pwIcon = document.getElementById('pwIcon');
   const pwText = document.getElementById('pwText');
+  if (!currentUser) {
+    productWishlistToggleBtn.classList.remove('in-wishlist');
+    if (pwIcon) pwIcon.textContent = '🔒';
+    if (pwText) pwText.textContent = 'Login to Save';
+    return;
+  }
+  const itemKey = currentData.productId || currentData.asin || extractAsin(asinInput.value);
+  const exists = wishlist.some(item => (item.productId || item.asin) === itemKey);
 
   if (exists) {
     productWishlistToggleBtn.classList.add('in-wishlist');
@@ -1299,6 +1312,11 @@ function updateProductWishlistBtnState() {
 if (productWishlistToggleBtn) {
   productWishlistToggleBtn.addEventListener('click', () => {
     if (!currentData) return;
+    if (!currentUser) {
+      showToast('Please login to save products', '🔒');
+      openLoginModal();
+      return;
+    }
     const itemKey = currentData.productId || currentData.asin || extractAsin(asinInput.value);
     const index = wishlist.findIndex(item => (item.productId || item.asin) === itemKey);
 

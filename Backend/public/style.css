@@ -1319,6 +1319,10 @@ body {
   border-radius: var(--rad-xs);
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .chip-mono {
