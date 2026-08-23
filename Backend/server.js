@@ -6,13 +6,21 @@ require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
+const { connectDB } = require('./config/db');
+const { initDealUpdater } = require('./jobs/dealUpdater');
 const analyzeRoutes = require('./routes/analyzeRoutes');
 const authRoutes = require('./routes/authRoutes');
+const dealRoutes = require('./routes/dealRoutes');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Connect Database & Launch Cron Workers
+connectDB().then(() => {
+  initDealUpdater();
+});
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -64,6 +72,7 @@ app.get('/api/image-proxy', async (req, res) => {
 
 app.use('/api', analyzeRoutes);
 app.use('/api', authRoutes);
+app.use('/api', dealRoutes);
 
 const PORT = process.env.PORT || 3000;
 

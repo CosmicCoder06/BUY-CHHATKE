@@ -156,8 +156,39 @@ function generateMyntraPriceHistory(currentPrice) {
   return history;
 }
 
+/**
+ * Standardized Marketplace Deal Fetcher for Myntra
+ */
+async function fetchMyntraDeals() {
+  const { MASTER_STORE_CATALOG } = require('./trendingService');
+  const items = MASTER_STORE_CATALOG.myntra || [];
+
+  return items.map(item => {
+    const currentPrice = item.basePrice;
+    const originalPrice = item.mrp;
+    const discount = Math.round(((originalPrice - currentPrice) / originalPrice) * 100);
+    const mockHist = generateMyntraPriceHistory(currentPrice);
+
+    return {
+      productName: item.title,
+      storeName: 'Myntra',
+      imageUrl: item.image,
+      currentPrice: currentPrice,
+      originalPrice: originalPrice,
+      discountPercentage: discount,
+      category: item.category || 'Fashion',
+      rating: item.rating || 4.3,
+      productUrl: item.url,
+      dealTag: discount >= 60 ? '💰 Huge Saving' : (discount >= 30 ? '🔥 Major Drop' : '👗 Top Selling Pick'),
+      priceHistory: mockHist.map(h => ({ price: parseFloat(h.currentprice), date: new Date(h.datec) })),
+      lastUpdated: new Date()
+    };
+  });
+}
+
 module.exports = {
   parseMyntraId,
   fetchMyntraProductDetails,
-  generateMyntraPriceHistory
+  generateMyntraPriceHistory,
+  fetchMyntraDeals
 };

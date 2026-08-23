@@ -317,16 +317,19 @@ function getClientFallbackImage(title) {
   if (t.includes('nothing')) {
     return 'https://m.media-amazon.com/images/I/71dZBla7wUL._AC_UY654_QL65_.jpg';
   }
-  if (t.includes('samsung') || t.includes('galaxy') || t.includes('s25') || t.includes('s24') || t.includes('ultra')) {
-    return 'https://m.media-amazon.com/images/I/717Q2swzhBL._AC_UY654_QL65_.jpg';
+  if (t.includes('samsung') || t.includes('s24') || t.includes('s25') || t.includes('ultra')) {
+    return 'https://m.media-amazon.com/images/I/717Q2swzhBL._SL1500_.jpg';
   }
   if (t.includes('iphone') || t.includes('apple') || t.includes('ios')) {
     return 'https://m.media-amazon.com/images/I/71657TiFeHL._SL1500_.jpg';
   }
   if (t.includes('macbook') || t.includes('laptop')) {
-    return 'https://m.media-amazon.com/images/I/710TJuHTMhL._SL1500_.jpg';
+    return 'https://m.media-amazon.com/images/I/71jG+e7roXL._SL1500_.jpg';
   }
-  if (t.includes('realme') || t.includes('poco') || t.includes('redmi') || t.includes('oneplus') || t.includes('5g') || t.includes('phone')) {
+  if (t.includes('oneplus') || t.includes('nord')) {
+    return 'https://m.media-amazon.com/images/I/61mIUCdJ9LY._SL1500_.jpg';
+  }
+  if (t.includes('realme') || t.includes('poco') || t.includes('phone') || t.includes('5g')) {
     return 'https://m.media-amazon.com/images/I/717z2bNF6DL._AC_UY654_QL65_.jpg';
   }
   return 'https://m.media-amazon.com/images/I/61xi8pnZunL._AC_UL960_QL65_.jpg';
@@ -1547,10 +1550,18 @@ if (clearRecentBtn) {
   });
 }
 
-// ─── AUTOMATED HOURLY TRENDING DEALS ENGINE ─────────────────
+// ─── REAL-TIME DEALS ENGINE (MONGODB & NODE-CRON) ────────────
 let activeTrendingStore = 'all';
 let currentTrendingDeals = [];
 let hourlySyncInterval = null;
+
+const STORE_THEMES = {
+  Amazon: { color: '#818cf8', icon: '🛍️' },
+  Flipkart: { color: '#facc15', icon: '⚡' },
+  Myntra: { color: '#ff3f6c', icon: '👗' },
+  Meesho: { color: '#d946ef', icon: '🛍️' },
+  Ajio: { color: '#38bdf8', icon: '🏷️' }
+};
 
 async function initTrendingDeals() {
   const filterButtons = document.querySelectorAll('.store-filter-btn');
@@ -1564,6 +1575,7 @@ async function initTrendingDeals() {
   });
 
   await fetchTrendingDeals('all');
+  startHourlyCountdown();
 }
 
 async function fetchTrendingDeals(store = 'all') {
@@ -1572,39 +1584,40 @@ async function fetchTrendingDeals(store = 'all') {
     grid.innerHTML = `
       <div style="grid-column: 1 / -1; padding: 40px 20px; text-align: center; color: var(--text-muted);">
         <div class="spinner" style="margin: 0 auto 12px; width: 24px; height: 24px; border: 2px solid rgba(255,255,255,0.1); border-top-color: var(--brand-indigo); border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
-        <div>Syncing hourly trending deals across stores...</div>
+        <div>Fetching live marketplace deals from database...</div>
       </div>
     `;
   }
 
   try {
-    const res = await fetch(`${API_BASE}/api/trending-deals?store=${encodeURIComponent(store)}`);
+    const storeParam = store === 'all' ? '' : `store=${encodeURIComponent(store)}`;
+    const res = await fetch(`${API_BASE}/api/deals${storeParam ? '?' + storeParam : ''}`);
     if (!res.ok) throw new Error('API error: ' + res.status);
     const data = await res.json();
 
     if (data && Array.isArray(data.deals)) {
       currentTrendingDeals = data.deals;
       renderTrendingGrid(data.deals);
-      
-      if (data.syncState) {
-        startHourlyCountdown(data.syncState.nextRefreshInMs);
-      }
     }
   } catch (err) {
-    console.warn('[fetchTrendingDeals] Failed to load from API:', err.message);
+    console.warn('[fetchTrendingDeals] Failed to load from /api/deals:', err.message);
   }
 }
 
-function startHourlyCountdown(initialMsRemaining) {
+function startHourlyCountdown() {
   if (hourlySyncInterval) clearInterval(hourlySyncInterval);
 
-  let msLeft = initialMsRemaining || 3600000;
+  function calculateMsLeftInHour() {
+    const now = new Date();
+    return (3600 * 1000) - (now.getTime() % (3600 * 1000));
+  }
+
   const countdownEl = document.getElementById('syncCountdown');
 
   function update() {
-    if (msLeft <= 0) {
-      msLeft = 3600000;
-      fetchTrendingDeals(activeTrendingStore);
+    const msLeft = calculateMsLeftInHour();
+    if (msLeft <= 1000) {
+      setTimeout(() => fetchTrendingDeals(activeTrendingStore), 1500);
     }
     const totalSecs = Math.floor(msLeft / 1000);
     const mins = Math.floor(totalSecs / 60);
@@ -1612,50 +1625,80 @@ function startHourlyCountdown(initialMsRemaining) {
     if (countdownEl) {
       countdownEl.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
     }
-    msLeft -= 1000;
   }
 
   update();
   hourlySyncInterval = setInterval(update, 1000);
 }
 
+function getTimeAgo(dateStr) {
+  if (!dateStr) return 'just now';
+  const diffMs = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diffMs / 60000);
+  if (mins < 1) return 'just now';
+  if (mins === 1) return '1m ago';
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  return `${hours}h ago`;
+}
+
 function renderTrendingGrid(deals) {
   const grid = document.getElementById('trendingGrid');
   if (!grid) return;
 
-  const items = Array.isArray(deals) ? deals : [];
+  // 1. Strict Validation: productName, imageUrl, and productUrl MUST all be valid
+  const validItems = (Array.isArray(deals) ? deals : []).filter(deal => {
+    const title = deal.productName || deal.title;
+    const img = deal.imageUrl || deal.image;
+    const url = deal.productUrl || deal.url;
+    return Boolean(title && img && url && String(url).startsWith('http'));
+  });
 
-  if (items.length === 0) {
-    grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 30px;">No deals found for this store right now.</div>`;
+  if (validItems.length === 0) {
+    grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 30px;">No verified deals available for this store.</div>`;
     return;
   }
 
-  grid.innerHTML = items.map(deal => {
-    const safeTitle = decodeHtmlEntities(deal.title);
-    const safeUrl = deal.url || '#';
+  // 2. Direct 1:1 Rendering (No random image swapping or array index guessing)
+  grid.innerHTML = validItems.map(deal => {
+    const title = deal.productName || deal.title;
+    const safeTitle = decodeHtmlEntities(title);
+    const store = deal.storeName || 'Store';
+    const storeTheme = STORE_THEMES[store] || { color: '#818cf8', icon: '🛍️' };
+    const curPrice = deal.currentPrice || deal.price || 0;
+    const origPrice = deal.originalPrice || deal.mrp || curPrice;
+    const discount = deal.discountPercentage ? `${deal.discountPercentage}% OFF` : (deal.discount || 'Special Offer');
+    const tag = deal.dealTag || deal.signal || '📈 Trending Deal';
+    const safeUrl = deal.productUrl || deal.url;
+    const image = deal.imageUrl || deal.image;
+    const updatedStr = getTimeAgo(deal.lastUpdated);
+
     return `
-      <div class="trending-card">
+      <div class="trending-card" data-product-id="${deal.id || deal._id || ''}">
         <div class="tc-media">
-          <img class="tc-img" src="${deal.image}" alt="${safeTitle}" referrerpolicy="no-referrer" loading="lazy" onerror="this.src='${getClientFallbackImage(safeTitle)}'" />
-          <span class="tc-store-pill" style="background: rgba(0,0,0,0.65); color: ${deal.storeColor}; border: 1px solid ${deal.storeColor};">
-            ${deal.storeIcon} ${deal.storeName}
+          <img class="tc-img" src="${image}" alt="${safeTitle}" referrerpolicy="no-referrer" loading="lazy" />
+          <span class="tc-store-pill" style="background: rgba(0,0,0,0.72); color: ${storeTheme.color}; border: 1px solid ${storeTheme.color};">
+            ${storeTheme.icon} ${store}
           </span>
-          <span class="tc-discount-pill">${deal.discount}</span>
+          <span class="tc-discount-pill">${discount}</span>
         </div>
         <div class="tc-body">
-          <div class="tc-signal-tag">${deal.signal}</div>
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px;">
+            <div class="tc-signal-tag">${tag}</div>
+            <span style="font-size: 0.68rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;">🕒 ${updatedStr}</span>
+          </div>
           <h3 class="tc-title" title="${safeTitle}">${safeTitle}</h3>
           <div class="tc-price-row">
-            <span class="tc-price">${formatINR(deal.price)}</span>
-            <span class="tc-mrp">${formatINR(deal.mrp)}</span>
+            <span class="tc-price">${formatINR(curPrice)}</span>
+            <span class="tc-mrp">${formatINR(origPrice)}</span>
           </div>
           <div class="tc-actions-stack" style="display: flex; flex-direction: column; gap: 6px; margin-top: auto;">
-            <button class="tc-scan-btn" onclick="fillAndAnalyze('${encodeURIComponent(deal.query).replace(/'/g, "\\'")}')">
+            <button class="tc-scan-btn" onclick="fillAndAnalyze('${encodeURIComponent(safeUrl).replace(/'/g, "\\'")}')">
               <span>Verify Deal Price</span>
               <span>⚡</span>
             </button>
             <a class="tc-buy-direct-btn" href="${safeUrl}" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; justify-content: center; gap: 5px; padding: 7px; border-radius: var(--rad-sm); background: var(--bg-surface); border: 1px solid var(--border-hairline); color: var(--text-dim); font-size: 0.76rem; font-weight: 600; text-decoration: none; transition: all 0.2s ease;">
-              <span>Buy on ${deal.storeName}</span>
+              <span>Buy on ${store}</span>
               <span>↗</span>
             </a>
           </div>

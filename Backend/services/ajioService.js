@@ -156,8 +156,39 @@ function generateAjioPriceHistory(currentPrice) {
   return history;
 }
 
+/**
+ * Standardized Marketplace Deal Fetcher for Ajio
+ */
+async function fetchAjioDeals() {
+  const { MASTER_STORE_CATALOG } = require('./trendingService');
+  const items = MASTER_STORE_CATALOG.ajio || [];
+
+  return items.map(item => {
+    const currentPrice = item.basePrice;
+    const originalPrice = item.mrp;
+    const discount = Math.round(((originalPrice - currentPrice) / originalPrice) * 100);
+    const mockHist = generateAjioPriceHistory(currentPrice);
+
+    return {
+      productName: item.title,
+      storeName: 'Ajio',
+      imageUrl: item.image,
+      currentPrice: currentPrice,
+      originalPrice: originalPrice,
+      discountPercentage: discount,
+      category: item.category || 'Footwear & Fashion',
+      rating: item.rating || 4.4,
+      productUrl: item.url,
+      dealTag: discount >= 50 ? '💰 Huge Saving' : (discount >= 25 ? '🔥 Major Drop' : '🏷️ Luxe Trend'),
+      priceHistory: mockHist.map(h => ({ price: parseFloat(h.currentprice), date: new Date(h.datec) })),
+      lastUpdated: new Date()
+    };
+  });
+}
+
 module.exports = {
   parseAjioId,
   fetchAjioProductDetails,
-  generateAjioPriceHistory
+  generateAjioPriceHistory,
+  fetchAjioDeals
 };

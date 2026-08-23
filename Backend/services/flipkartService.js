@@ -215,9 +215,40 @@ function generateFlipkartPriceHistory(currentPrice) {
   return history;
 }
 
+/**
+ * Standardized Marketplace Deal Fetcher for Flipkart
+ */
+async function fetchFlipkartDeals() {
+  const { MASTER_STORE_CATALOG } = require('./trendingService');
+  const items = MASTER_STORE_CATALOG.flipkart || [];
+
+  return items.map(item => {
+    const currentPrice = item.basePrice;
+    const originalPrice = item.mrp;
+    const discount = Math.round(((originalPrice - currentPrice) / originalPrice) * 100);
+    const mockHist = generateFlipkartPriceHistory(currentPrice);
+
+    return {
+      productName: item.title,
+      storeName: 'Flipkart',
+      imageUrl: item.image,
+      currentPrice: currentPrice,
+      originalPrice: originalPrice,
+      discountPercentage: discount,
+      category: item.category || 'Electronics',
+      rating: item.rating || 4.4,
+      productUrl: item.url,
+      dealTag: discount >= 50 ? '💰 Huge Saving' : (discount >= 20 ? '🔥 Major Drop' : '📈 Trending Deal'),
+      priceHistory: mockHist.map(h => ({ price: h.currentprice, date: new Date(h.datec) })),
+      lastUpdated: new Date()
+    };
+  });
+}
+
 module.exports = {
   parseFlipkartId,
   fetchFlipkartProductDetails,
   generateFlipkartPriceHistory,
-  generateMockFlipkartProduct
+  generateMockFlipkartProduct,
+  fetchFlipkartDeals
 };
