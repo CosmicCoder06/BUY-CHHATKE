@@ -1,6 +1,19 @@
-# buySmartly — Price Intelligence for Indian Shopping
+<div align="center">
 
-buySmartly helps shoppers scan supported product links, review price insights, save products after login, and open a live product assistant through its Chrome extension.
+# 🛍️ buySmartly
+
+### Price Intelligence for Indian Shopping
+
+![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
+![Express](https://img.shields.io/badge/Express-API-000000?style=for-the-badge&logo=express&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-Vanilla-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
+![Chrome Extension](https://img.shields.io/badge/Chrome-Extension-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white)
+
+**Paste a product link. Check the price. Shop smarter.**
+
+</div>
+
+buySmartly helps shoppers scan product links, review price insights, save products after login, and open a live product assistant through its Chrome extension.
 
 ## Supported stores
 
@@ -17,11 +30,11 @@ buySmartly helps shoppers scan supported product links, review price insights, s
 
 ## Features
 
-- Paste a product URL to analyse title, image, current price, price history, and deal score.
-- Deal recommendation: **Buy**, **Fair Price**, or **Wait**.
-- Dark/light theme, price alerts, recent searches, and responsive dashboard.
-- Login-protected wishlist.
-- Chrome extension with live product detection and dashboard handoff.
+- 🔗 **Multi-store scans** — Paste a supported product link to analyse its title, image, price, and deal insights.
+- 📈 **Price intelligence** — Price history, high/low/average values, and a Buy / Fair Price / Wait recommendation.
+- ❤️ **Wishlist & alerts** — Login-protected wishlist and target-price alerts.
+- 🌙 **Polished dashboard** — Responsive UI with dark/light mode, recent searches, and animated charts.
+- 🧩 **Chrome extension** — Detects the live product page and hands its visible price to the dashboard.
 
 ## Tech stack
 
@@ -61,6 +74,16 @@ The RapidAPI key must be subscribed to the **Realtime flipkart amazon myntra aji
 4. Choose the [`Extension`](./Extension) folder.
 
 Reload the extension whenever files in that folder change.
+
+## How it works
+
+```text
+Product URL / Chrome Extension
+              ↓
+       Express API + RapidAPI
+              ↓
+ Price insights, chart, deal score
+```
 
 ## Project structure
 
