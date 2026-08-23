@@ -1547,320 +1547,88 @@ if (clearRecentBtn) {
   });
 }
 
-// ─── EVERYDAY TRENDING MULTI-STORE SHOWCASE ──────────────────
-const TRENDING_DEALS = [
-  // ─── AMAZON (4 Deals) ───
-  {
-    store: 'amazon',
-    storeName: 'Amazon',
-    storeIcon: '🛍️',
-    storeColor: '#818cf8',
-    title: 'Sony WH-1000XM5 Wireless ANC Headphones',
-    price: 26990,
-    mrp: 34990,
-    discount: '23% OFF',
-    signal: '🔥 All-Time Low',
-    image: 'https://m.media-amazon.com/images/I/61O3iMlnJIL._SL1500_.jpg',
-    url: 'https://www.amazon.in/dp/B09XS7JWHH',
-    query: 'B09XS7JWHH'
-  },
-  {
-    store: 'amazon',
-    storeName: 'Amazon',
-    storeIcon: '🛍️',
-    storeColor: '#818cf8',
-    title: 'Apple iPhone 15 (256 GB) - Black Titanium',
-    price: 69999,
-    mrp: 79900,
-    discount: '12% OFF',
-    signal: '⚡ Optimal Timing',
-    image: 'https://m.media-amazon.com/images/I/71657TiFeHL._SL1500_.jpg',
-    url: 'https://www.amazon.in/dp/B0CHX1W1XY',
-    query: 'B0CHX1W1XY'
-  },
-  {
-    store: 'amazon',
-    storeName: 'Amazon',
-    storeIcon: '🛍️',
-    storeColor: '#818cf8',
-    title: 'Samsung Galaxy S24 Ultra 5G AI Smartphone (Titanium Gray)',
-    price: 121999,
-    mrp: 134999,
-    discount: '10% OFF',
-    signal: '⚡ Flagship Deal',
-    image: 'https://m.media-amazon.com/images/I/717Q2swzhBL._AC_UY654_QL65_.jpg',
-    url: 'https://www.amazon.in/dp/B0CQYC21QY',
-    query: 'B0CQYC21QY'
-  },
-  {
-    store: 'amazon',
-    storeName: 'Amazon',
-    storeIcon: '🛍️',
-    storeColor: '#818cf8',
-    title: 'Apple MacBook Air M2 (13.6-inch, 8GB RAM, 256GB SSD)',
-    price: 84990,
-    mrp: 99900,
-    discount: '15% OFF',
-    signal: '🔥 Price Stabilized',
-    image: 'https://m.media-amazon.com/images/I/710TJuHTMhL._SL1500_.jpg',
-    url: 'https://www.amazon.in/dp/B0B3CQBRB4',
-    query: 'B0B3CQBRB4'
-  },
+// ─── AUTOMATED HOURLY TRENDING DEALS ENGINE ─────────────────
+let activeTrendingStore = 'all';
+let currentTrendingDeals = [];
+let hourlySyncInterval = null;
 
-  // ─── FLIPKART (4 Deals) ───
-  {
-    store: 'flipkart',
-    storeName: 'Flipkart',
-    storeIcon: '⚡',
-    storeColor: '#facc15',
-    title: 'Nothing Phone (2a) 5G (Black, 128 GB, 8 GB RAM)',
-    price: 23999,
-    mrp: 25999,
-    discount: '8% OFF',
-    signal: '⚡ Verified Deal',
-    image: 'https://m.media-amazon.com/images/I/71dZBla7wUL._AC_UY654_QL65_.jpg',
-    url: 'https://www.flipkart.com/nothing-phone-2a-5g-black-128-gb/p/itmd06869b2d88ad',
-    query: 'MOBGXZ86HFKZUYZZ'
-  },
-  {
-    store: 'flipkart',
-    storeName: 'Flipkart',
-    storeIcon: '⚡',
-    storeColor: '#facc15',
-    title: 'boAt Rockerz 450 Bluetooth On-Ear Headphone',
-    price: 1299,
-    mrp: 3990,
-    discount: '67% OFF',
-    signal: '🔥 Super Drop',
-    image: 'https://m.media-amazon.com/images/I/61u1VALn6JL._SL1500_.jpg',
-    url: 'https://www.flipkart.com/boat-rockerz-450-bluetooth-headset/p/itm12345678',
-    query: 'https://www.flipkart.com/boat-rockerz-450-bluetooth-headset/p/itm12345678'
-  },
-  {
-    store: 'flipkart',
-    storeName: 'Flipkart',
-    storeIcon: '⚡',
-    storeColor: '#facc15',
-    title: 'Poco X6 Pro 5G (Spectre Black, 256 GB, 8 GB RAM)',
-    price: 21999,
-    mrp: 26999,
-    discount: '19% OFF',
-    signal: '⚡ Gaming Value',
-    image: 'https://m.media-amazon.com/images/I/717z2bNF6DL._AC_UY654_QL65_.jpg',
-    url: 'https://www.flipkart.com/poco-x6-pro-5g-spectre-black-256-gb/p/itm5a8427f7dbbe4',
-    query: 'https://www.flipkart.com/poco-x6-pro-5g-spectre-black-256-gb/p/itm5a8427f7dbbe4'
-  },
-  {
-    store: 'flipkart',
-    storeName: 'Flipkart',
-    storeIcon: '⚡',
-    storeColor: '#facc15',
-    title: 'realme 12 Pro+ 5G (Submarine Blue, 256 GB, 8 GB RAM)',
-    price: 29999,
-    mrp: 34999,
-    discount: '14% OFF',
-    signal: '⚡ Periscope Camera',
-    image: 'https://m.media-amazon.com/images/I/714DutH6IBL._AC_UY654_QL65_.jpg',
-    url: 'https://www.flipkart.com/realme-12-pro-plus-5g-submarine-blue-256-gb/p/itm7e34d3d82a17f',
-    query: 'https://www.flipkart.com/realme-12-pro-plus-5g-submarine-blue-256-gb/p/itm7e34d3d82a17f'
-  },
-
-  // ─── MYNTRA (4 Deals) ───
-  {
-    store: 'myntra',
-    storeName: 'Myntra',
-    storeIcon: '👗',
-    storeColor: '#ff3f6c',
-    title: 'Caprese Croc-Textured Shoulder Bag',
-    price: 950,
-    mrp: 3799,
-    discount: '75% OFF',
-    signal: '👗 75% Flash Deal',
-    image: 'https://m.media-amazon.com/images/I/61wZjWZC7IL._AC_UL960_QL65_.jpg',
-    url: 'https://www.myntra.com/handbags/caprese/caprese-croc-textured-baguette-shoulder-bag/35719710/buy',
-    query: 'https://www.myntra.com/handbags/caprese/caprese-croc-textured-baguette-shoulder-bag/35719710/buy'
-  },
-  {
-    store: 'myntra',
-    storeName: 'Myntra',
-    storeIcon: '👗',
-    storeColor: '#ff3f6c',
-    title: 'Roadster Men Navy Blue Casual Solid Shirt',
-    price: 799,
-    mrp: 1599,
-    discount: '50% OFF',
-    signal: '👗 Best Seller',
-    image: 'https://m.media-amazon.com/images/I/51N7HxDG0UL._AC_UL960_QL65_.jpg',
-    url: 'https://www.myntra.com/shirts/roadster/roadster-men-casual-shirt/13735160/buy',
-    query: 'https://www.myntra.com/shirts/roadster/roadster-men-casual-shirt/13735160/buy'
-  },
-  {
-    store: 'myntra',
-    storeName: 'Myntra',
-    storeIcon: '👗',
-    storeColor: '#ff3f6c',
-    title: 'HRX by Hrithik Roshan Men Running Shoes',
-    price: 1299,
-    mrp: 3499,
-    discount: '63% OFF',
-    signal: '👗 Activewear Deal',
-    image: 'https://m.media-amazon.com/images/I/51+ReOwmYJL._AC_UL960_QL65_.jpg',
-    url: 'https://www.myntra.com/shoes/hrx-by-hrithik-roshan/hrx-men-running-shoes/19324022/buy',
-    query: 'https://www.myntra.com/shoes/hrx-by-hrithik-roshan/hrx-men-running-shoes/19324022/buy'
-  },
-  {
-    store: 'myntra',
-    storeName: 'Myntra',
-    storeIcon: '👗',
-    storeColor: '#ff3f6c',
-    title: 'Anouk Women Printed Kurta with Palazzos',
-    price: 1199,
-    mrp: 2999,
-    discount: '60% OFF',
-    signal: '👗 Ethnic Trend',
-    image: 'https://m.media-amazon.com/images/I/61is4J+KZtL._AC_UL960_QL65_.jpg',
-    url: 'https://www.myntra.com/kurta-sets/anouk/anouk-women-printed-kurta-set/22819234/buy',
-    query: 'https://www.myntra.com/kurta-sets/anouk/anouk-women-printed-kurta-set/22819234/buy'
-  },
-
-  // ─── MEESHO (4 Deals) ───
-  {
-    store: 'meesho',
-    storeName: 'Meesho',
-    storeIcon: '🛍️',
-    storeColor: '#d946ef',
-    title: 'Trendy Attractive Men White Casual Sneakers',
-    price: 489,
-    mrp: 1199,
-    discount: '59% OFF',
-    signal: '🛍️ Direct Supplier',
-    image: 'https://m.media-amazon.com/images/I/71D9ImsvEtL._AC_UY695_.jpg',
-    url: 'https://www.meesho.com/trendy-sneakers/p/57jkwf',
-    query: 'https://www.meesho.com/trendy-sneakers/p/57jkwf'
-  },
-  {
-    store: 'meesho',
-    storeName: 'Meesho',
-    storeIcon: '🛍️',
-    storeColor: '#d946ef',
-    title: 'Classy Elegant Women Georgette Saree with Blouse',
-    price: 389,
-    mrp: 999,
-    discount: '61% OFF',
-    signal: '🛍️ Hot Pick',
-    image: 'https://m.media-amazon.com/images/I/818AenacwjL._AC_UL960_QL65_.jpg',
-    url: 'https://www.meesho.com/women-georgette-saree/p/62mkpq',
-    query: 'https://www.meesho.com/women-georgette-saree/p/62mkpq'
-  },
-  {
-    store: 'meesho',
-    storeName: 'Meesho',
-    storeIcon: '🛍️',
-    storeColor: '#d946ef',
-    title: 'Stylish Bluetooth Wireless Neckband Earphones',
-    price: 299,
-    mrp: 899,
-    discount: '67% OFF',
-    signal: '🛍️ Budget King',
-    image: 'https://m.media-amazon.com/images/I/61u1VALn6JL._SL1500_.jpg',
-    url: 'https://www.meesho.com/wireless-neckband/p/48nxzt',
-    query: 'https://www.meesho.com/wireless-neckband/p/48nxzt'
-  },
-  {
-    store: 'meesho',
-    storeName: 'Meesho',
-    storeIcon: '🛍️',
-    storeColor: '#d946ef',
-    title: 'Waterproof Canvas Men Laptop Backpack (30L)',
-    price: 449,
-    mrp: 1299,
-    discount: '65% OFF',
-    signal: '🛍️ Top Rated',
-    image: 'https://m.media-amazon.com/images/I/71Qw2yG6GJL._AC_UL960_QL65_.jpg',
-    url: 'https://www.meesho.com/men-laptop-backpack/p/73krvw',
-    query: 'https://www.meesho.com/men-laptop-backpack/p/73krvw'
-  },
-
-  // ─── AJIO (4 Deals) ───
-  {
-    store: 'ajio',
-    storeName: 'Ajio',
-    storeIcon: '🏷️',
-    storeColor: '#38bdf8',
-    title: 'Nike Air Max SC Low-Top Lace-Up Sneakers',
-    price: 4495,
-    mrp: 5995,
-    discount: '25% OFF',
-    signal: '🏷️ Luxe Trend',
-    image: 'https://m.media-amazon.com/images/I/61xi8pnZunL._AC_UL960_QL65_.jpg',
-    url: 'https://www.ajio.com/nike-air-max/p/469034298_white',
-    query: 'https://www.ajio.com/nike-air-max/p/469034298_white'
-  },
-  {
-    store: 'ajio',
-    storeName: 'Ajio',
-    storeIcon: '🏷️',
-    storeColor: '#38bdf8',
-    title: "Steve Madden Men's Possess Chunky Sneakers",
-    price: 21271,
-    mrp: 24249,
-    discount: '12% OFF',
-    signal: '🏷️ Designer Pick',
-    image: 'https://m.media-amazon.com/images/I/51+ReOwmYJL._AC_UL960_QL65_.jpg',
-    url: 'https://www.ajio.com/steve-madden-men-possess-sneakers/p/610360303_005',
-    query: 'https://www.ajio.com/steve-madden-men-possess-sneakers/p/610360303_005'
-  },
-  {
-    store: 'ajio',
-    storeName: 'Ajio',
-    storeIcon: '🏷️',
-    storeColor: '#38bdf8',
-    title: 'Puma Men Electron E Pro Training Shoes',
-    price: 2499,
-    mrp: 4999,
-    discount: '50% OFF',
-    signal: '🏷️ Ajio Luxe 50%',
-    image: 'https://m.media-amazon.com/images/I/61bVZVbcHJL._AC_UL960_QL65_.jpg',
-    url: 'https://www.ajio.com/puma-men-electron-e-pro-shoes/p/469123847_black',
-    query: 'https://www.ajio.com/puma-men-electron-e-pro-shoes/p/469123847_black'
-  },
-  {
-    store: 'ajio',
-    storeName: 'Ajio',
-    storeIcon: '🏷️',
-    storeColor: '#38bdf8',
-    title: "Levi's Men 511 Slim Fit Mid-Rise Jeans",
-    price: 1999,
-    mrp: 3999,
-    discount: '50% OFF',
-    signal: '🏷️ Denim Special',
-    image: 'https://m.media-amazon.com/images/I/51H0teWFbfL._AC_UL960_QL65_.jpg',
-    url: 'https://www.ajio.com/levis-men-511-slim-fit-jeans/p/460839210_blue',
-    query: 'https://www.ajio.com/levis-men-511-slim-fit-jeans/p/460839210_blue'
-  }
-];
-
-function initTrendingDeals() {
+async function initTrendingDeals() {
   const filterButtons = document.querySelectorAll('.store-filter-btn');
   filterButtons.forEach(btn => {
     btn.addEventListener('click', () => {
       filterButtons.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      const store = btn.getAttribute('data-store') || 'all';
-      renderTrendingGrid(store);
+      activeTrendingStore = btn.getAttribute('data-store') || 'all';
+      fetchTrendingDeals(activeTrendingStore);
     });
   });
 
-  renderTrendingGrid('all');
+  await fetchTrendingDeals('all');
 }
 
-function renderTrendingGrid(storeFilter = 'all') {
+async function fetchTrendingDeals(store = 'all') {
+  const grid = document.getElementById('trendingGrid');
+  if (grid && currentTrendingDeals.length === 0) {
+    grid.innerHTML = `
+      <div style="grid-column: 1 / -1; padding: 40px 20px; text-align: center; color: var(--text-muted);">
+        <div class="spinner" style="margin: 0 auto 12px; width: 24px; height: 24px; border: 2px solid rgba(255,255,255,0.1); border-top-color: var(--brand-indigo); border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+        <div>Syncing hourly trending deals across stores...</div>
+      </div>
+    `;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/api/trending-deals?store=${encodeURIComponent(store)}`);
+    if (!res.ok) throw new Error('API error: ' + res.status);
+    const data = await res.json();
+
+    if (data && Array.isArray(data.deals)) {
+      currentTrendingDeals = data.deals;
+      renderTrendingGrid(data.deals);
+      
+      if (data.syncState) {
+        startHourlyCountdown(data.syncState.nextRefreshInMs);
+      }
+    }
+  } catch (err) {
+    console.warn('[fetchTrendingDeals] Failed to load from API:', err.message);
+  }
+}
+
+function startHourlyCountdown(initialMsRemaining) {
+  if (hourlySyncInterval) clearInterval(hourlySyncInterval);
+
+  let msLeft = initialMsRemaining || 3600000;
+  const countdownEl = document.getElementById('syncCountdown');
+
+  function update() {
+    if (msLeft <= 0) {
+      msLeft = 3600000;
+      fetchTrendingDeals(activeTrendingStore);
+    }
+    const totalSecs = Math.floor(msLeft / 1000);
+    const mins = Math.floor(totalSecs / 60);
+    const secs = totalSecs % 60;
+    if (countdownEl) {
+      countdownEl.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+    msLeft -= 1000;
+  }
+
+  update();
+  hourlySyncInterval = setInterval(update, 1000);
+}
+
+function renderTrendingGrid(deals) {
   const grid = document.getElementById('trendingGrid');
   if (!grid) return;
 
-  const items = storeFilter === 'all'
-    ? TRENDING_DEALS
-    : TRENDING_DEALS.filter(d => d.store === storeFilter);
+  const items = Array.isArray(deals) ? deals : [];
+
+  if (items.length === 0) {
+    grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 30px;">No deals found for this store right now.</div>`;
+    return;
+  }
 
   grid.innerHTML = items.map(deal => {
     const safeTitle = decodeHtmlEntities(deal.title);

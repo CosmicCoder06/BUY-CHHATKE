@@ -28,6 +28,12 @@ const {
   generateAjioPriceHistory
 } = require('../services/ajioService');
 
+const {
+  getHourlyTrendingDeals,
+  MASTER_STORE_CATALOG,
+  STORE_CONFIG
+} = require('../services/trendingService');
+
 const { estimatePriceFromTitle } = require('../services/metadataScraper');
 
 /**
@@ -99,6 +105,76 @@ async function analyze(req, res) {
   }
 
   const inputLower = rawInput.toLowerCase();
+
+  // 0. DIRECT MASTER CATALOG MATCH (100% Precise Title, Price, Image & Store URL)
+  for (const [storeKey, storeItems] of Object.entries(MASTER_STORE_CATALOG)) {
+    const matchedItem = storeItems.find(it => {
+      const itId = String(it.id || '').toUpperCase();
+      const itQuery = String(it.query || '').toUpperCase();
+      const itUrl = String(it.url || '').toLowerCase();
+      const rawUpper = rawInput.toUpperCase();
+      return (
+        itId === rawUpper ||
+        itQuery === rawUpper ||
+        rawInput.toLowerCase().includes(itUrl) ||
+        itUrl.includes(rawInput.toLowerCase()) ||
+        rawUpper.includes(itId)
+      );
+    });
+
+    if (matchedItem) {
+      const cfg = STORE_CONFIG[storeKey] || { name: storeKey, icon: '🛍️', tag: 'Verified' };
+      const currentPrice = matchedItem.basePrice;
+      const mrp = matchedItem.mrp;
+      const rawHistory = generateAmazonMockHistory(currentPrice);
+      const prices = rawHistory.map(p => parseFloat(p.currentprice) || currentPrice);
+      const avg = prices.reduce((a, b) => a + b, 0) / prices.length;
+      const highPrice = Math.max(...prices, currentPrice);
+      const lowPrice = Math.min(...prices, currentPrice);
+      const deviation = ((currentPrice - avg) / avg) * 100;
+      const savingsAmount = Math.max(0, avg - currentPrice);
+
+      const { dealScore, recommendation, decisionTitle, reason, isSellerReliable } = evaluateDeal({
+        currentPrice,
+        avgPrice: avg,
+        deviation,
+        sellerRating: matchedItem.rating || 4.5,
+        reviewCount: matchedItem.reviews || 4200,
+        isVerified: true,
+        platformName: cfg.name,
+        sellerName: matchedItem.seller
+      });
+
+      return res.json({
+        platform: storeKey,
+        platformName: cfg.name,
+        platformIcon: cfg.icon,
+        asin: matchedItem.id,
+        productId: matchedItem.id,
+        productTitle: matchedItem.title,
+        productImage: matchedItem.image,
+        productUrl: matchedItem.url,
+        productPrice: `₹${currentPrice.toLocaleString('en-IN')}`,
+        productMrp: `₹${mrp.toLocaleString('en-IN')}`,
+        currentPrice: Math.round(currentPrice),
+        avgPrice: Math.round(avg),
+        highPrice: Math.round(highPrice),
+        lowPrice: Math.round(lowPrice),
+        deviation: parseFloat(deviation.toFixed(1)),
+        savingsAmount: Math.round(savingsAmount),
+        dealScore,
+        recommendation,
+        decisionTitle,
+        reason,
+        sellerRating: matchedItem.rating || 4.5,
+        reviewCount: matchedItem.reviews || 4200,
+        sellerName: matchedItem.seller,
+        sellerReliable: isSellerReliable,
+        isVerified: true,
+        priceHistory: rawHistory.slice(-30).map(p => ({ date: p.datec, price: Math.round(parseFloat(p.currentprice) || currentPrice) }))
+      });
+    }
+  }
 
   // Platform Detection
   const myntraId = parseMyntraId(rawInput);
@@ -446,4 +522,18 @@ async function analyze(req, res) {
   }
 }
 
-module.exports = { analyze, parseAsin };
+/**
+ * Endpoint for Automated Hourly Trending Deals across all 5 stores
+ */
+function getTrendingDeals(req, res) {
+  try {
+    const store = (req.query.store || 'all').toLowerCase();
+    const data = getHourlyTrendingDeals(store);
+    return res.json(data);
+  } catch (err) {
+    console.error('[getTrendingDeals] Error:', err);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+}
+
+module.exports = { analyze, parseAsin, getTrendingDeals };

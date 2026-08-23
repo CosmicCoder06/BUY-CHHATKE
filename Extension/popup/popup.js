@@ -198,19 +198,45 @@ function bindStorePills() {
   });
 }
 
-function renderTrendingList(filterStore) {
+async function renderTrendingList(filterStore) {
   const container = document.getElementById('trendingList');
+  if (!container) return;
+
+  container.innerHTML = '<div style="font-size: 11px; color: #94a3b8; text-align: center; padding: 10px;">Loading live deals...</div>';
+
+  let items = [];
+  try {
+    const res = await fetch(`http://localhost:3000/api/trending-deals?store=${encodeURIComponent(filterStore)}`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data && Array.isArray(data.deals)) {
+        items = data.deals.map(d => ({
+          title: d.title,
+          price: '₹' + Number(d.price).toLocaleString('en-IN'),
+          drop: d.discount,
+          image: d.image,
+          storeColor: d.storeColor,
+          storeName: d.storeName,
+          query: d.query
+        }));
+      }
+    }
+  } catch (e) {
+    // Fallback to local mocks
+  }
+
+  if (items.length === 0) {
+    items = filterStore === 'all' 
+      ? TRENDING_MOCKS 
+      : TRENDING_MOCKS.filter(item => item.store === filterStore);
+  }
+
   container.innerHTML = '';
-
-  const filtered = filterStore === 'all' 
-    ? TRENDING_MOCKS 
-    : TRENDING_MOCKS.filter(item => item.store === filterStore);
-
-  filtered.forEach(item => {
+  items.forEach(item => {
     const el = document.createElement('div');
     el.className = 'trending-item';
     el.innerHTML = `
-      <img src="${item.image}" alt="${item.title}" class="t-thumb" />
+      <img src="${item.image}" alt="${item.title}" class="t-thumb" referrerpolicy="no-referrer" onerror="this.src='https://m.media-amazon.com/images/I/61xi8pnZunL._AC_UL960_QL65_.jpg'" />
       <div class="t-info">
         <div class="t-title">${item.title}</div>
         <div class="t-meta">
