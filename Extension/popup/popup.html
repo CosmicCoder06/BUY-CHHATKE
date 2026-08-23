@@ -2,100 +2,105 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>buySmarty Extension</title>
-  <link rel="stylesheet" href="popup.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>buySmartly AI Assistant</title>
+  <link rel="stylesheet" href="popup.css"/>
 </head>
 <body>
-  <div class="ext-container">
+  <div class="sba-popup-container">
     <!-- Header -->
-    <header class="ext-header">
-      <div class="brand">
-        <span class="sparkle">?</span>
-        <span class="logo-text">buy<span class="gradient-text">Smarty</span></span>
-        <span class="ext-badge">PRO</span>
-      </div>
-      <a href="http://localhost:3000" target="_blank" class="launch-btn" title="Open Full Dashboard">
-        <span>Dashboard ?</span>
-      </a>
-    </header>
-
-    <!-- Context Card (Current Page Scanner) -->
-    <div id="pageDetectCard" class="context-card">
-      <div class="detect-header">
-        <span id="storeIcon" class="store-badge">???</span>
-        <div class="detect-info">
-          <div id="detectTitle" class="detect-title">Detecting active product...</div>
-          <div id="detectStore" class="detect-store">Supported Stores: Amazon, Flipkart, Myntra, Meesho, Ajio</div>
+    <header class="sba-popup-header">
+      <div class="sba-brand">
+        <div class="sba-logo-icon">✦</div>
+        <div class="sba-logo-text">
+          <span class="sba-title">buy<span class="sba-gradient">Smartly</span> <span class="sba-badge">AI</span></span>
+          <span class="sba-subtitle" id="sbaActiveStoreTxt">Ready on Flipkart, Amazon, Myntra, Meesho, Ajio</span>
         </div>
       </div>
-      <button id="scanCurrentBtn" class="primary-scan-btn">
-        <span class="btn-icon">?</span>
-        <span class="btn-text">Analyze Current Page Deal</span>
+      <div class="sba-version-pill">v2.0</div>
+    </header>
+
+    <!-- Account Auth Status Card -->
+    <div class="sba-account-bar" id="sbaAccountBar">
+      <div class="sba-user-info">
+        <span class="sba-user-status" id="sbaUserStatusLbl">🔒 Authentication Required</span>
+        <span class="sba-user-email is-locked" id="sbaUserEmail">Login to unlock buySmartly Intelligence</span>
+      </div>
+      <div class="sba-account-actions">
+        <button class="sba-auth-btn" id="sbaAuthActionBtn">Login Now ↵</button>
+        <button class="sba-logout-btn" id="sbaLogoutBtn" style="display: none;" title="Sign out / Switch account">Logout</button>
+      </div>
+    </div>
+
+    <!-- Quick Toggle Controls -->
+    <div class="sba-settings-list">
+      <div class="sba-setting-item">
+        <div class="sba-setting-info">
+          <span class="sba-setting-title">📈 3-Month Price History</span>
+          <span class="sba-setting-desc">Verified price trend chart on product pages</span>
+        </div>
+        <label class="sba-switch">
+          <input type="checkbox" id="toggleHistory" checked />
+          <span class="sba-slider"></span>
+        </label>
+      </div>
+
+      <div class="sba-setting-item">
+        <div class="sba-setting-info">
+          <span class="sba-setting-title">🛡️ Fake Discount Detector</span>
+          <span class="sba-setting-desc">Identify inflated MRPs before sales</span>
+        </div>
+        <label class="sba-switch">
+          <input type="checkbox" id="toggleFakeDetector" checked />
+          <span class="sba-slider"></span>
+        </label>
+      </div>
+
+      <div class="sba-setting-item">
+        <div class="sba-setting-info">
+          <span class="sba-setting-title">⚖️ Cross-Store Comparison</span>
+          <span class="sba-setting-desc">Live deals across Flipkart, Amazon, Myntra, Meesho, Ajio</span>
+        </div>
+        <label class="sba-switch">
+          <input type="checkbox" id="toggleLookAlike" checked />
+          <span class="sba-slider"></span>
+        </label>
+      </div>
+
+      <div class="sba-setting-item">
+        <div class="sba-setting-info">
+          <span class="sba-setting-title">🔔 Price Drop Alerts</span>
+          <span class="sba-setting-desc">Instant alerts when price hits target</span>
+        </div>
+        <label class="sba-switch">
+          <input type="checkbox" id="toggleAlerts" checked />
+          <span class="sba-slider"></span>
+        </label>
+      </div>
+
+      <div class="sba-setting-item">
+        <div class="sba-setting-info">
+          <span class="sba-setting-title">🪟 Smart Floating Dock</span>
+          <span class="sba-setting-desc">Show floating intelligence panel on store pages</span>
+        </div>
+        <label class="sba-switch">
+          <input type="checkbox" id="toggleFloatingDock" checked />
+          <span class="sba-slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="sba-popup-actions">
+      <button class="sba-launch-btn" id="sbaLaunchWebBtn">
+        <span class="sba-btn-icon">⚡</span>
+        <span id="sbaLaunchBtnText">Open buySmartly Dashboard</span>
       </button>
     </div>
 
-    <!-- Universal Search Bar -->
-    <div class="search-section">
-      <div class="search-box">
-        <span class="search-icon">??</span>
-        <input type="text" id="quickSearchInput" placeholder="Paste link or search SKU / product..." />
-        <button id="quickSearchBtn" class="search-arrow-btn">?</button>
-      </div>
-    </div>
-
-    <!-- Store Switcher Rail -->
-    <div class="store-pills">
-      <button class="store-pill active" data-store="all">All (5)</button>
-      <button class="store-pill" data-store="amazon">Amazon</button>
-      <button class="store-pill" data-store="flipkart">Flipkart</button>
-      <button class="store-pill" data-store="myntra">Myntra</button>
-      <button class="store-pill" data-store="meesho">Meesho</button>
-      <button class="store-pill" data-store="ajio">Ajio</button>
-    </div>
-
-    <!-- Mini Telemetry Result (Dynamically Injected) -->
-    <div id="resultCard" class="result-card" style="display: none;">
-      <div class="result-media">
-        <img id="resImg" src="" alt="Product" />
-        <span id="resSignal" class="signal-tag">?? Optimal Deal</span>
-      </div>
-      <div class="result-details">
-        <h4 id="resTitle" class="res-title">Product Title</h4>
-        <div class="price-row">
-          <span id="resPrice" class="res-price">?0</span>
-          <span id="resMrp" class="res-mrp">?0</span>
-          <span id="resDrop" class="res-drop">-0%</span>
-        </div>
-        <div class="verdict-box">
-          <div id="resVerdict" class="res-verdict">Verified Authenticity</div>
-        </div>
-        <div class="card-actions">
-          <a id="resBuyBtn" href="#" target="_blank" class="buy-link">Open in Store ?</a>
-          <button id="resDeepDiveBtn" class="deep-dive-btn">Full AI Charts</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Loading State -->
-    <div id="loadingState" class="loading-state" style="display: none;">
-      <div class="spinner"></div>
-      <span>Querying AI Pricing Engine...</span>
-    </div>
-
-    <!-- Quick Trending Links -->
-    <div class="trending-section">
-      <div class="section-title">? Trending Deal Picks</div>
-      <div class="trending-list" id="trendingList">
-        <!-- Injected via popup.js -->
-      </div>
-    </div>
-
     <!-- Footer -->
-    <footer class="ext-footer">
-      <span>? AI Real-Time Price Tracker</span>
-      <span class="dot">�</span>
-      <a href="http://localhost:3000" target="_blank">buySmarty Web</a>
+    <footer class="sba-popup-footer">
+      <span>buySmartly AI Assistant v2.0 • AI Shopping Intelligence</span>
     </footer>
   </div>
 

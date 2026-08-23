@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="referrer" content="no-referrer" />
-  <title>buySmarty — Price Intelligence & Deal Tracker</title>
+  <title>buySmartly — Price Intelligence & Deal Tracker</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
@@ -14,7 +14,7 @@
   <link rel="icon"
     href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✦</text></svg>">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-  <link rel="stylesheet" href="style.css?v=5.0.0" />
+  <link rel="stylesheet" href="style.css?v=6.0.0" />
 </head>
 
 <body>
@@ -48,15 +48,33 @@
   <header class="terminal-header">
     <div class="header-inner">
       <div class="brand-block">
-        <div class="brand-icon">
-          <span class="pulse-dot"></span>
-          <span class="brand-glyph">✦</span>
-        </div>
-        <div class="brand-info">
-          <div class="brand-title">buySmartly <span class="brand-ai">AI ASSISTANT</span></div>
-          <div class="brand-status"> PRICE INTELLIGENCE TERMINAL</div>
-        </div>
+        <a href="/" style="text-decoration: none; display: flex; align-items: center; gap: 10px; color: inherit;">
+          <div class="brand-icon">
+            <span class="pulse-dot"></span>
+            <span class="brand-glyph">✦</span>
+          </div>
+          <div class="brand-info">
+            <div class="brand-title">buySmartly <span class="brand-ai">AI ASSISTANT</span></div>
+            <div class="brand-status"> PRICE INTELLIGENCE TERMINAL</div>
+          </div>
+        </a>
       </div>
+
+      <!-- Navigation Routes -->
+      <nav class="header-nav" id="mainHeaderNav">
+        <a href="/" class="nav-link active" data-route="home">
+          <span class="nav-icon">⚡</span>
+          <span class="nav-text">Price Scanner</span>
+        </a>
+        <a href="/deals" class="nav-link" data-route="deals">
+          <span class="nav-icon">🔥</span>
+          <span class="nav-text">Live Deals</span>
+        </a>
+        <a href="/extension" class="nav-link" data-route="extension">
+          <span class="nav-icon">🧩</span>
+          <span class="nav-text">Extension</span>
+        </a>
+      </nav>
 
       <div class="header-controls">
         <!-- Wishlist Header Trigger -->
@@ -85,7 +103,7 @@
   <main class="terminal-stage">
 
     <!-- Hero Portal (Clean typography & Fluid Surface) -->
-    <section class="portal-section">
+    <section class="portal-section" id="homeSection">
       <div class="portal-tag">
         <span class="portal-tag-dot"></span>
         <span class="portal-tag-text">MULTI-STORE PRICE INTELLIGENCE</span>
@@ -384,6 +402,34 @@
 
     </div>
 
+    <!-- ─── CHROME EXTENSION SECTION ────────────────────────────── -->
+    <section class="extension-surface" id="extensionSection" style="margin-top: 40px; margin-bottom: 20px; padding: 32px 28px; border-radius: var(--rad-lg); background: var(--bg-surface); border: 1px solid var(--border-hairline-strong); position: relative; overflow: hidden;">
+      <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 24px;">
+        <div style="max-width: 640px;">
+          <div class="portal-tag" style="margin-bottom: 12px;">
+            <span class="portal-tag-dot"></span>
+            <span class="portal-tag-text">CHROME BROWSER EXTENSION</span>
+          </div>
+          <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--text-main); margin-bottom: 8px; line-height: 1.3;">
+            Track Live Prices on <span class="gradient-text">Amazon, Flipkart, Myntra, Meesho &amp; Ajio</span>
+          </h2>
+          <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
+            Inject genuine 30-day volatility charts, AI fake discount detections, and price drop notifications directly onto the shopping product page.
+          </p>
+        </div>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+          <a href="/downloads/buySmartly-extension.zip" download="buySmartly-Chrome-Extension.zip" class="action-submit-btn" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; font-size: 0.92rem; font-weight: 700;">
+            <span>Download Extension (.zip)</span>
+            <span>⬇️</span>
+          </a>
+          <button type="button" id="openSetupGuideBtn" onclick="openExtensionModal()" class="tc-buy-direct-btn" style="padding: 12px 22px; font-size: 0.92rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
+            <span>Setup Guide</span>
+            <span>📖</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
   </main>
 
   <!-- ─── WISHLIST SLIDE-OVER DRAWER ──────────────────────────── -->
@@ -556,6 +602,59 @@
     </div>
   </div>
 
+  <!-- ─── CHROME EXTENSION SETUP GUIDE MODAL ─────────────────── -->
+  <div class="modal-overlay" id="extensionModalOverlay" style="display: none;">
+    <div class="modal-card" style="max-width: 580px; width: 92vw;">
+      <button class="modal-close-btn" id="closeExtModalBtn" onclick="document.getElementById('extensionModalOverlay').style.display='none'">✕</button>
+
+      <div class="modal-header">
+        <div class="modal-brand-icon" style="background: rgba(99, 102, 241, 0.15); border-color: rgba(99, 102, 241, 0.4); color: var(--brand-indigo);">🧩</div>
+        <h3 class="modal-title">Install buySmartly Chrome Extension</h3>
+        <p class="modal-sub">Monitor live price drops &amp; historical price graphs directly on Amazon, Flipkart, Myntra, Meesho &amp; Ajio.</p>
+      </div>
+
+      <div class="extension-guide-steps" style="display: flex; flex-direction: column; gap: 12px; margin: 18px 0;">
+        <div class="guide-step-card" style="display: flex; gap: 14px; padding: 14px; border-radius: var(--rad-md); background: var(--bg-subtle); border: 1px solid var(--border-hairline); align-items: flex-start;">
+          <div class="step-num-badge" style="width: 28px; height: 28px; border-radius: 50%; background: var(--brand-indigo); color: #fff; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.85rem;">1</div>
+          <div style="flex: 1;">
+            <div style="font-weight: 700; font-size: 0.9rem; color: var(--text-main); margin-bottom: 3px;">Download &amp; Extract ZIP</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 8px;">Download the extension zip file and extract the folder to your PC.</div>
+            <a href="/downloads/buySmartly-extension.zip" download="buySmartly-Chrome-Extension.zip" class="action-submit-btn" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; font-size: 0.82rem; font-weight: 600;">
+              <span>Download Extension (.zip)</span>
+              <span>⬇️</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="guide-step-card" style="display: flex; gap: 14px; padding: 14px; border-radius: var(--rad-md); background: var(--bg-subtle); border: 1px solid var(--border-hairline); align-items: flex-start;">
+          <div class="step-num-badge" style="width: 28px; height: 28px; border-radius: 50%; background: var(--brand-indigo); color: #fff; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.85rem;">2</div>
+          <div style="flex: 1;">
+            <div style="font-weight: 700; font-size: 0.9rem; color: var(--text-main); margin-bottom: 3px;">Open Chrome Extensions Settings</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 8px;">In your Google Chrome URL bar, open:</div>
+            <div style="display: flex; align-items: center; gap: 8px; background: var(--bg-input); padding: 8px 12px; border-radius: var(--rad-sm); border: 1px solid var(--border-hairline);">
+              <code style="font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; color: var(--brand-cyan); flex: 1;">chrome://extensions</code>
+              <button type="button" onclick="navigator.clipboard.writeText('chrome://extensions'); showToast('Copied chrome://extensions to clipboard!', '📋');" style="background: var(--bg-subtle-hover); border: 1px solid var(--border-hairline); color: var(--text-main); cursor: pointer; font-size: 0.76rem; font-weight: 600; padding: 4px 8px; border-radius: var(--rad-xs);">Copy URL 📋</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="guide-step-card" style="display: flex; gap: 14px; padding: 14px; border-radius: var(--rad-md); background: var(--bg-subtle); border: 1px solid var(--border-hairline); align-items: flex-start;">
+          <div class="step-num-badge" style="width: 28px; height: 28px; border-radius: 50%; background: var(--brand-indigo); color: #fff; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.85rem;">3</div>
+          <div style="flex: 1;">
+            <div style="font-weight: 700; font-size: 0.9rem; color: var(--text-main); margin-bottom: 3px;">Toggle "Developer Mode" &amp; Click "Load Unpacked"</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.5;">
+              Enable <b>Developer mode</b> switch at the top-right corner. Then click <b>Load unpacked</b> at the top-left and select your unzipped <code>Extension</code> folder.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button type="button" onclick="document.getElementById('extensionModalOverlay').style.display='none'" class="modal-submit-btn" style="width: 100%; justify-content: center; margin-top: 4px;">
+        Got it, Ready to Track Deals 🚀
+      </button>
+    </div>
+  </div>
+
   <!-- ─── TOAST NOTIFICATION ──────────────────────────────────── -->
   <div class="toast-container" id="toastContainer"></div>
 
@@ -569,7 +668,7 @@
           <div class="fb-icon">
             <span class="fb-glyph">🛍️</span>
           </div>
-          <span class="fb-text">buySmarty</span>
+          <span class="fb-text">buySmartly</span>
         </div>
 
         <div class="footer-socials">
@@ -699,7 +798,7 @@
 
       <!-- Bottom Bar -->
       <div class="footer-bottom-bar">
-        <div class="f-copy">buySmarty Internet Pvt Ltd. © 2012 - 2026</div>
+        <div class="f-copy">buySmartly Internet Pvt Ltd. © 2012 - 2026</div>
         <div class="f-legal-links">
           <a href="#" class="legal-link">Legal Terms</a>
           <span class="legal-dot">·</span>
@@ -712,7 +811,7 @@
     </div>
   </footer>
 
-  <script src="app.js?v=5.0.0"></script>
+  <script src="app.js?v=6.0.0"></script>
 </body>
 
 </html>

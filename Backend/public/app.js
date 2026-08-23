@@ -1,5 +1,5 @@
 /**
- * buySmarty — CLIENT CONTROLLER
+ * buySmartly — CLIENT CONTROLLER
  * AI Price Intelligence, User Auth, Wishlist & Deal Verification Protocol
  */
 
@@ -868,6 +868,24 @@ if (loginModalOverlay) {
   });
 }
 
+// ─── CHROME EXTENSION SETUP GUIDE MODAL CONTROLLERS ─────────
+window.openExtensionModal = function () {
+  const extOverlay = document.getElementById('extensionModalOverlay');
+  if (extOverlay) extOverlay.style.display = 'flex';
+};
+
+window.closeExtensionModal = function () {
+  const extOverlay = document.getElementById('extensionModalOverlay');
+  if (extOverlay) extOverlay.style.display = 'none';
+};
+
+const extModalOverlay = document.getElementById('extensionModalOverlay');
+if (extModalOverlay) {
+  extModalOverlay.addEventListener('click', (e) => {
+    if (e.target === extModalOverlay) window.closeExtensionModal();
+  });
+}
+
 if (tabLoginBtn && tabRegisterBtn) {
   tabLoginBtn.addEventListener('click', () => {
     tabLoginBtn.classList.add('active');
@@ -1022,7 +1040,7 @@ if (verifyOtpBtn) {
       }
 
       // Success: activate verified account
-      loginUser(data.user.email, data.user.name, true);
+      loginUser(data.user.email, data.user.name, true, data.authToken);
       closeLoginModal();
       showToast(`🎉 Email Verified! Welcome, ${data.user.name}!`, '✅');
     } catch (err) {
@@ -1078,7 +1096,8 @@ if (backToRegisterBtn) {
   });
 }
 
-function loginUser(email, name, verified = true) {
+function loginUser(email, name, verified = true, token = null) {
+  const authToken = token || ('sba_jwt_' + btoa(email + ':' + Date.now()));
   currentUser = {
     email,
     name: name || email.split('@')[0],
@@ -1088,14 +1107,46 @@ function loginUser(email, name, verified = true) {
     loggedInAt: currentUser?.loggedInAt || new Date().toISOString()
   };
   localStorage.setItem('sba_user', JSON.stringify(currentUser));
+  localStorage.setItem('user', JSON.stringify(currentUser));
+  localStorage.setItem('authToken', authToken);
   initAuthUI();
+
+  // 1. Broadcast authentication state to Chrome Extension
+  window.postMessage({
+    type: 'SBA_AUTH_SYNC',
+    authToken: authToken,
+    user: currentUser
+  }, '*');
+  document.dispatchEvent(new CustomEvent('SBA_AUTH_CHANGED', { detail: currentUser }));
+
+  // 2. Handle redirect back to ecommerce product if launched with redirect parameter
+  const params = new URLSearchParams(window.location.search);
+  const redirectTarget = params.get('redirect') || params.get('product') || params.get('productUrl') || params.get('returnUrl');
+  if (redirectTarget && redirectTarget !== 'extension' && (redirectTarget.startsWith('http://') || redirectTarget.startsWith('https://'))) {
+    showToast('Login successful! Redirecting back to product...', '🚀');
+    setTimeout(() => {
+      window.location.href = decodeURIComponent(redirectTarget);
+    }, 600);
+  }
+}
 }
 
 function logoutUser() {
   currentUser = null;
   localStorage.removeItem('sba_user');
+  localStorage.removeItem('user');
+  localStorage.removeItem('authToken');
   initAuthUI();
   closeAccountModal();
+
+  // Broadcast logout state to Chrome Extension
+  window.postMessage({
+    type: 'SBA_AUTH_SYNC',
+    authToken: null,
+    user: null
+  }, '*');
+  document.dispatchEvent(new CustomEvent('SBA_AUTH_CHANGED', { detail: null }));
+
   showToast('Logged out successfully', '👋');
 }
 
@@ -1700,6 +1751,134 @@ function renderTrendingGrid(deals) {
   }).join('');
 }
 
+// ─── CLIENT-SIDE SPA ROUTING ENGINE & SCROLL SPY ───────────
+let isNavigatingViaClick = false;
+
+function setActiveNavTab(routeName) {
+  const navLinks = document.querySelectorAll('#mainHeaderNav .nav-link');
+  navLinks.forEach(link => {
+    if (link.getAttribute('data-route') === routeName) {
+      link.classList.add('active');
+    } else {
+      link.classList.remove('active');
+    }
+  });
+}
+
+function handleClientRoute() {
+  const path = window.location.pathname.toLowerCase().replace(/\/$/, '') || '/';
+  const hash = window.location.hash.toLowerCase().replace(/^#/, '');
+
+  if (path === '/login' || hash === 'login') {
+    if (!currentUser) {
+      setTimeout(() => {
+        openLoginModal();
+      }, 150);
+    }
+  } else if (path === '/dashboard' || hash === 'dashboard') {
+    setActiveNavTab('home');
+  } else if (path === '/deals' || hash === 'deals' || path.startsWith('/deals/')) {
+    setActiveNavTab('deals');
+    const emptyState = document.getElementById('emptyState');
+    if (emptyState) {
+      emptyState.style.display = 'block';
+      emptyState.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    const parts = path.split('/');
+    if (parts[2]) {
+      const storeName = parts[2].toLowerCase();
+      const storeBtn = document.querySelector(`.store-filter-btn[data-store="${storeName}"]`);
+      if (storeBtn) {
+        document.querySelectorAll('.store-filter-btn').forEach(b => b.classList.remove('active'));
+        storeBtn.classList.add('active');
+        activeTrendingStore = storeName;
+        fetchTrendingDeals(storeName);
+      }
+    }
+  } else if (path === '/tracker' || hash === 'tracker' || path === '/wishlist' || hash === 'wishlist') {
+    setActiveNavTab('tracker');
+    openWishlist();
+  } else if (path === '/extension' || hash === 'extension') {
+    setActiveNavTab('extension');
+    const extSec = document.getElementById('extensionSection');
+    if (extSec) {
+      extSec.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  } else {
+    // Default Home / Scanner Route
+    setActiveNavTab('home');
+    if (isNavigatingViaClick) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+}
+
+function initScrollSpy() {
+  let ticking = false;
+  window.addEventListener('scroll', () => {
+    if (isNavigatingViaClick) return;
+    if (!ticking) {
+      window.requestAnimationFrame(() => {
+        const scrollPos = window.scrollY + 200;
+        const extSec = document.getElementById('extensionSection');
+        const emptyState = document.getElementById('emptyState');
+        const homeSec = document.getElementById('homeSection');
+
+        if (extSec && scrollPos >= extSec.offsetTop - 150) {
+          setActiveNavTab('extension');
+        } else if (emptyState && scrollPos >= emptyState.offsetTop - 150) {
+          setActiveNavTab('deals');
+        } else {
+          setActiveNavTab('home');
+        }
+        ticking = false;
+      });
+      ticking = true;
+    }
+  }, { passive: true });
+}
+
+function initRouter() {
+  document.addEventListener('click', (e) => {
+    const link = e.target.closest('a[data-route]');
+    if (link) {
+      e.preventDefault();
+      const routeName = link.getAttribute('data-route');
+      const targetHref = link.getAttribute('href');
+
+      isNavigatingViaClick = true;
+      window.history.pushState(null, '', targetHref);
+
+      if (routeName === 'home') {
+        setActiveNavTab('home');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else if (routeName === 'deals') {
+        setActiveNavTab('deals');
+        const emptyState = document.getElementById('emptyState');
+        if (emptyState) emptyState.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else if (routeName === 'tracker') {
+        setActiveNavTab('tracker');
+        openWishlist();
+      } else if (routeName === 'extension') {
+        setActiveNavTab('extension');
+        const extSec = document.getElementById('extensionSection');
+        if (extSec) extSec.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+
+      setTimeout(() => {
+        isNavigatingViaClick = false;
+      }, 700);
+    }
+  });
+
+  window.addEventListener('popstate', handleClientRoute);
+  window.addEventListener('hashchange', handleClientRoute);
+
+  initScrollSpy();
+  handleClientRoute();
+}
+
 // Global helper for sample buttons and card clicks
 window.fillAndAnalyze = function (idOrUrl) {
   if (!asinInput) return;
@@ -1709,14 +1888,58 @@ window.fillAndAnalyze = function (idOrUrl) {
   executeAnalysis();
 };
 
+// ─── QUERY PARAMETERS & EXTENSION SYNC HANDLER ─────────────────
+function handleExtensionAndQueryParams() {
+  const params = new URLSearchParams(window.location.search);
+  const rawProduct = params.get('product') || params.get('productUrl') || params.get('q') || params.get('url');
+  const isExtensionSource = params.get('source') === 'extension' || params.get('redirect') === 'extension';
+  const requireLogin = params.get('login') === '1' || window.location.pathname.includes('/login');
+
+  const storedToken = localStorage.getItem('authToken') || (currentUser ? 'sba_jwt_' + btoa((currentUser.email || 'user') + ':' + Date.now()) : null);
+
+  // Broadcast current auth state to extension content script
+  if (currentUser && storedToken) {
+    window.postMessage({
+      type: 'SBA_AUTH_SYNC',
+      authToken: storedToken,
+      user: currentUser
+    }, '*');
+    document.dispatchEvent(new CustomEvent('SBA_AUTH_CHANGED', { detail: currentUser }));
+  }
+
+  // Handle Login prompt if requested from extension and user not yet authenticated
+  if ((requireLogin || isExtensionSource) && !currentUser) {
+    setTimeout(() => {
+      openLoginModal();
+    }, 250);
+  }
+
+  // Single Source of Truth: Auto-analyze the exact product URL passed from extension
+  if (rawProduct) {
+    const cleanProductUrl = decodeURIComponent(rawProduct).trim();
+    if (asinInput && cleanProductUrl) {
+      asinInput.value = cleanProductUrl;
+      if (clearBtn) clearBtn.style.display = 'flex';
+      currentData = null; // Flush stale cache
+      setTimeout(() => {
+        executeAnalysis();
+      }, 350);
+    }
+  }
+}
+
 // Initial calls on load
 document.addEventListener('DOMContentLoaded', () => {
   renderRecentSearches();
   initTrendingDeals();
+  initRouter();
+  handleExtensionAndQueryParams();
 });
 
 // Immediate execution in case DOM is already ready
 renderRecentSearches();
 initTrendingDeals();
+initRouter();
+handleExtensionAndQueryParams();
 
 

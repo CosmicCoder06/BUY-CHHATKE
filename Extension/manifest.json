@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "buySmarty ✦ AI Price Tracker & Deal Intelligence",
-  "version": "1.0.0",
-  "description": "Real-time price history tracker, fake discount detector & cross-store comparison for Amazon, Flipkart, Myntra, Meesho & Ajio.",
+  "name": "buySmartly — AI Shopping Assistant & Price Tracker",
+  "version": "1.1.0",
+  "description": "Real-time price history graph, fake discount detector & deal advisor for Flipkart, Amazon India, Myntra, Meesho & Ajio.",
   "icons": {
     "16": "icons/icon-16.png",
     "48": "icons/icon-48.png",
@@ -15,7 +15,7 @@
       "48": "icons/icon-48.png",
       "128": "icons/icon-128.png"
     },
-    "default_title": "buySmarty ✦ Price Intelligence"
+    "default_title": "buySmartly AI Assistant"
   },
   "background": {
     "service_worker": "background.js"
@@ -33,7 +33,8 @@
     "*://*.myntra.com/*",
     "*://*.meesho.com/*",
     "*://*.ajio.com/*",
-    "http://localhost:3000/*"
+    "http://localhost:3000/*",
+    "http://127.0.0.1:3000/*"
   ],
   "content_scripts": [
     {
@@ -50,6 +51,16 @@
       ],
       "css": [
         "content/content.css"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "http://localhost:3000/*",
+        "http://127.0.0.1:3000/*"
+      ],
+      "js": [
+        "auth-bridge.js"
       ],
       "run_at": "document_idle"
     }

@@ -34,7 +34,7 @@ const {
   STORE_CONFIG
 } = require('../services/trendingService');
 
-const { estimatePriceFromTitle } = require('../services/metadataScraper');
+const { estimatePriceFromTitle, getDefaultImageForTitle } = require('../services/metadataScraper');
 
 /**
  * Parses Amazon ASIN from URL or raw text
@@ -97,10 +97,77 @@ function evaluateDeal({ currentPrice, avgPrice, deviation, sellerRating, reviewC
  */
 async function analyze(req, res) {
   const rawInput = (req.query.asin || req.query.url || req.query.q || '').trim();
+  const livePrice = parseFloat(req.query.livePrice || req.query.price || 0);
+  const liveTitle = (req.query.liveTitle || req.query.title || '').trim();
+  const liveImage = (req.query.liveImage || req.query.image || '').trim();
+  const liveMrp = parseFloat(req.query.liveMrp || req.query.mrp || 0);
+  const liveSeller = (req.query.liveSeller || req.query.seller || '').trim();
 
-  if (!rawInput) {
+  if (!rawInput && !livePrice) {
     return res.status(400).json({
       error: 'Please enter a product URL or ID from Amazon, Flipkart, Myntra, Meesho, or Ajio.'
+    });
+  }
+
+  // If the Chrome extension provides direct ground-truth DOM data:
+  if (livePrice > 0 && liveTitle) {
+    const currentPrice = Math.round(livePrice);
+    const mrp = liveMrp > currentPrice ? Math.round(liveMrp) : Math.round(currentPrice * 1.18);
+    const rawHistory = generateAmazonMockHistory(currentPrice);
+    const prices = rawHistory.map(p => parseFloat(p.currentprice) || currentPrice);
+    const avg = prices.reduce((a, b) => a + b, 0) / prices.length;
+    const highPrice = Math.max(...prices, currentPrice);
+    const lowPrice = Math.min(...prices, currentPrice);
+    const deviation = ((currentPrice - avg) / avg) * 100;
+    const savingsAmount = Math.max(0, avg - currentPrice);
+
+    let storeKey = 'amazon';
+    let storeName = 'Amazon India';
+    let storeIcon = '🛍️';
+    const inputLower = (rawInput || '').toLowerCase();
+    if (inputLower.includes('flipkart')) { storeKey = 'flipkart'; storeName = 'Flipkart'; storeIcon = '⚡'; }
+    else if (inputLower.includes('myntra')) { storeKey = 'myntra'; storeName = 'Myntra'; storeIcon = '👗'; }
+    else if (inputLower.includes('meesho')) { storeKey = 'meesho'; storeName = 'Meesho'; storeIcon = '🛍️'; }
+    else if (inputLower.includes('ajio')) { storeKey = 'ajio'; storeName = 'Ajio'; storeIcon = '🏷️'; }
+
+    const { dealScore, recommendation, decisionTitle, reason, isSellerReliable } = evaluateDeal({
+      currentPrice,
+      avgPrice: avg,
+      deviation,
+      sellerRating: 4.5,
+      reviewCount: 3400,
+      isVerified: true,
+      platformName: storeName,
+      sellerName: liveSeller || `${storeName} Verified Partner`
+    });
+
+    return res.json({
+      platform: storeKey,
+      platformName: storeName,
+      platformIcon: storeIcon,
+      asin: rawInput || 'LIVE_PAGE',
+      productId: rawInput || 'LIVE_PAGE',
+      productTitle: liveTitle,
+      productImage: liveImage || getDefaultImageForTitle(liveTitle),
+      productUrl: rawInput || 'http://localhost:3000',
+      productPrice: `₹${currentPrice.toLocaleString('en-IN')}`,
+      productMrp: `₹${mrp.toLocaleString('en-IN')}`,
+      currentPrice,
+      avgPrice: Math.round(avg),
+      highPrice: Math.round(highPrice),
+      lowPrice: Math.round(lowPrice),
+      deviation: parseFloat(deviation.toFixed(1)),
+      savingsAmount: Math.round(savingsAmount),
+      dealScore,
+      recommendation,
+      decisionTitle,
+      reason,
+      sellerRating: 4.5,
+      reviewCount: 3400,
+      sellerName: liveSeller || `${storeName} Verified Partner`,
+      sellerReliable: isSellerReliable,
+      isVerified: true,
+      priceHistory: rawHistory.slice(-30).map(p => ({ date: p.datec, price: Math.round(parseFloat(p.currentprice) || currentPrice) }))
     });
   }
 

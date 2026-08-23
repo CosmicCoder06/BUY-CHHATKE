@@ -1,5 +1,5 @@
-﻿/**
- * buySmarty Marketplace Catalog & Real-Time Deal Engine
+/**
+ * buySmartly Marketplace Catalog & Real-Time Deal Engine
  * Strictly connects Product Name, SKU, Image URL, and Store URL for 100% precision.
  * Uses permanent canonical links and active deep-links to prevent 404 / "Whoops!" errors.
  */
@@ -329,7 +329,39 @@ const STORE_CONFIG = {
   ajio: { name: 'Ajio', icon: '🏷️', color: '#38bdf8', tag: 'Ajio Luxe' }
 };
 
+function getHourlyTrendingDeals(store = 'all') {
+  const allDeals = [];
+  for (const [storeKey, items] of Object.entries(MASTER_STORE_CATALOG)) {
+    if (store !== 'all' && store !== storeKey) continue;
+    const cfg = STORE_CONFIG[storeKey] || { name: storeKey, icon: '🛍️', color: '#818cf8', tag: 'Verified' };
+    items.forEach(it => {
+      const discount = Math.round(((it.mrp - it.basePrice) / it.mrp) * 100);
+      allDeals.push({
+        id: it.id,
+        title: it.title,
+        productName: it.title,
+        price: it.basePrice,
+        currentPrice: it.basePrice,
+        originalPrice: it.mrp,
+        mrp: it.mrp,
+        discount: `${discount}% OFF`,
+        discountPercentage: discount,
+        image: it.image,
+        imageUrl: it.image,
+        store: storeKey,
+        storeName: cfg.name,
+        storeColor: cfg.color,
+        storeTag: cfg.tag,
+        productUrl: it.url,
+        query: it.url
+      });
+    });
+  }
+  return { success: true, count: allDeals.length, deals: allDeals };
+}
+
 module.exports = {
+  getHourlyTrendingDeals,
   MASTER_STORE_CATALOG,
   STORE_CONFIG
 };

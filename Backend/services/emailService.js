@@ -73,7 +73,7 @@ async function getTransporter() {
  */
 async function sendOtpEmail({ to, name = 'Valued User', otp }) {
   const transporter = await getTransporter();
-  const fromAddress = process.env.EMAIL_FROM || process.env.GMAIL_USER || process.env.SMTP_USER || '"buySmarty" <no-reply@buychhatke.ai>';
+  const fromAddress = process.env.EMAIL_FROM || process.env.GMAIL_USER || process.env.SMTP_USER || '"buySmartly" <no-reply@buychhatke.ai>';
 
   const htmlContent = `
     <!DOCTYPE html>
@@ -81,7 +81,7 @@ async function sendOtpEmail({ to, name = 'Valued User', otp }) {
     <head>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Email Verification - buySmarty</title>
+      <title>Email Verification - buySmartly</title>
       <style>
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #0a0e17; color: #f8fafc; margin: 0; padding: 24px 12px; }
         .email-wrapper { max-width: 520px; margin: 0 auto; background: #0d1322; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 16px; overflow: hidden; box-shadow: 0 12px 36px rgba(0,0,0,0.5); }
@@ -105,7 +105,7 @@ async function sendOtpEmail({ to, name = 'Valued User', otp }) {
         </div>
         <div class="email-body">
           <p class="greeting">Hello ${name},</p>
-          <p class="msg-text">Thank you for creating an account with buySmarty. To complete your registration and activate automated price drop alerts, please use the 6-digit verification code below:</p>
+          <p class="msg-text">Thank you for creating an account with buySmartly. To complete your registration and activate automated price drop alerts, please use the 6-digit verification code below:</p>
           
           <div class="otp-container">
             <div class="otp-label">Verification Code</div>
@@ -117,7 +117,7 @@ async function sendOtpEmail({ to, name = 'Valued User', otp }) {
           </div>
         </div>
         <div class="email-footer">
-          &copy; ${new Date().getFullYear()} buySmarty AI. Autonomous Price Tracking & Intelligence.
+          &copy; ${new Date().getFullYear()} buySmartly AI. Autonomous Price Tracking & Intelligence.
         </div>
       </div>
     </body>
@@ -127,8 +127,8 @@ async function sendOtpEmail({ to, name = 'Valued User', otp }) {
   const mailOptions = {
     from: fromAddress,
     to: to,
-    subject: `${otp} is your buySmarty Verification Code`,
-    text: `Hello ${name},\n\nYour 6-digit verification code for buySmarty is: ${otp}\n\nThis code will expire in 10 minutes.\n\nThank you,\nbuySmarty Team`,
+    subject: `${otp} is your buySmartly Verification Code`,
+    text: `Hello ${name},\n\nYour 6-digit verification code for buySmartly is: ${otp}\n\nThis code will expire in 10 minutes.\n\nThank you,\nbuySmartly Team`,
     html: htmlContent
   };
 

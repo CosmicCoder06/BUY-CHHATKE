@@ -26,7 +26,7 @@ connectDB().then(() => {
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',
-    service: 'buySmarty API',
+    service: 'buySmartly API',
     timestamp: new Date().toISOString(),
     rapidApiConfigured: Boolean(process.env.RAPIDAPI_KEY),
     smtpConfigured: Boolean(process.env.GMAIL_USER || process.env.SMTP_USER || process.env.SMTP_HOST)
@@ -74,8 +74,41 @@ app.use('/api', analyzeRoutes);
 app.use('/api', authRoutes);
 app.use('/api', dealRoutes);
 
+// Direct Chrome Extension Download Endpoint
+app.get([
+  '/api/download-extension',
+  '/downloads/buySmartly-extension.zip',
+  '/extension/extension.zip',
+  '/extension.zip'
+], (req, res) => {
+  const zipPath = path.join(__dirname, 'public', 'downloads', 'buySmartly-extension.zip');
+  res.download(zipPath, 'buySmartly-Chrome-Extension.zip');
+});
+
+// SPA Frontend Routing Support (/login, /dashboard, /deals, /tracker, /extension, etc.)
+app.get([
+  '/login',
+  '/dashboard',
+  '/deals',
+  '/deals/:store',
+  '/tracker',
+  '/extension',
+  '/wishlist',
+  '/about'
+], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Wildcard SPA Fallback middleware (Express 5 compatible)
+app.use((req, res) => {
+  if (req.path.startsWith('/api/') || req.path.startsWith('/downloads/')) {
+    return res.status(404).json({ error: 'Endpoint not found' });
+  }
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-  console.log(`buySmarty Server running at http://localhost:${PORT}`);
+  console.log(`buySmartly Server running at http://localhost:${PORT}`);
 });

@@ -106,11 +106,13 @@ async function verifyOtp(req, res) {
         // Verification successful -> Clear OTP from store
         const displayName = name || record.name || normalizedEmail.split('@')[0];
         otpStore.delete(normalizedEmail);
+        const authToken = 'sba_jwt_' + Buffer.from(JSON.stringify({ email: normalizedEmail, name: displayName, timestamp: Date.now() })).toString('base64');
 
         return res.json({
             success: true,
             verified: true,
             message: 'Email successfully verified.',
+            authToken,
             user: {
                 email: normalizedEmail,
                 name: displayName,
