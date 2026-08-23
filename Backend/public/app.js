@@ -1128,14 +1128,6 @@ function loginUser(email, name, verified = true, token = null) {
       window.location.href = decodeURIComponent(redirectTarget);
     }, 600);
   }
-}
-}
-
-function logoutUser() {
-  currentUser = null;
-  localStorage.removeItem('sba_user');
-  localStorage.removeItem('user');
-  localStorage.removeItem('authToken');
   initAuthUI();
   closeAccountModal();
 
