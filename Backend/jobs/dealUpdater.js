@@ -85,7 +85,11 @@ async function updateAllMarketplaceDeals() {
         !incoming.productUrl ||
         !incoming.currentPrice ||
         !incoming.storeName ||
-        incoming.isVerified !== true
+        // Catalog services provide listings sourced for this feed, but they do
+        // not add an `isVerified` field themselves. Treat only an explicit
+        // false value as unverified; otherwise every valid catalog record was
+        // discarded before it could be persisted.
+        incoming.isVerified === false
       ) {
         continue;
       }

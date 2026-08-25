@@ -64,9 +64,11 @@ async function sendOtp(req, res) {
         });
     } catch (err) {
         console.error('[AUTH CONTROLLER ERROR]', err);
-        return res.status(500).json({
+        return res.status(err.code === 'EMAIL_NOT_CONFIGURED' ? 503 : 500).json({
             success: false,
-            error: 'Failed to send verification email. Please check your email configuration.'
+            error: err.code === 'EMAIL_NOT_CONFIGURED'
+                ? 'Account verification is temporarily unavailable. Please try again later.'
+                : 'Failed to send verification email. Please check your email configuration.'
         });
     }
 }

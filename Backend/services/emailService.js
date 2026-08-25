@@ -1,7 +1,6 @@
 const nodemailer = require('nodemailer');
 
 let cachedTransporter = null;
-let etherealAccount = null;
 
 /**
  * Initializes or returns the cached Nodemailer transport.
@@ -41,27 +40,12 @@ async function getTransporter() {
     return cachedTransporter;
   }
 
-  // Option 3: Automated Ethereal Test Account fallback
-  console.log('[EMAIL SERVICE] No SMTP credentials in .env. Initializing test SMTP account...');
-  try {
-    if (!etherealAccount) {
-      etherealAccount = await nodemailer.createTestAccount();
-    }
-    cachedTransporter = nodemailer.createTransport({
-      host: etherealAccount.smtp.host,
-      port: etherealAccount.smtp.port,
-      secure: etherealAccount.smtp.secure,
-      auth: {
-        user: etherealAccount.user,
-        pass: etherealAccount.pass
-      }
-    });
-    console.log(`[EMAIL SERVICE] Test SMTP ready. Account: ${etherealAccount.user}`);
-    return cachedTransporter;
-  } catch (err) {
-    console.error('[EMAIL SERVICE] Failed to create test account:', err.message);
-    throw err;
-  }
+  // A test inbox is useful locally, but it cannot deliver a verification code
+  // to a real user and often waits indefinitely on hosted services. Production
+  // must use a configured email provider.
+  const error = new Error('Email verification is not configured. Please add SMTP credentials to the server environment.');
+  error.code = 'EMAIL_NOT_CONFIGURED';
+  throw error;
 }
 
 /**
@@ -73,7 +57,7 @@ async function getTransporter() {
  */
 async function sendOtpEmail({ to, name = 'Valued User', otp }) {
   const transporter = await getTransporter();
-  const fromAddress = process.env.EMAIL_FROM || process.env.GMAIL_USER || process.env.SMTP_USER || '"buySmartly" <no-reply@buychhatke.ai>';
+  const fromAddress = process.env.EMAIL_FROM || process.env.GMAIL_USER || process.env.SMTP_USER;
 
   const htmlContent = `
     <!DOCTYPE html>

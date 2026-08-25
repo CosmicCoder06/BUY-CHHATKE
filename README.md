@@ -60,11 +60,24 @@ Create `.env` in the repository root:
 
 ```env
 PORT=3000
-MONGO_URI=mongodb://127.0.0.1:27017/buy-chhatke
+MONGODB_URI=mongodb://127.0.0.1:27017/buy-chhatke
 RAPIDAPI_KEY=your_rapidapi_key
+# Use either Gmail with an app password...
+GMAIL_USER=your-address@gmail.com
+GMAIL_APP_PASSWORD=your_16_character_app_password
+# ...or a transactional provider (Brevo, SendGrid, Mailgun, AWS SES, etc.).
+# SMTP_HOST=smtp.example.com
+# SMTP_PORT=587
+# SMTP_USER=your_smtp_username
+# SMTP_PASS=your_smtp_password
+# EMAIL_FROM="buySmartly" <no-reply@your-domain.com>
 ```
 
 The RapidAPI key must be subscribed to the **Realtime flipkart amazon myntra ajio croma product details** API for the multi-store endpoint.
+
+### Render production setup
+
+In Render's service **Environment** page, set `MONGODB_URI` to a MongoDB Atlas connection string and configure either the Gmail pair (`GMAIL_USER`, `GMAIL_APP_PASSWORD`) or the SMTP variables above. `MONGODB_URI` is required for accounts to survive deploys and restarts; SMTP is required for real email verification. Never put these values in the repository.
 
 ## Chrome extension
 
