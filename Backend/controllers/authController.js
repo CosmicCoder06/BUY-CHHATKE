@@ -63,7 +63,14 @@ async function sendOtp(req, res) {
             sentToRealInbox: dispatchResult.sentToRealInbox
         });
     } catch (err) {
-        console.error('[AUTH CONTROLLER ERROR]', err);
+        // Axios errors can include request configuration (including provider API
+        // keys). Log only the diagnostic fields that are safe for Render logs.
+        console.error('[AUTH CONTROLLER ERROR]', {
+            message: err.message,
+            code: err.code,
+            status: err.response?.status,
+            providerMessage: err.response?.data?.message || err.response?.data?.code
+        });
         return res.status(err.code === 'EMAIL_NOT_CONFIGURED' ? 503 : 500).json({
             success: false,
             error: err.code === 'EMAIL_NOT_CONFIGURED'
