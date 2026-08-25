@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const axios = require('axios');
 
 let cachedTransporter = null;
 const SMTP_TIMEOUT_MS = Math.max(3000, Number.parseInt(process.env.SMTP_TIMEOUT_MS || '10000', 10) || 10000);
@@ -69,9 +70,6 @@ async function getTransporter() {
  * @param {string} options.otp - 6-digit OTP verification code
  */
 async function sendOtpEmail({ to, name = 'Valued User', otp }) {
-  const transporter = await getTransporter();
-  const fromAddress = process.env.EMAIL_FROM || process.env.GMAIL_USER || process.env.SMTP_USER;
-
   const htmlContent = `
     <!DOCTYPE html>
     <html lang="en">
@@ -121,11 +119,41 @@ async function sendOtpEmail({ to, name = 'Valued User', otp }) {
     </html>
     `;
 
+  const textContent = `Hello ${name},\n\nYour 6-digit verification code for buySmartly is: ${otp}\n\nThis code will expire in 10 minutes.\n\nThank you,\nbuySmartly Team`;
+  const fromAddress = process.env.EMAIL_FROM || process.env.GMAIL_USER || process.env.SMTP_USER;
+
+  // Render free services block SMTP ports. Brevo delivers through HTTPS, so it
+  // works on free hosting while retaining the same verification-email flow.
+  if (process.env.BREVO_API_KEY) {
+    const fromEmail = String(fromAddress || '').match(/<([^>]+)>/)?.[1] || fromAddress;
+    if (!fromEmail) {
+      const error = new Error('A verified sender email is required for Brevo. Set EMAIL_FROM or GMAIL_USER.');
+      error.code = 'EMAIL_SENDER_NOT_CONFIGURED';
+      throw error;
+    }
+
+    const response = await axios.post('https://api.brevo.com/v3/smtp/email', {
+      sender: { name: 'buySmartly', email: fromEmail },
+      to: [{ email: to, name }],
+      subject: `${otp} is your buySmartly Verification Code`,
+      textContent,
+      htmlContent
+    }, {
+      headers: { 'api-key': process.env.BREVO_API_KEY, 'content-type': 'application/json' },
+      timeout: SMTP_TIMEOUT_MS
+    });
+
+    console.log(`[EMAIL DISPATCH] Brevo email sent to: ${to} | Message ID: ${response.data.messageId}`);
+    return { success: true, messageId: response.data.messageId, previewUrl: null, sentToRealInbox: true };
+  }
+
+  const transporter = await getTransporter();
+
   const mailOptions = {
     from: fromAddress,
     to: to,
     subject: `${otp} is your buySmartly Verification Code`,
-    text: `Hello ${name},\n\nYour 6-digit verification code for buySmartly is: ${otp}\n\nThis code will expire in 10 minutes.\n\nThank you,\nbuySmartly Team`,
+    text: textContent,
     html: htmlContent
   };
 
