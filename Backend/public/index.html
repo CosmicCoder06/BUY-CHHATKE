@@ -496,6 +496,8 @@
             </div>
           </div>
 
+          <button type="button" class="forgot-password-btn" id="forgotPasswordBtn">Forgot password?</button>
+
           <button type="submit" class="modal-submit-btn" id="authSubmitBtn">Sign In to Engine ↵</button>
         </form>
       </div>
@@ -529,6 +531,44 @@
         <button type="button" class="modal-submit-btn verify-submit-btn" id="verifyOtpBtn">Verify &amp; Activate Account
           ↵</button>
         <button type="button" class="back-auth-btn" id="backToRegisterBtn">← Back to Edit Details</button>
+      </div>
+
+      <!-- Password reset: request code -->
+      <div id="passwordResetRequestStep" style="display: none;">
+        <div class="modal-header">
+          <div class="modal-brand-icon verify-icon">🔐</div>
+          <h3 class="modal-title">Reset Your Password</h3>
+          <p class="modal-sub">Enter your account email. If it exists, we’ll send a secure reset code.</p>
+        </div>
+        <div class="modal-form">
+          <div class="form-group">
+            <label class="form-label" for="resetEmailInput">Email Address</label>
+            <input type="email" id="resetEmailInput" class="form-input" placeholder="name@domain.com" autocomplete="email" />
+          </div>
+          <button type="button" class="modal-submit-btn" id="sendResetOtpBtn">Send Reset Code ↵</button>
+          <button type="button" class="back-auth-btn" id="backToLoginBtn">← Back to Sign In</button>
+        </div>
+      </div>
+
+      <!-- Password reset: verify code and choose password -->
+      <div id="passwordResetConfirmStep" style="display: none;">
+        <div class="modal-header">
+          <div class="modal-brand-icon verify-icon">🔐</div>
+          <h3 class="modal-title">Choose a New Password</h3>
+          <p class="modal-sub">Enter the 6-digit code sent to <b id="resetTargetEmail" class="highlight-email"></b></p>
+        </div>
+        <div class="modal-form">
+          <div class="form-group">
+            <label class="form-label" for="resetOtpInput">Reset Code</label>
+            <input type="text" id="resetOtpInput" class="otp-input" maxlength="6" autocomplete="one-time-code" inputmode="numeric" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="newPasswordInput">New Password</label>
+            <input type="password" id="newPasswordInput" class="form-input" minlength="8" autocomplete="new-password" placeholder="At least 8 characters" />
+          </div>
+          <button type="button" class="modal-submit-btn" id="resetPasswordBtn">Update Password ↵</button>
+          <button type="button" class="back-auth-btn" id="backToResetRequestBtn">← Use a different email</button>
+        </div>
       </div>
 
     </div>

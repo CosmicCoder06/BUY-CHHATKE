@@ -92,6 +92,8 @@ const tabRegisterBtn = document.getElementById('tabRegisterBtn');
 const authForm = document.getElementById('authForm');
 const authFormStep = document.getElementById('authFormStep');
 const authVerifyStep = document.getElementById('authVerifyStep');
+const passwordResetRequestStep = document.getElementById('passwordResetRequestStep');
+const passwordResetConfirmStep = document.getElementById('passwordResetConfirmStep');
 const nameGroup = document.getElementById('nameGroup');
 const userNameInput = document.getElementById('userNameInput');
 const userEmailInput = document.getElementById('userEmailInput');
@@ -101,6 +103,15 @@ const emailHint = document.getElementById('emailHint');
 const authSubmitBtn = document.getElementById('authSubmitBtn');
 const modalTitle = document.getElementById('modalTitle');
 const modalSub = document.getElementById('modalSub');
+const forgotPasswordBtn = document.getElementById('forgotPasswordBtn');
+const resetEmailInput = document.getElementById('resetEmailInput');
+const sendResetOtpBtn = document.getElementById('sendResetOtpBtn');
+const resetOtpInput = document.getElementById('resetOtpInput');
+const newPasswordInput = document.getElementById('newPasswordInput');
+const resetPasswordBtn = document.getElementById('resetPasswordBtn');
+const resetTargetEmail = document.getElementById('resetTargetEmail');
+const backToLoginBtn = document.getElementById('backToLoginBtn');
+const backToResetRequestBtn = document.getElementById('backToResetRequestBtn');
 const alertUserText = document.getElementById('alertUserText');
 
 // OTP Verification Step Elements
@@ -902,6 +913,8 @@ function closeLoginModal() {
 function resetAuthModalSteps() {
   if (authFormStep) authFormStep.style.display = 'block';
   if (authVerifyStep) authVerifyStep.style.display = 'none';
+  if (passwordResetRequestStep) passwordResetRequestStep.style.display = 'none';
+  if (passwordResetConfirmStep) passwordResetConfirmStep.style.display = 'none';
   if (emailHint) emailHint.style.display = 'none';
   if (otpCodeInput) otpCodeInput.value = '';
   pendingRegistration = null;
@@ -1202,6 +1215,69 @@ function loginUser(email, name, verified = true, token = null) {
   closeAccountModal();
   updateProductWishlistBtnState();
 }
+
+let pendingPasswordResetEmail = null;
+
+function showPasswordResetRequest() {
+  if (authFormStep) authFormStep.style.display = 'none';
+  if (authVerifyStep) authVerifyStep.style.display = 'none';
+  if (passwordResetConfirmStep) passwordResetConfirmStep.style.display = 'none';
+  if (passwordResetRequestStep) passwordResetRequestStep.style.display = 'block';
+  if (resetEmailInput) { resetEmailInput.value = userEmailInput?.value.trim() || ''; resetEmailInput.focus(); }
+}
+
+function showLoginForm() {
+  resetAuthModalSteps();
+  tabLoginBtn?.click();
+}
+
+if (forgotPasswordBtn) forgotPasswordBtn.addEventListener('click', showPasswordResetRequest);
+if (backToLoginBtn) backToLoginBtn.addEventListener('click', showLoginForm);
+if (backToResetRequestBtn) backToResetRequestBtn.addEventListener('click', showPasswordResetRequest);
+
+if (sendResetOtpBtn) sendResetOtpBtn.addEventListener('click', async () => {
+  const email = resetEmailInput?.value.trim();
+  if (!email || !isValidEmail(email)) { showToast('Enter a valid email address', '⚠️'); triggerShake(resetEmailInput); return; }
+  sendResetOtpBtn.disabled = true;
+  sendResetOtpBtn.textContent = 'Sending Reset Code... ⏳';
+  try {
+    const res = await fetchWithTimeout(`${API_BASE}/api/auth/request-password-reset`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Unable to request a reset code.');
+    pendingPasswordResetEmail = email.toLowerCase();
+    if (passwordResetRequestStep) passwordResetRequestStep.style.display = 'none';
+    if (passwordResetConfirmStep) passwordResetConfirmStep.style.display = 'block';
+    if (resetTargetEmail) resetTargetEmail.textContent = pendingPasswordResetEmail;
+    if (resetOtpInput) resetOtpInput.focus();
+    showToast('If the account exists, a reset code has been sent.', '✉️');
+  } catch (err) { showToast(`❌ ${err.message}`, '⚠️'); }
+  finally { sendResetOtpBtn.disabled = false; sendResetOtpBtn.textContent = 'Send Reset Code ↵'; }
+});
+
+if (resetPasswordBtn) resetPasswordBtn.addEventListener('click', async () => {
+  const otp = resetOtpInput?.value.trim();
+  const password = newPasswordInput?.value || '';
+  if (!pendingPasswordResetEmail || !/^\d{6}$/.test(otp || '') || password.length < 8) {
+    showToast('Enter the 6-digit code and a password of at least 8 characters.', '⚠️'); return;
+  }
+  resetPasswordBtn.disabled = true;
+  resetPasswordBtn.textContent = 'Updating Password... ⏳';
+  try {
+    const res = await fetchWithTimeout(`${API_BASE}/api/auth/reset-password`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: pendingPasswordResetEmail, otp, password })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Unable to reset password.');
+    pendingPasswordResetEmail = null;
+    showLoginForm();
+    if (userEmailInput) userEmailInput.value = resetEmailInput?.value.trim() || '';
+    if (userPasswordInput) userPasswordInput.value = '';
+    showToast('✅ Password updated. Please sign in.', '✅');
+  } catch (err) { showToast(`❌ ${err.message}`, '⚠️'); }
+  finally { resetPasswordBtn.disabled = false; resetPasswordBtn.textContent = 'Update Password ↵'; }
+});
 if (passwordToggleBtn && userPasswordInput) {
   passwordToggleBtn.addEventListener('click', () => {
     const shouldShow = userPasswordInput.type === 'password';

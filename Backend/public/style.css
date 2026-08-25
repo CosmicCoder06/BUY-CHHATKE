@@ -2351,6 +2351,9 @@ body {
 
 .modal-submit-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
 
+.forgot-password-btn { align-self: flex-end; border: 0; background: transparent; color: var(--brand-cyan); font-size: 0.76rem; font-weight: 700; cursor: pointer; padding: 0; margin: -4px 0 6px; }
+.forgot-password-btn:hover { text-decoration: underline; }
+
 .password-field { position: relative; width: 100%; }
 .password-field .form-input { width: 100%; padding-right: 48px; }
 .password-toggle { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 32px; height: 32px; border: 0; border-radius: 8px; background: transparent; color: var(--brand-cyan); cursor: pointer; padding: 6px; display: grid; place-items: center; }

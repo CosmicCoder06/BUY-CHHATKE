@@ -39,4 +39,18 @@ async function create(user) {
   return created;
 }
 
-module.exports = { findByEmail, create, hashPassword, verifyPassword };
+async function updatePassword(email, passwordHash) {
+  if (isDbConnected()) {
+    return MongooseUser.findOneAndUpdate(
+      { email },
+      { $set: { passwordHash } },
+      { returnDocument: 'after' }
+    ).lean();
+  }
+  const user = memoryUsers.get(email);
+  if (!user) return null;
+  user.passwordHash = passwordHash;
+  return user;
+}
+
+module.exports = { findByEmail, create, updatePassword, hashPassword, verifyPassword };

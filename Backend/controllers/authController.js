@@ -1,8 +1,40 @@
 const { sendOtpEmail } = require('../services/emailService');
 const User = require('../models/User');
+const crypto = require('crypto');
 
 // In-memory OTP Cache: Map<email, { otp, expiresAt, name }>
 const otpStore = new Map();
+const otpRequestStore = new Map();
+const OTP_TTL_MS = 10 * 60 * 1000;
+const MAX_OTP_ATTEMPTS = 5;
+
+function otpKey(purpose, email) {
+    return `${purpose}:${email}`;
+}
+
+function createOtp() {
+    return String(crypto.randomInt(100000, 1000000));
+}
+
+function hashOtp(otp) {
+    return crypto.createHash('sha256').update(String(otp)).digest('hex');
+}
+
+function validOtp(record, enteredOtp) {
+    const actual = Buffer.from(hashOtp(enteredOtp), 'hex');
+    const expected = Buffer.from(record.otpHash, 'hex');
+    return actual.length === expected.length && crypto.timingSafeEqual(actual, expected);
+}
+
+function canRequestOtp(purpose, email) {
+    const key = otpKey(purpose, email);
+    const now = Date.now();
+    const requests = (otpRequestStore.get(key) || []).filter(time => now - time < OTP_TTL_MS);
+    if (requests.length >= 3) return false;
+    requests.push(now);
+    otpRequestStore.set(key, requests);
+    return true;
+}
 
 // Helper to validate email format
 function isValidEmail(email) {
@@ -37,13 +69,17 @@ async function sendOtp(req, res) {
             : normalizedEmail.split('@')[0];
 
         // Generate cryptographically random 6-digit OTP
-        const otp = String(Math.floor(100000 + Math.random() * 900000));
-        const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
+        if (!canRequestOtp('registration', normalizedEmail)) {
+            return res.status(429).json({ success: false, error: 'Too many codes requested. Please wait 10 minutes.' });
+        }
+        const otp = createOtp();
+        const expiresAt = Date.now() + OTP_TTL_MS;
 
         // Store OTP in memory
-        otpStore.set(normalizedEmail, {
-            otp,
+        otpStore.set(otpKey('registration', normalizedEmail), {
+            otpHash: hashOtp(otp),
             expiresAt,
+            attempts: 0,
             name: userName,
             passwordHash: User.hashPassword(password)
         });
@@ -97,7 +133,8 @@ async function verifyOtp(req, res) {
         const normalizedEmail = email.trim().toLowerCase();
         const enteredOtp = String(otp).trim();
 
-        const record = otpStore.get(normalizedEmail);
+        const recordKey = otpKey('registration', normalizedEmail);
+        const record = otpStore.get(recordKey);
 
         if (!record) {
             return res.status(400).json({
@@ -107,14 +144,19 @@ async function verifyOtp(req, res) {
         }
 
         if (Date.now() > record.expiresAt) {
-            otpStore.delete(normalizedEmail);
+            otpStore.delete(recordKey);
             return res.status(400).json({
                 success: false,
                 error: 'Verification code has expired. Please request a new one.'
             });
         }
 
-        if (record.otp !== enteredOtp) {
+        record.attempts += 1;
+        if (record.attempts > MAX_OTP_ATTEMPTS) {
+            otpStore.delete(recordKey);
+            return res.status(429).json({ success: false, error: 'Too many invalid attempts. Please request a new code.' });
+        }
+        if (!validOtp(record, enteredOtp)) {
             return res.status(400).json({
                 success: false,
                 error: 'Invalid verification code. Please check your email and try again.'
@@ -125,7 +167,7 @@ async function verifyOtp(req, res) {
         const displayName = name || record.name || normalizedEmail.split('@')[0];
         const existingUser = await User.findByEmail(normalizedEmail);
         if (existingUser) {
-            otpStore.delete(normalizedEmail);
+            otpStore.delete(recordKey);
             return res.status(409).json({ success: false, error: 'An account already exists for this email. Please sign in.' });
         }
 
@@ -135,7 +177,7 @@ async function verifyOtp(req, res) {
             passwordHash: record.passwordHash,
             verified: true
         });
-        otpStore.delete(normalizedEmail);
+        otpStore.delete(recordKey);
         const authToken = 'sba_jwt_' + Buffer.from(JSON.stringify({ email: normalizedEmail, name: displayName, timestamp: Date.now() })).toString('base64');
 
         return res.json({
@@ -155,6 +197,58 @@ async function verifyOtp(req, res) {
             success: false,
             error: 'Failed to verify code. Please try again.'
         });
+    }
+}
+
+async function requestPasswordReset(req, res) {
+    try {
+        const normalizedEmail = String(req.body.email || '').trim().toLowerCase();
+        // Same response for existing and unknown accounts prevents email enumeration.
+        const message = 'If an account exists for this email, a reset code has been sent.';
+        if (!isValidEmail(normalizedEmail) || !canRequestOtp('password-reset', normalizedEmail)) {
+            return res.status(200).json({ success: true, message });
+        }
+        const user = await User.findByEmail(normalizedEmail);
+        if (!user) return res.status(200).json({ success: true, message });
+
+        const otp = createOtp();
+        otpStore.set(otpKey('password-reset', normalizedEmail), {
+            otpHash: hashOtp(otp), expiresAt: Date.now() + OTP_TTL_MS, attempts: 0
+        });
+        await sendOtpEmail({ to: normalizedEmail, name: user.name, otp, type: 'password-reset' });
+        return res.status(200).json({ success: true, message });
+    } catch (err) {
+        console.error('[PASSWORD RESET REQUEST ERROR]', { message: err.message, code: err.code, status: err.response?.status });
+        return res.status(503).json({ success: false, error: 'Password reset is temporarily unavailable. Please try again later.' });
+    }
+}
+
+async function resetPassword(req, res) {
+    try {
+        const normalizedEmail = String(req.body.email || '').trim().toLowerCase();
+        const otp = String(req.body.otp || '').trim();
+        const password = req.body.password;
+        if (!isValidEmail(normalizedEmail) || !/^\d{6}$/.test(otp) || typeof password !== 'string' || password.length < 8) {
+            return res.status(400).json({ success: false, error: 'Enter the 6-digit code and a password of at least 8 characters.' });
+        }
+        const key = otpKey('password-reset', normalizedEmail);
+        const record = otpStore.get(key);
+        if (!record || Date.now() > record.expiresAt) {
+            otpStore.delete(key);
+            return res.status(400).json({ success: false, error: 'This reset code has expired. Request a new one.' });
+        }
+        record.attempts += 1;
+        if (record.attempts > MAX_OTP_ATTEMPTS || !validOtp(record, otp)) {
+            if (record.attempts > MAX_OTP_ATTEMPTS) otpStore.delete(key);
+            return res.status(400).json({ success: false, error: 'Invalid reset code.' });
+        }
+        const updatedUser = await User.updatePassword(normalizedEmail, User.hashPassword(password));
+        otpStore.delete(key);
+        if (!updatedUser) return res.status(400).json({ success: false, error: 'Unable to reset this password.' });
+        return res.json({ success: true, message: 'Password updated. You can now sign in.' });
+    } catch (err) {
+        console.error('[PASSWORD RESET ERROR]', { message: err.message });
+        return res.status(500).json({ success: false, error: 'Unable to reset password. Please try again.' });
     }
 }
 
@@ -199,5 +293,7 @@ module.exports = {
     sendOtp,
     verifyOtp,
     login,
+    requestPasswordReset,
+    resetPassword,
     getStatus
 };

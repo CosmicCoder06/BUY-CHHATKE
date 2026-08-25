@@ -69,14 +69,19 @@ async function getTransporter() {
  * @param {string} options.name - Recipient user name
  * @param {string} options.otp - 6-digit OTP verification code
  */
-async function sendOtpEmail({ to, name = 'Valued User', otp }) {
+async function sendOtpEmail({ to, name = 'Valued User', otp, type = 'verification' }) {
+  const isPasswordReset = type === 'password-reset';
+  const actionLabel = isPasswordReset ? 'Password Reset' : 'Email Verification';
+  const actionText = isPasswordReset
+    ? 'We received a request to reset your buySmartly password. Use the 6-digit code below to choose a new password.'
+    : 'Thank you for creating an account with buySmartly. To complete your registration and activate automated price drop alerts, please use the 6-digit verification code below:';
   const htmlContent = `
     <!DOCTYPE html>
     <html lang="en">
     <head>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Email Verification - buySmartly</title>
+      <title>${actionLabel} - buySmartly</title>
       <style>
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #0a0e17; color: #f8fafc; margin: 0; padding: 24px 12px; }
         .email-wrapper { max-width: 520px; margin: 0 auto; background: #0d1322; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 16px; overflow: hidden; box-shadow: 0 12px 36px rgba(0,0,0,0.5); }
@@ -100,10 +105,10 @@ async function sendOtpEmail({ to, name = 'Valued User', otp }) {
         </div>
         <div class="email-body">
           <p class="greeting">Hello ${name},</p>
-          <p class="msg-text">Thank you for creating an account with buySmartly. To complete your registration and activate automated price drop alerts, please use the 6-digit verification code below:</p>
+          <p class="msg-text">${actionText}</p>
           
           <div class="otp-container">
-            <div class="otp-label">Verification Code</div>
+            <div class="otp-label">${actionLabel} Code</div>
             <div class="otp-code">${otp}</div>
           </div>
 
@@ -119,7 +124,7 @@ async function sendOtpEmail({ to, name = 'Valued User', otp }) {
     </html>
     `;
 
-  const textContent = `Hello ${name},\n\nYour 6-digit verification code for buySmartly is: ${otp}\n\nThis code will expire in 10 minutes.\n\nThank you,\nbuySmartly Team`;
+  const textContent = `Hello ${name},\n\nYour 6-digit ${isPasswordReset ? 'password reset' : 'verification'} code for buySmartly is: ${otp}\n\nThis code will expire in 10 minutes.\n\nThank you,\nbuySmartly Team`;
   const fromAddress = process.env.EMAIL_FROM || process.env.GMAIL_USER || process.env.SMTP_USER;
 
   // Render free services block SMTP ports. Brevo delivers through HTTPS, so it
@@ -135,7 +140,7 @@ async function sendOtpEmail({ to, name = 'Valued User', otp }) {
     const response = await axios.post('https://api.brevo.com/v3/smtp/email', {
       sender: { name: 'buySmartly', email: fromEmail },
       to: [{ email: to, name }],
-      subject: `${otp} is your buySmartly Verification Code`,
+      subject: `${otp} is your buySmartly ${actionLabel} Code`,
       textContent,
       htmlContent
     }, {
@@ -152,7 +157,7 @@ async function sendOtpEmail({ to, name = 'Valued User', otp }) {
   const mailOptions = {
     from: fromAddress,
     to: to,
-    subject: `${otp} is your buySmartly Verification Code`,
+    subject: `${otp} is your buySmartly ${actionLabel} Code`,
     text: textContent,
     html: htmlContent
   };
