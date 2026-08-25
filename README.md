@@ -60,7 +60,7 @@ Create `.env` in the repository root:
 
 ```env
 PORT=3000
-MONGODB_URI=mongodb://127.0.0.1:27017/buy-chhatke
+MONGODB_URI=mongodb://127.0.0.1:27017/buySmartly
 RAPIDAPI_KEY=your_rapidapi_key
 # Use either Gmail with an app password...
 GMAIL_USER=your-address@gmail.com

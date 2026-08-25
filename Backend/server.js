@@ -1,7 +1,6 @@
 const path = require('path');
-// Load environment variables from parent root or current directory
+// The repository root is the single source of local configuration.
 require('dotenv').config({ path: path.resolve(__dirname, '../.env'), quiet: true });
-require('dotenv').config({ path: path.resolve(__dirname, '.env'), quiet: true });
 
 const express = require('express');
 const cors = require('cors');
