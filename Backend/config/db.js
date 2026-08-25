@@ -8,7 +8,9 @@ const mongoose = require('mongoose');
 let isConnected = false;
 
 async function connectDB() {
-  const uri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/buy-chhatke';
+  const configuredUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/buySmartly';
+  const databaseName = process.env.MONGODB_DATABASE || 'buySmartly';
+  const uri = configuredUri.replace(/\/[^/?]+(\?.*)?$/, `/${databaseName}$1`);
   try {
     mongoose.set('strictQuery', false);
     await mongoose.connect(uri, {
