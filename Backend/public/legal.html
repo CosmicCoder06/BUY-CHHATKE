@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Legal | buySmartly</title>
+  <style>
+    :root { color-scheme: dark; --bg:#0a1020; --surface:#111a2e; --line:rgba(148,163,184,.18); --text:#e7edf8; --muted:#9cabc4; --cyan:#22d3ee; --indigo:#818cf8; }
+    * { box-sizing:border-box; } body { margin:0; min-height:100vh; font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif; color:var(--text); background:radial-gradient(circle at 10% 0%,#182454 0,transparent 32%),var(--bg); }
+    main { width:min(860px,calc(100% - 32px)); margin:0 auto; padding:56px 0 72px; } a { color:inherit; } .brand { display:inline-flex; align-items:center; gap:9px; text-decoration:none; font-weight:800; font-size:1.2rem; margin-bottom:42px; } .brand i { width:28px; height:28px; display:grid; place-items:center; border-radius:9px; font-style:normal; background:linear-gradient(135deg,var(--cyan),#6366f1); color:#fff; }
+    article { border:1px solid var(--line); border-radius:22px; padding:clamp(24px,5vw,48px); background:rgba(17,26,46,.9); box-shadow:0 24px 70px rgba(0,0,0,.3); } .eyebrow { color:var(--cyan); font-size:.72rem; font-weight:800; letter-spacing:.14em; } h1 { margin:10px 0 8px; font-size:clamp(1.8rem,5vw,2.7rem); } .updated { margin:0 0 34px; color:var(--muted); font-size:.88rem; } h2 { margin:30px 0 8px; font-size:1.05rem; } p,li { color:var(--muted); font-size:.94rem; line-height:1.7; } ul { padding-left:20px; } .notice { margin-top:30px; padding:14px 16px; border-radius:12px; border:1px solid rgba(34,211,238,.22); background:rgba(34,211,238,.06); color:#c9d8eb; font-size:.86rem; line-height:1.5; } .back { display:inline-block; margin-top:28px; color:var(--cyan); text-decoration:none; font-weight:700; }
+  </style>
+</head>
+<body>
+  <main>
+    <a class="brand" href="/"><i>✦</i>buySmartly</a>
+    <article id="document"></article>
+    <a class="back" href="/">← Back to buySmartly</a>
+  </main>
+  <script>
+    const docs = {
+      terms: { eyebrow:'LEGAL TERMS', title:'Terms of Use', sections:[
+        ['Using buySmartly','buySmartly provides product-price information, deal discovery and price-alert tools for personal use. You are responsible for how you use the service and for keeping your account details secure.'],
+        ['Price and merchant information','Prices, stock, offers and product information come from third-party sources and may change without notice. Always confirm the final price, seller, delivery terms and return policy on the merchant website before purchasing.'],
+        ['Acceptable use','Do not misuse the service, attempt unauthorised access, interfere with its operation, or use it to violate applicable laws or third-party rights.'],
+        ['Service availability','We may update, pause or improve features at any time. The service is provided as available and does not guarantee price accuracy, uninterrupted access or savings.']
+      ]},
+      privacy: { eyebrow:'PRIVACY & POLICIES', title:'Privacy Policy', sections:[
+        ['Information we use','We use the information you provide—such as name, email address and saved preferences—to create your account, send requested verification codes and price alerts, and operate the service.'],
+        ['Product and usage data','Product links, saved wishlist items and alert settings are used to provide the features you request. Some preferences may be stored in your browser so the site works between visits.'],
+        ['Sharing','We do not sell personal information. We may use trusted service providers for email delivery, hosting, analytics or payments when those features are enabled.'],
+        ['Your choices','You can stop using the service, remove locally stored browser data, or contact us to request account-related assistance.']
+      ]},
+      cookies: { eyebrow:'COOKIE PREFERENCES', title:'Cookie Policy', sections:[
+        ['Essential storage','buySmartly uses essential browser storage to keep session, theme, wishlist and alert preferences working.'],
+        ['Optional services','Third-party services may use their own cookies or similar technologies when you visit their pages or use an enabled payment service. Their own policies apply.'],
+        ['Your control','You can clear or block cookies and site storage through your browser settings. Some features may no longer work correctly after doing so.']
+      ]}
+    };
+    const selected = docs[new URLSearchParams(location.search).get('doc')] || docs.terms;
+    document.title = `${selected.title} | buySmartly`;
+    document.getElementById('document').innerHTML = `<div class="eyebrow">${selected.eyebrow}</div><h1>${selected.title}</h1><p class="updated">Last updated: 26 August 2026</p>${selected.sections.map(([heading,text]) => `<section><h2>${heading}</h2><p>${text}</p></section>`).join('')}<div class="notice">This is a basic interim policy for buySmartly. It will be reviewed and expanded before full commercial payment features launch.</div>`;
+  </script>
+</body>
+</html>
