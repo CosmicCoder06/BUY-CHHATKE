@@ -1,6 +1,17 @@
 const nodemailer = require('nodemailer');
 
 let cachedTransporter = null;
+const SMTP_TIMEOUT_MS = Math.max(3000, Number.parseInt(process.env.SMTP_TIMEOUT_MS || '10000', 10) || 10000);
+
+function transporterTimeouts() {
+  return {
+    // Prevent an unavailable or misconfigured mail provider from leaving the
+    // registration request open indefinitely.
+    connectionTimeout: SMTP_TIMEOUT_MS,
+    greetingTimeout: SMTP_TIMEOUT_MS,
+    socketTimeout: SMTP_TIMEOUT_MS
+  };
+}
 
 /**
  * Initializes or returns the cached Nodemailer transport.
@@ -16,6 +27,7 @@ async function getTransporter() {
     console.log(`[EMAIL SERVICE] Configured Gmail SMTP for ${gmailUser}`);
     cachedTransporter = nodemailer.createTransport({
       service: 'gmail',
+      ...transporterTimeouts(),
       auth: {
         user: gmailUser,
         pass: gmailPass
@@ -32,6 +44,7 @@ async function getTransporter() {
       host: process.env.SMTP_HOST,
       port: port,
       secure: process.env.SMTP_SECURE === 'true' || port === 465,
+      ...transporterTimeouts(),
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS

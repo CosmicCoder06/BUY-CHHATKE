@@ -141,6 +141,21 @@ const API_BASE = (location.port === '3000' || location.protocol === 'file:')
   ? 'http://localhost:3000'
   : (location.port && location.port !== '3000' ? 'http://localhost:3000' : '');
 
+async function fetchWithTimeout(url, options = {}, timeoutMs = 15000) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      throw new Error('The server took too long to respond. Please try again.');
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
 // ─── INITIALIZATION ─────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   initAuthUI();
@@ -971,7 +986,7 @@ if (authForm) {
       authSubmitBtn.textContent = 'Sending Verification Email... ⏳';
 
       try {
-        const res = await fetch(`${API_BASE}/api/auth/send-otp`, {
+        const res = await fetchWithTimeout(`${API_BASE}/api/auth/send-otp`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, name, password })
@@ -1020,7 +1035,7 @@ if (authForm) {
       authSubmitBtn.disabled = true;
       authSubmitBtn.textContent = 'Signing In... ⏳';
       try {
-        const res = await fetch(`${API_BASE}/api/auth/login`, {
+        const res = await fetchWithTimeout(`${API_BASE}/api/auth/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password })
@@ -1077,7 +1092,7 @@ if (verifyOtpBtn) {
     verifyOtpBtn.textContent = 'Verifying Code... ⏳';
 
     try {
-      const res = await fetch(`${API_BASE}/api/auth/verify-otp`, {
+      const res = await fetchWithTimeout(`${API_BASE}/api/auth/verify-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -1113,7 +1128,7 @@ if (resendOtpBtn) {
     resendOtpBtn.textContent = 'Resending... ⏳';
 
     try {
-      const res = await fetch(`${API_BASE}/api/auth/send-otp`, {
+      const res = await fetchWithTimeout(`${API_BASE}/api/auth/send-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
