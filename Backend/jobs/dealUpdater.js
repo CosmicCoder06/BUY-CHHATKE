@@ -143,7 +143,7 @@ async function updateAllMarketplaceDeals() {
           priceHistory: priceHistory,
           lastUpdated: now
         },
-        { upsert: true, new: true }
+        { upsert: true, returnDocument: 'after' }
       );
 
       updatedRecords.push(saved);

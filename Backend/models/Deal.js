@@ -133,7 +133,7 @@ const Deal = {
     return memoryStore.get(String(id)) || null;
   },
 
-  async findOneAndUpdate(filter, update, options = { upsert: true, new: true }) {
+  async findOneAndUpdate(filter, update, options = { upsert: true, returnDocument: 'after' }) {
     if (isDbConnected()) {
       return await MongooseDeal.findOneAndUpdate(filter, update, options).lean();
     }
