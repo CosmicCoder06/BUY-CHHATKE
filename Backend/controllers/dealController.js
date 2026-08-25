@@ -45,6 +45,11 @@ async function getDeals(req, res) {
 
     let deals = await Deal.find(filter, sortOption);
 
+    // The previous seed catalog contained illustrative data and some listings
+    // used images from a different marketplace. Daily Deals must only show a
+    // listing when its title, image, price and URL came from a verified source.
+    deals = (deals || []).filter(deal => deal.isVerified === true);
+
     // If text search on in-memory mode or fuzzy fallback
     if (searchQuery && Array.isArray(deals)) {
       const qLower = searchQuery.toLowerCase();
@@ -53,16 +58,6 @@ async function getDeals(req, res) {
         (d.category && d.category.toLowerCase().includes(qLower)) ||
         (d.storeName && d.storeName.toLowerCase().includes(qLower))
       );
-    }
-
-    // If deals table is empty, auto-seed with immediate sync
-    if (!deals || deals.length === 0) {
-      const { updateAllMarketplaceDeals } = require('../jobs/dealUpdater');
-      deals = await updateAllMarketplaceDeals();
-      if (store && store.toLowerCase() !== 'all') {
-        const storeNameFormatted = store.charAt(0).toUpperCase() + store.slice(1).toLowerCase();
-        deals = deals.filter(d => d.storeName.toLowerCase() === storeNameFormatted.toLowerCase());
-      }
     }
 
     return res.json({

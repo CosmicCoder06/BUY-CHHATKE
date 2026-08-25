@@ -14,6 +14,20 @@
   }
 
   const currentUrl = window.location.href;
+  const LOCAL_DASHBOARD_URL = 'http://localhost:3000';
+
+  function getDashboardBaseUrl() {
+    return new Promise((resolve) => {
+      if (!isExtensionValid() || !chrome.storage?.local) {
+        resolve(LOCAL_DASHBOARD_URL);
+        return;
+      }
+      chrome.storage.local.get(['dashboardBaseUrl'], (res) => {
+        const value = String(res?.dashboardBaseUrl || '').replace(/\/$/, '');
+        resolve(/^https?:\/\//i.test(value) ? value : LOCAL_DASHBOARD_URL);
+      });
+    });
+  }
 
   // ─── 1. STRICT PLATFORM & PRODUCT PAGE DETECTION RULES ───────────────
   // ONLY activate on valid product pages. NEVER activate on Homepage, Search, Category, Collections, Deals, Cart, Login.
@@ -173,6 +187,29 @@
 
     // B. FLIPKART
     else if (platform === 'Flipkart') {
+      // Product JSON-LD is tied to the open product, unlike promotional cards
+      // elsewhere on the page (which can contain unrelated lower prices).
+      const schemaNodes = [];
+      document.querySelectorAll('script[type="application/ld+json"]').forEach((script) => {
+        try {
+          const json = JSON.parse(script.textContent || '{}');
+          if (Array.isArray(json)) schemaNodes.push(...json);
+          else if (Array.isArray(json['@graph'])) schemaNodes.push(...json['@graph']);
+          else schemaNodes.push(json);
+        } catch (_) {}
+      });
+      const schemaProduct = schemaNodes.find((item) => {
+        const type = item?.['@type'];
+        return type === 'Product' || (Array.isArray(type) && type.includes('Product'));
+      });
+      if (schemaProduct) {
+        const offer = Array.isArray(schemaProduct.offers) ? schemaProduct.offers[0] : schemaProduct.offers;
+        const schemaPrice = parsePrice(String(offer?.price || offer?.lowPrice || ''));
+        if (schemaPrice > 0) currentPrice = schemaPrice;
+        productTitle = schemaProduct.name || productTitle;
+        productImage = Array.isArray(schemaProduct.image) ? schemaProduct.image[0] : (schemaProduct.image || productImage);
+      }
+
       const priceSelectors = [
         'div.Nx9bqj.CxhGGd',
         'div[class*="Nx9bqj"][class*="CxhGGd"]',
@@ -188,12 +225,22 @@
         'div._25b18c',
         'div[class*="_25b18c"]'
       ];
-      for (const sel of priceSelectors) {
-        const el = document.querySelector(sel);
-        if (el && el.innerText) {
-          const val = parsePrice(el.innerText);
-          if (val > 0) { currentPrice = val; break; }
+      if (!currentPrice) {
+        const titleEl = document.querySelector('h1.C6Ji6Q, h1 span.B_NuCI, h1.VU-ZEz, span.VU-ZEz, h1._6EBuvT, h1');
+        const titleBox = titleEl?.getBoundingClientRect();
+        const candidates = [];
+        for (const sel of priceSelectors) {
+          document.querySelectorAll(sel).forEach((el) => {
+            const val = parsePrice(el.innerText || '');
+            if (!val || candidates.some((candidate) => candidate.el === el)) return;
+            const box = el.getBoundingClientRect();
+            const proximity = titleBox && box.height ? Math.abs(box.top - titleBox.bottom) : 10000;
+            const primaryClass = /Nx9bqj|CxhGGd/.test(el.className || '') ? 5000 : 0;
+            candidates.push({ el, val, score: primaryClass - proximity });
+          });
         }
+        candidates.sort((a, b) => b.score - a.score);
+        if (candidates[0]) currentPrice = candidates[0].val;
       }
 
       // Direct DOM scanner for ₹ currency text if class-based extraction missed
@@ -715,7 +762,7 @@
                   <span class="sba-store-name">${c.store} ${c.isCurrent ? '(Current)' : ''}</span>
                   <span class="sba-store-price">₹${Number(c.price).toLocaleString('en-IN')}</span>
                 </div>
-                ${c.isCheapest ? '<span class="sba-cheap-tag">Lowest Price ⭐</span>' : `<a href="http://localhost:3000/dashboard?product=${encodeURIComponent(prodContext.productUrl)}" target="_blank" class="sba-c-link">View ↗</a>`}
+                ${c.isCheapest ? '<span class="sba-cheap-tag">Lowest Price ⭐</span>' : '<a href="#" class="sba-c-link sba-dashboard-link">View ↗</a>'}
               </div>
             `).join('')}
           </div>
@@ -845,16 +892,17 @@
     const loginNowAltBtn = panel.querySelector('#sbaLoginNowAltBtn');
     const openDashBtn = panel.querySelector('#sbaOpenDashBtn');
 
-    function redirectToLogin() {
+    async function redirectToLogin() {
       const targetProductUrl = encodeURIComponent(window.location.href);
-      window.open(`http://localhost:3000/login?source=extension&redirect=${targetProductUrl}`, '_blank');
+      const dashboardBaseUrl = await getDashboardBaseUrl();
+      window.open(`${dashboardBaseUrl}/login?source=extension&redirect=${targetProductUrl}`, '_blank');
     }
 
     if (loginNowBtn) loginNowBtn.addEventListener('click', redirectToLogin);
     if (loginNowAltBtn) loginNowAltBtn.addEventListener('click', redirectToLogin);
 
     if (openDashBtn) {
-      openDashBtn.addEventListener('click', () => {
+      openDashBtn.addEventListener('click', async () => {
         const p = new URLSearchParams({
           product: prodContext.productUrl,
           livePrice: String(prodContext.currentPrice || ''),
@@ -862,9 +910,18 @@
           liveImage: prodContext.productImage || '',
           liveMrp: String(prodContext.originalPrice || '')
         });
-        window.open(`http://localhost:3000/dashboard?${p.toString()}`, '_blank');
+        const dashboardBaseUrl = await getDashboardBaseUrl();
+        window.open(`${dashboardBaseUrl}/dashboard?${p.toString()}`, '_blank');
       });
     }
+
+    panel.querySelectorAll('.sba-dashboard-link').forEach((link) => {
+      link.addEventListener('click', async (event) => {
+        event.preventDefault();
+        const dashboardBaseUrl = await getDashboardBaseUrl();
+        window.open(`${dashboardBaseUrl}/dashboard?product=${encodeURIComponent(prodContext.productUrl)}`, '_blank');
+      });
+    });
 
     // TABS
     const tabs = panel.querySelectorAll('.sba-tab');

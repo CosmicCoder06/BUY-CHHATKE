@@ -139,7 +139,7 @@
       <div id="recentSearchesContainer" class="recent-searches-container">
         <div class="recent-header">
           <span class="recent-label">⏱️ Recent Searches:</span>
-          <button id="clearRecentBtn" class="recent-clear-btn" title="Clear History">Clear</button>
+          <button id="clearRecentBtn" type="button" class="recent-clear-btn" title="Clear History">Clear</button>
         </div>
         <div class="recent-tiles-rail" id="recentTilesRail">
           <!-- Injected dynamically by JavaScript -->
@@ -422,9 +422,8 @@
             <span>Download Extension (.zip)</span>
             <span>⬇️</span>
           </a>
-          <button type="button" id="openSetupGuideBtn" onclick="openExtensionModal()" class="tc-buy-direct-btn" style="padding: 12px 22px; font-size: 0.92rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
-            <span>Setup Guide</span>
-            <span>📖</span>
+          <button type="button" id="openSetupGuideBtn" onclick="openExtensionModal()" class="extension-guide-btn">
+            <span>📖</span><span>Setup Guide</span>
           </button>
         </div>
       </div>
@@ -488,7 +487,13 @@
 
           <div class="form-group">
             <label class="form-label" for="userPasswordInput">Password</label>
-            <input type="password" id="userPasswordInput" class="form-input" placeholder="••••••••" required />
+            <div class="password-field">
+              <input type="password" id="userPasswordInput" class="form-input" placeholder="••••••••" required />
+              <button type="button" class="password-toggle" id="passwordToggleBtn" aria-label="Show password">
+                <svg class="eye-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.8"/></svg>
+                <svg class="eye-closed" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 3 18 18M10.6 6.2A10.8 10.8 0 0 1 12 6c6 0 9.5 6 9.5 6a17.5 17.5 0 0 1-3 3.7M6.1 6.1C3.9 8 2.5 12 2.5 12S6 18 12 18c1.4 0 2.6-.3 3.7-.8M9.5 9.5a3.5 3.5 0 0 0 4.9 4.9"/></svg>
+              </button>
+            </div>
           </div>
 
           <button type="submit" class="modal-submit-btn" id="authSubmitBtn">Sign In to Engine ↵</button>
@@ -574,11 +579,15 @@
             </div>
             <div class="form-group">
               <label class="form-label" for="editAlertPref">Alert Delivery Channel</label>
-              <select id="editAlertPref" class="form-input form-select">
-                <option value="email">Direct Email Dispatch</option>
-                <option value="push">Browser Push Notifications</option>
-                <option value="both">Both (Email + Browser)</option>
-              </select>
+              <div class="alert-pref-picker" id="alertPrefPicker">
+                <input type="hidden" id="editAlertPref" value="email" />
+                <button type="button" class="alert-pref-trigger" id="alertPrefTrigger" aria-haspopup="listbox" aria-expanded="false"><span id="alertPrefLabel">✉️ Direct Email Dispatch</span><span class="alert-pref-chevron">⌄</span></button>
+                <div class="alert-pref-options" id="alertPrefOptions" role="listbox" hidden>
+                  <button type="button" role="option" data-value="email">✉️ <span><b>Direct Email</b><small>Receive alerts in your inbox</small></span></button>
+                  <button type="button" role="option" data-value="push">🔔 <span><b>Browser Notifications</b><small>Instant alerts on this device</small></span></button>
+                  <button type="button" role="option" data-value="both">✨ <span><b>Email + Browser</b><small>Never miss a price drop</small></span></button>
+                </div>
+              </div>
             </div>
           </div>
           <button class="acc-btn-primary" id="saveProfileBtn">Save Preferences</button>
@@ -811,7 +820,7 @@
     </div>
   </footer>
 
-  <script src="app.js?v=6.0.0"></script>
+  <script src="app.js?v=6.0.8"></script>
 </body>
 
 </html>

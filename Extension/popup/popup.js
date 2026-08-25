@@ -28,14 +28,17 @@ async function initAuthState(tab) {
   const launchBtnText = document.getElementById('sbaLaunchBtnText');
 
   return new Promise((resolve) => {
-    chrome.storage.local.get(['authToken', 'user', 'currentProduct'], (res) => {
+    chrome.storage.local.get(['authToken', 'user', 'currentProduct', 'dashboardBaseUrl'], (res) => {
       const isAuth = Boolean(res.authToken && res.user);
       const user = res.user;
       const product = res.currentProduct;
       const targetProductUrl = product?.productUrl || product?.url || tab?.url || '';
       const encodedUrl = encodeURIComponent(targetProductUrl);
+      const dashboardBaseUrl = /^https?:\/\//i.test(String(res.dashboardBaseUrl || ''))
+        ? String(res.dashboardBaseUrl).replace(/\/$/, '')
+        : 'http://localhost:3000';
       const dashboardUrl = () => {
-        if (!targetProductUrl) return 'http://localhost:3000/dashboard';
+        if (!targetProductUrl) return `${dashboardBaseUrl}/dashboard`;
         const p = new URLSearchParams({ product: targetProductUrl });
         if (Number(product?.currentPrice) > 0) {
           p.set('livePrice', product.currentPrice);
@@ -43,7 +46,7 @@ async function initAuthState(tab) {
           p.set('liveImage', product.productImage || product.image || '');
           p.set('liveMrp', product.originalPrice || '');
         }
-        return `http://localhost:3000/dashboard?${p.toString()}`;
+        return `${dashboardBaseUrl}/dashboard?${p.toString()}`;
       };
 
       // Context detector text
@@ -100,13 +103,13 @@ async function initAuthState(tab) {
         if (logoutBtn) logoutBtn.style.display = 'none';
 
         authActionBtn.onclick = () => {
-          window.open(`http://localhost:3000/login?source=extension&redirect=${encodedUrl}`, '_blank');
+          window.open(`${dashboardBaseUrl}/login?source=extension&redirect=${encodedUrl}`, '_blank');
         };
 
         if (launchWebBtn) {
           launchBtnText.textContent = 'Login Now to Unlock buySmartly';
           launchWebBtn.onclick = () => {
-            window.open(`http://localhost:3000/login?source=extension&redirect=${encodedUrl}`, '_blank');
+            window.open(`${dashboardBaseUrl}/login?source=extension&redirect=${encodedUrl}`, '_blank');
           };
         }
       }

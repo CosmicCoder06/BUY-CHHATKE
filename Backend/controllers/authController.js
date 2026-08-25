@@ -1,4 +1,5 @@
 const { sendOtpEmail } = require('../services/emailService');
+const User = require('../models/User');
 
 // In-memory OTP Cache: Map<email, { otp, expiresAt, name }>
 const otpStore = new Map();
@@ -14,7 +15,7 @@ function isValidEmail(email) {
  */
 async function sendOtp(req, res) {
     try {
-        const { email, name } = req.body;
+        const { email, name, password } = req.body;
 
         if (!email || !isValidEmail(email)) {
             return res.status(400).json({
@@ -24,6 +25,13 @@ async function sendOtp(req, res) {
         }
 
         const normalizedEmail = email.trim().toLowerCase();
+        if (typeof password !== 'string' || password.length < 4) {
+            return res.status(400).json({ success: false, error: 'Password must be at least 4 characters.' });
+        }
+
+        if (await User.findByEmail(normalizedEmail)) {
+            return res.status(409).json({ success: false, error: 'An account already exists for this email. Please sign in.' });
+        }
         const userName = (name && typeof name === 'string' && name.trim().length > 0)
             ? name.trim()
             : normalizedEmail.split('@')[0];
@@ -36,7 +44,8 @@ async function sendOtp(req, res) {
         otpStore.set(normalizedEmail, {
             otp,
             expiresAt,
-            name: userName
+            name: userName,
+            passwordHash: User.hashPassword(password)
         });
 
         // Dispatch Email via Nodemailer
@@ -105,6 +114,18 @@ async function verifyOtp(req, res) {
 
         // Verification successful -> Clear OTP from store
         const displayName = name || record.name || normalizedEmail.split('@')[0];
+        const existingUser = await User.findByEmail(normalizedEmail);
+        if (existingUser) {
+            otpStore.delete(normalizedEmail);
+            return res.status(409).json({ success: false, error: 'An account already exists for this email. Please sign in.' });
+        }
+
+        await User.create({
+            email: normalizedEmail,
+            name: displayName,
+            passwordHash: record.passwordHash,
+            verified: true
+        });
         otpStore.delete(normalizedEmail);
         const authToken = 'sba_jwt_' + Buffer.from(JSON.stringify({ email: normalizedEmail, name: displayName, timestamp: Date.now() })).toString('base64');
 
@@ -128,6 +149,29 @@ async function verifyOtp(req, res) {
     }
 }
 
+async function login(req, res) {
+    try {
+        const { email, password } = req.body;
+        if (!email || !password || !isValidEmail(email)) {
+            return res.status(400).json({ success: false, error: 'Valid email and password are required.' });
+        }
+        const normalizedEmail = email.trim().toLowerCase();
+        const user = await User.findByEmail(normalizedEmail);
+        if (!user || !User.verifyPassword(password, user.passwordHash)) {
+            return res.status(401).json({ success: false, error: 'Incorrect email or password.' });
+        }
+        const authToken = 'sba_jwt_' + Buffer.from(JSON.stringify({ email: user.email, name: user.name, timestamp: Date.now() })).toString('base64');
+        return res.json({
+            success: true,
+            authToken,
+            user: { email: user.email, name: user.name, verified: true }
+        });
+    } catch (err) {
+        console.error('[LOGIN CONTROLLER ERROR]', err);
+        return res.status(500).json({ success: false, error: 'Unable to sign in. Please try again.' });
+    }
+}
+
 /**
  * Returns configuration status of the authentication & email service.
  */
@@ -145,5 +189,6 @@ function getStatus(req, res) {
 module.exports = {
     sendOtp,
     verifyOtp,
+    login,
     getStatus
 };

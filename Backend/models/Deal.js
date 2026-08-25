@@ -55,6 +55,11 @@ const DealSchema = new mongoose.Schema({
     type: String,
     default: '📈 Trending Deal'
   },
+  isVerified: {
+    type: Boolean,
+    default: false,
+    index: true
+  },
   priceHistory: [
     {
       price: { type: Number, required: true },

@@ -20,11 +20,20 @@
 
       if (storedToken && rawUser) {
         const user = JSON.parse(rawUser);
-        chrome.storage.local.set({ authToken: storedToken, user: user }, () => {
+        chrome.storage.local.set({ authToken: storedToken, user: user, dashboardBaseUrl: window.location.origin }, () => {
           if (chrome.runtime?.lastError) {}
         });
       }
     } catch (e) {}
+  }
+
+  // Remember the active buySmartly deployment so extension redirects never
+  // fall back to localhost after the project is deployed on Render.
+  const isBuySmartlyPage = /buysmartly/i.test(document.title) || Boolean(
+    localStorage.getItem('authToken') || localStorage.getItem('sba_user') || localStorage.getItem('user')
+  );
+  if (isExtensionAlive() && isBuySmartlyPage) {
+    chrome.storage.local.set({ dashboardBaseUrl: window.location.origin }, () => {});
   }
 
   syncFromStorage();
@@ -40,7 +49,8 @@
         if (e.data.authToken && e.data.user) {
           chrome.storage.local.set({
             authToken: e.data.authToken,
-            user: e.data.user
+            user: e.data.user,
+            dashboardBaseUrl: window.location.origin
           }, () => {
             if (chrome.runtime?.lastError) {}
           });

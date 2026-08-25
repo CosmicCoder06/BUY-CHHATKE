@@ -1,6 +1,16 @@
 // buySmartly AI Assistant — Background Service Worker (Manifest V3)
 
 const SUPPORTED_HOSTS = ['flipkart.com', 'amazon.in', 'amazon.com', 'myntra.com', 'meesho.com', 'ajio.com', 'croma.com'];
+const LOCAL_DASHBOARD_URL = 'http://localhost:3000';
+
+function getDashboardBaseUrl() {
+  return new Promise((resolve) => {
+    chrome.storage.local.get(['dashboardBaseUrl'], (res) => {
+      const value = String(res.dashboardBaseUrl || '').replace(/\/$/, '');
+      resolve(/^https?:\/\//i.test(value) ? value : LOCAL_DASHBOARD_URL);
+    });
+  });
+}
 
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({
@@ -23,15 +33,16 @@ chrome.runtime.onInstalled.addListener(() => {
 });
 
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
-  let targetUrl = 'http://localhost:3000/dashboard';
+  const dashboardBaseUrl = await getDashboardBaseUrl();
+  let targetUrl = `${dashboardBaseUrl}/dashboard`;
 
   if (info.menuItemId === 'buysmartly-track-selection' && info.selectionText) {
-    targetUrl = `http://localhost:3000/dashboard?product=${encodeURIComponent(info.selectionText.trim())}`;
+    targetUrl = `${dashboardBaseUrl}/dashboard?product=${encodeURIComponent(info.selectionText.trim())}`;
   } else if (info.menuItemId === 'buysmartly-track-link' && info.linkUrl) {
-    targetUrl = `http://localhost:3000/dashboard?product=${encodeURIComponent(info.linkUrl.trim())}`;
+    targetUrl = `${dashboardBaseUrl}/dashboard?product=${encodeURIComponent(info.linkUrl.trim())}`;
   } else if (info.menuItemId === 'buysmartly-open-dashboard') {
     if (tab && tab.url) {
-      targetUrl = `http://localhost:3000/dashboard?product=${encodeURIComponent(tab.url)}`;
+      targetUrl = `${dashboardBaseUrl}/dashboard?product=${encodeURIComponent(tab.url)}`;
     }
   }
 
@@ -79,7 +90,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     (async () => {
       try {
         const product = message.product || {};
-        const apiUrl = `http://localhost:3000/api/analyze?url=${encodeURIComponent(product.productUrl || message.url || message.query)}&livePrice=${encodeURIComponent(product.currentPrice || '')}&liveTitle=${encodeURIComponent(product.productTitle || '')}&liveImage=${encodeURIComponent(product.productImage || '')}&liveMrp=${encodeURIComponent(product.originalPrice || '')}`;
+        const dashboardBaseUrl = await getDashboardBaseUrl();
+        const apiUrl = `${dashboardBaseUrl}/api/analyze?url=${encodeURIComponent(product.productUrl || message.url || message.query)}&livePrice=${encodeURIComponent(product.currentPrice || '')}&liveTitle=${encodeURIComponent(product.productTitle || '')}&liveImage=${encodeURIComponent(product.productImage || '')}&liveMrp=${encodeURIComponent(product.originalPrice || '')}`;
         const res = await fetch(apiUrl);
         if (!res.ok) throw new Error('API status: ' + res.status);
         const data = await res.json();

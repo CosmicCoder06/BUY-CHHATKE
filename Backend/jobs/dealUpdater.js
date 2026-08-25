@@ -84,7 +84,8 @@ async function updateAllMarketplaceDeals() {
         !incoming.imageUrl ||
         !incoming.productUrl ||
         !incoming.currentPrice ||
-        !incoming.storeName
+        !incoming.storeName ||
+        incoming.isVerified !== true
       ) {
         continue;
       }
@@ -132,6 +133,7 @@ async function updateAllMarketplaceDeals() {
           discountPercentage: incoming.discountPercentage,
           category: incoming.category || 'General',
           rating: incoming.rating || 4.3,
+          isVerified: true,
           productUrl: incoming.productUrl,
           dealTag: smartTag,
           priceHistory: priceHistory,

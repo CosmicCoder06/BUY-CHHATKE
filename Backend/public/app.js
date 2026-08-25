@@ -12,6 +12,23 @@ let userAlerts = JSON.parse(localStorage.getItem('sba_alerts') || '[]');
 let pendingRegistration = null;
 let otpCountdownInterval = null;
 
+// Old demo sessions used a locally generated token. Clear only those sessions so
+// every new login is backed by a real account and password.
+const storedAuthToken = localStorage.getItem('authToken');
+let hasAccountToken = false;
+try {
+  const tokenPayload = JSON.parse(atob((storedAuthToken || '').replace('sba_jwt_', '')));
+  hasAccountToken = Boolean(tokenPayload.email && tokenPayload.name);
+} catch (_) {
+  hasAccountToken = false;
+}
+if (currentUser && !hasAccountToken) {
+  currentUser = null;
+  localStorage.removeItem('sba_user');
+  localStorage.removeItem('user');
+  localStorage.removeItem('authToken');
+}
+
 // ─── THEME MANAGER ──────────────────────────────────────────────
 (function () {
   const root = document.documentElement;
@@ -79,6 +96,7 @@ const nameGroup = document.getElementById('nameGroup');
 const userNameInput = document.getElementById('userNameInput');
 const userEmailInput = document.getElementById('userEmailInput');
 const userPasswordInput = document.getElementById('userPasswordInput');
+const passwordToggleBtn = document.getElementById('passwordToggleBtn');
 const emailHint = document.getElementById('emailHint');
 const authSubmitBtn = document.getElementById('authSubmitBtn');
 const modalTitle = document.getElementById('modalTitle');
@@ -109,6 +127,10 @@ const accScansCount = document.getElementById('accScansCount');
 const accWishlistStat = document.getElementById('accWishlistStat');
 const editUserName = document.getElementById('editUserName');
 const editAlertPref = document.getElementById('editAlertPref');
+const alertPrefPicker = document.getElementById('alertPrefPicker');
+const alertPrefTrigger = document.getElementById('alertPrefTrigger');
+const alertPrefLabel = document.getElementById('alertPrefLabel');
+const alertPrefOptions = document.getElementById('alertPrefOptions');
 const saveProfileBtn = document.getElementById('saveProfileBtn');
 const accAlertsList = document.getElementById('accAlertsList');
 const activeAlertsCountNum = document.getElementById('activeAlertsCountNum');
@@ -952,7 +974,7 @@ if (authForm) {
         const res = await fetch(`${API_BASE}/api/auth/send-otp`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, name })
+          body: JSON.stringify({ email, name, password })
         });
         const data = await res.json();
 
@@ -989,11 +1011,32 @@ if (authForm) {
         authSubmitBtn.textContent = 'Verify Email & Create Account ↵';
       }
     } else {
-      // Direct Sign In for existing session
-      const name = email.split('@')[0];
-      loginUser(email, name);
-      closeLoginModal();
-      showToast(`Welcome back, ${name}!`, '👤');
+      const password = userPasswordInput.value;
+      if (!password) {
+        showToast('Please enter your password', '⚠️');
+        triggerShake(userPasswordInput);
+        return;
+      }
+      authSubmitBtn.disabled = true;
+      authSubmitBtn.textContent = 'Signing In... ⏳';
+      try {
+        const res = await fetch(`${API_BASE}/api/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Unable to sign in.');
+        loginUser(data.user.email, data.user.name, true, data.authToken);
+        closeLoginModal();
+        showToast(`Welcome back, ${data.user.name}!`, '👤');
+      } catch (err) {
+        showToast(`❌ ${err.message}`, '⚠️');
+        triggerShake(userPasswordInput);
+      } finally {
+        authSubmitBtn.disabled = false;
+        authSubmitBtn.textContent = 'Sign In to Engine ↵';
+      }
     }
   });
 }
@@ -1075,7 +1118,8 @@ if (resendOtpBtn) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: pendingRegistration.email,
-          name: pendingRegistration.name
+          name: pendingRegistration.name,
+          password: pendingRegistration.password
         })
       });
       const data = await res.json();
@@ -1138,10 +1182,30 @@ function loginUser(email, name, verified = true, token = null) {
       window.location.href = decodeURIComponent(redirectTarget);
     }, 600);
   }
+
   initAuthUI();
   closeAccountModal();
+  updateProductWishlistBtnState();
+}
+if (passwordToggleBtn && userPasswordInput) {
+  passwordToggleBtn.addEventListener('click', () => {
+    const shouldShow = userPasswordInput.type === 'password';
+    userPasswordInput.type = shouldShow ? 'text' : 'password';
+    passwordToggleBtn.classList.toggle('is-visible', shouldShow);
+    passwordToggleBtn.setAttribute('aria-label', shouldShow ? 'Hide password' : 'Show password');
+  });
+}
 
-  // Broadcast logout state to Chrome Extension
+function logoutUser() {
+  currentUser = null;
+  localStorage.removeItem('sba_user');
+  localStorage.removeItem('user');
+  localStorage.removeItem('authToken');
+  closeAccountModal();
+  closeLoginModal();
+  initAuthUI();
+  updateProductWishlistBtnState();
+
   window.postMessage({
     type: 'SBA_AUTH_SYNC',
     authToken: null,
@@ -1164,6 +1228,27 @@ function initAccountEvents() {
   }
   if (saveProfileBtn) {
     saveProfileBtn.addEventListener('click', saveAccountPreferences);
+  }
+  if (alertPrefTrigger && alertPrefOptions && editAlertPref) {
+    alertPrefTrigger.addEventListener('click', () => {
+      const opening = alertPrefOptions.hidden;
+      alertPrefOptions.hidden = !opening;
+      alertPrefTrigger.setAttribute('aria-expanded', String(opening));
+    });
+    alertPrefOptions.addEventListener('click', (event) => {
+      const option = event.target.closest('[data-value]');
+      if (!option) return;
+      editAlertPref.value = option.dataset.value;
+      syncAlertPrefPicker();
+      alertPrefOptions.hidden = true;
+      alertPrefTrigger.setAttribute('aria-expanded', 'false');
+    });
+    document.addEventListener('click', (event) => {
+      if (!alertPrefPicker.contains(event.target)) {
+        alertPrefOptions.hidden = true;
+        alertPrefTrigger.setAttribute('aria-expanded', 'false');
+      }
+    });
   }
   if (accountLogoutBtn) {
     accountLogoutBtn.addEventListener('click', () => {
@@ -1205,6 +1290,7 @@ function openAccountModal() {
   // Form inputs
   if (editUserName) editUserName.value = currentUser.name || '';
   if (editAlertPref) editAlertPref.value = currentUser.alertPref || 'email';
+  syncAlertPrefPicker();
 
   // Render armed alerts
   renderAccountAlerts();
@@ -1248,19 +1334,32 @@ function renderAccountAlerts() {
     return;
   }
 
-  accAlertsList.innerHTML = userAlerts.map(alert => `
+  accAlertsList.innerHTML = userAlerts.map((alert, index) => `
     <div class="acc-alert-row">
       <div class="acc-alert-info">
         <span class="acc-alert-price">${formatINR(alert.targetPrice)}</span>
-        <span class="acc-alert-asin">ASIN: ${alert.asin}</span>
+        <span class="acc-alert-product" title="${escapeHtml(alert.title || alert.asin || 'Tracked product')}">${escapeHtml(alert.title || 'Tracked product')}</span>
       </div>
-      <button class="acc-alert-del-btn" onclick="deleteUserAlert('${alert.asin}')" title="Disarm Alert">✕</button>
+      <button class="acc-alert-del-btn" onclick="deleteUserAlert(${index})" title="Disarm Alert" aria-label="Remove price alert">✕</button>
     </div>
   `).join('');
 }
 
-window.deleteUserAlert = function (asin) {
-  userAlerts = userAlerts.filter(a => a.asin !== asin);
+function syncAlertPrefPicker() {
+  if (!editAlertPref || !alertPrefLabel || !alertPrefOptions) return;
+  const labels = { email: '✉️ Direct Email Dispatch', push: '🔔 Browser Notifications', both: '✨ Email + Browser' };
+  alertPrefLabel.textContent = labels[editAlertPref.value] || labels.email;
+  alertPrefOptions.querySelectorAll('[data-value]').forEach(option => option.classList.toggle('selected', option.dataset.value === editAlertPref.value));
+}
+
+function escapeHtml(value) {
+  const node = document.createElement('span');
+  node.textContent = String(value || '');
+  return node.innerHTML;
+}
+
+window.deleteUserAlert = function (index) {
+  userAlerts.splice(Number(index), 1);
   localStorage.setItem('sba_alerts', JSON.stringify(userAlerts));
   renderAccountAlerts();
   if (accAlertsCount) accAlertsCount.textContent = userAlerts.length;
@@ -1355,33 +1454,42 @@ function renderWishlistItems() {
     return;
   }
 
-  wishlistItemsList.innerHTML = wishlist.map(item => `
+  wishlistItemsList.innerHTML = wishlist.map((item, index) => {
+    const reference = item.productId || item.asin || '';
+    const platform = String(item.platform || '').trim();
+    const storeLabel = platform ? platform.charAt(0).toUpperCase() + platform.slice(1) : 'Saved product';
+    return `
     <div class="wishlist-item-row">
       <div class="wi-img-frame">
         <img src="${item.image || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100'}" alt="Product" referrerpolicy="no-referrer" />
       </div>
       <div class="wi-info">
-        <div class="wi-title" title="${item.title}">${item.title}</div>
+        <div class="wi-store">${escapeHtml(storeLabel)}</div>
+        <div class="wi-title" title="${escapeHtml(item.title)}">${escapeHtml(item.title)}</div>
         <div class="wi-price-row">
           <span class="wi-price">${formatINR(item.price)}</span>
-          <span class="wi-asin">ASIN: ${item.asin}</span>
+          <span class="wi-status">Price tracking ready</span>
         </div>
       </div>
       <div class="wi-actions">
-        <button class="wi-scan-btn" onclick="scanFromWishlist('${item.asin}')">Scan ⚡</button>
-        <button class="wi-del-btn" onclick="removeFromWishlist('${item.asin}')" title="Remove">✕</button>
+        <button class="wi-scan-btn" onclick="scanWishlistItem(${index})">Scan <span>⚡</span></button>
+        <button class="wi-del-btn" onclick="removeWishlistItem(${index})" title="Remove" aria-label="Remove saved product">✕</button>
       </div>
     </div>
-  `).join('');
+  `;
+  }).join('');
 }
 
-window.scanFromWishlist = function (asin) {
+window.scanWishlistItem = function (index) {
+  const item = wishlist[Number(index)];
+  if (!item) return;
   closeWishlistDrawer();
-  fillAndAnalyze(asin);
+  fillAndAnalyze(item.productId || item.asin);
 };
 
-window.removeFromWishlist = function (asin) {
-  wishlist = wishlist.filter(item => item.asin !== asin);
+window.removeWishlistItem = function (index) {
+  if (!Number.isInteger(Number(index)) || !wishlist[Number(index)]) return;
+  wishlist.splice(Number(index), 1);
   localStorage.setItem('sba_wishlist', JSON.stringify(wishlist));
   updateWishlistUI();
   showToast('Item removed from wishlist', '🗑️');
@@ -1540,11 +1648,14 @@ const DEFAULT_RECENT_SEARCHES = [
 function getRecentSearches() {
   try {
     const raw = localStorage.getItem(RECENT_KEY);
-    if (!raw) return DEFAULT_RECENT_SEARCHES;
+    // No saved history means no recent searches — never repopulate cleared data
+    // with demo entries.
+    if (!raw) return [];
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) && parsed.length > 0 ? parsed : DEFAULT_RECENT_SEARCHES;
+    // An empty array is an intentional user action after pressing Clear.
+    return Array.isArray(parsed) ? parsed : [];
   } catch (e) {
-    return DEFAULT_RECENT_SEARCHES;
+    return [];
   }
 }
 
@@ -1599,168 +1710,63 @@ function renderRecentSearches() {
 
 const clearRecentBtn = document.getElementById('clearRecentBtn');
 if (clearRecentBtn) {
-  clearRecentBtn.addEventListener('click', () => {
+  clearRecentBtn.onclick = () => {
     localStorage.setItem(RECENT_KEY, JSON.stringify([]));
     renderRecentSearches();
     showToast('Recent searches cleared', '🧹');
-  });
+  };
 }
 
 // ─── REAL-TIME DEALS ENGINE (MONGODB & NODE-CRON) ────────────
 let activeTrendingStore = 'all';
 let currentTrendingDeals = [];
 let hourlySyncInterval = null;
-
 const STORE_THEMES = {
-  Amazon: { color: '#818cf8', icon: '🛍️' },
-  Flipkart: { color: '#facc15', icon: '⚡' },
-  Myntra: { color: '#ff3f6c', icon: '👗' },
-  Meesho: { color: '#d946ef', icon: '🛍️' },
-  Ajio: { color: '#38bdf8', icon: '🏷️' }
+  Amazon: { color: '#818cf8', icon: '🛍️' }, Flipkart: { color: '#facc15', icon: '⚡' },
+  Myntra: { color: '#ff3f6c', icon: '👗' }, Meesho: { color: '#d946ef', icon: '🛍️' }, Ajio: { color: '#38bdf8', icon: '🏷️' }
 };
 
 async function initTrendingDeals() {
-  const filterButtons = document.querySelectorAll('.store-filter-btn');
-  filterButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      filterButtons.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      activeTrendingStore = btn.getAttribute('data-store') || 'all';
-      fetchTrendingDeals(activeTrendingStore);
-    });
-  });
-
-  await fetchTrendingDeals('all');
-  startHourlyCountdown();
+  document.querySelectorAll('.store-filter-btn').forEach(btn => btn.addEventListener('click', () => {
+    document.querySelectorAll('.store-filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active'); activeTrendingStore = btn.dataset.store || 'all'; fetchTrendingDeals(activeTrendingStore);
+  }));
+  await fetchTrendingDeals('all'); startHourlyCountdown();
 }
 
 async function fetchTrendingDeals(store = 'all') {
   const grid = document.getElementById('trendingGrid');
-  if (grid && currentTrendingDeals.length === 0) {
-    grid.innerHTML = `
-      <div style="grid-column: 1 / -1; padding: 40px 20px; text-align: center; color: var(--text-muted);">
-        <div class="spinner" style="margin: 0 auto 12px; width: 24px; height: 24px; border: 2px solid rgba(255,255,255,0.1); border-top-color: var(--brand-indigo); border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
-        <div>Fetching live marketplace deals from database...</div>
-      </div>
-    `;
-  }
-
   try {
-    const storeParam = store === 'all' ? '' : `store=${encodeURIComponent(store)}`;
-    const res = await fetch(`${API_BASE}/api/deals${storeParam ? '?' + storeParam : ''}`);
-    if (!res.ok) throw new Error('API error: ' + res.status);
-    const data = await res.json();
-
-    if (data && Array.isArray(data.deals)) {
-      currentTrendingDeals = data.deals;
-      renderTrendingGrid(data.deals);
-    }
-  } catch (err) {
-    console.warn('[fetchTrendingDeals] Failed to load from /api/deals:', err.message);
-  }
+    const response = await fetch(`${API_BASE}/api/deals${store === 'all' ? '' : `?store=${encodeURIComponent(store)}`}`);
+    if (!response.ok) throw new Error(`API error: ${response.status}`);
+    const data = await response.json();
+    currentTrendingDeals = Array.isArray(data.deals) ? data.deals : [];
+    renderTrendingGrid(currentTrendingDeals);
+  } catch (_) { if (grid) grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:30px">No verified deals available for this store.</div>'; }
 }
 
 function startHourlyCountdown() {
   if (hourlySyncInterval) clearInterval(hourlySyncInterval);
-
-  function calculateMsLeftInHour() {
-    const now = new Date();
-    return (3600 * 1000) - (now.getTime() % (3600 * 1000));
-  }
-
-  const countdownEl = document.getElementById('syncCountdown');
-
-  function update() {
-    const msLeft = calculateMsLeftInHour();
-    if (msLeft <= 1000) {
-      setTimeout(() => fetchTrendingDeals(activeTrendingStore), 1500);
-    }
-    const totalSecs = Math.floor(msLeft / 1000);
-    const mins = Math.floor(totalSecs / 60);
-    const secs = totalSecs % 60;
-    if (countdownEl) {
-      countdownEl.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-    }
-  }
-
-  update();
-  hourlySyncInterval = setInterval(update, 1000);
+  const update = () => { const total = Math.floor((3600000 - Date.now() % 3600000) / 1000); const el = document.getElementById('syncCountdown'); if (el) el.textContent = `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`; };
+  update(); hourlySyncInterval = setInterval(update, 1000);
 }
 
-function getTimeAgo(dateStr) {
-  if (!dateStr) return 'just now';
-  const diffMs = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diffMs / 60000);
-  if (mins < 1) return 'just now';
-  if (mins === 1) return '1m ago';
-  if (mins < 60) return `${mins}m ago`;
-  const hours = Math.floor(mins / 60);
-  return `${hours}h ago`;
-}
+function getTimeAgo(dateStr) { const mins = Math.floor((Date.now() - new Date(dateStr || Date.now()).getTime()) / 60000); return mins < 1 ? 'just now' : mins < 60 ? `${mins}m ago` : `${Math.floor(mins / 60)}h ago`; }
+
+window.openDealUrl = function (encodedUrl) {
+  const url = decodeURIComponent(encodedUrl || '');
+  if (!/^https?:\/\//i.test(url)) return;
+  window.open(url, '_blank', 'noopener,noreferrer');
+};
 
 function renderTrendingGrid(deals) {
-  const grid = document.getElementById('trendingGrid');
-  if (!grid) return;
-
-  // 1. Strict Validation: productName, imageUrl, and productUrl MUST all be valid
-  const validItems = (Array.isArray(deals) ? deals : []).filter(deal => {
-    const title = deal.productName || deal.title;
-    const img = deal.imageUrl || deal.image;
-    const url = deal.productUrl || deal.url;
-    return Boolean(title && img && url && String(url).startsWith('http'));
-  });
-
-  if (validItems.length === 0) {
-    grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 30px;">No verified deals available for this store.</div>`;
-    return;
-  }
-
-  // 2. Direct 1:1 Rendering (No random image swapping or array index guessing)
+  const grid = document.getElementById('trendingGrid'); if (!grid) return;
+  const validItems = (Array.isArray(deals) ? deals : []).filter(d => (d.productName || d.title) && (d.imageUrl || d.image) && /^https?:/.test(d.productUrl || d.url || ''));
+  if (!validItems.length) { grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:30px">No verified deals available for this store.</div>'; return; }
   grid.innerHTML = validItems.map(deal => {
-    const title = deal.productName || deal.title;
-    const safeTitle = decodeHtmlEntities(title);
-    const store = deal.storeName || 'Store';
-    const storeTheme = STORE_THEMES[store] || { color: '#818cf8', icon: '🛍️' };
-    const curPrice = deal.currentPrice || deal.price || 0;
-    const origPrice = deal.originalPrice || deal.mrp || curPrice;
-    const discount = deal.discountPercentage ? `${deal.discountPercentage}% OFF` : (deal.discount || 'Special Offer');
-    const tag = deal.dealTag || deal.signal || '📈 Trending Deal';
-    const safeUrl = deal.productUrl || deal.url;
-    const image = deal.imageUrl || deal.image;
-    const updatedStr = getTimeAgo(deal.lastUpdated);
-
-    return `
-      <div class="trending-card" data-product-id="${deal.id || deal._id || ''}">
-        <div class="tc-media">
-          <img class="tc-img" src="${image}" alt="${safeTitle}" referrerpolicy="no-referrer" loading="lazy" />
-          <span class="tc-store-pill" style="background: rgba(0,0,0,0.72); color: ${storeTheme.color}; border: 1px solid ${storeTheme.color};">
-            ${storeTheme.icon} ${store}
-          </span>
-          <span class="tc-discount-pill">${discount}</span>
-        </div>
-        <div class="tc-body">
-          <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px;">
-            <div class="tc-signal-tag">${tag}</div>
-            <span style="font-size: 0.68rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;">🕒 ${updatedStr}</span>
-          </div>
-          <h3 class="tc-title" title="${safeTitle}">${safeTitle}</h3>
-          <div class="tc-price-row">
-            <span class="tc-price">${formatINR(curPrice)}</span>
-            <span class="tc-mrp">${formatINR(origPrice)}</span>
-          </div>
-          <div class="tc-actions-stack" style="display: flex; flex-direction: column; gap: 6px; margin-top: auto;">
-            <button class="tc-scan-btn" onclick="fillAndAnalyze('${encodeURIComponent(safeUrl).replace(/'/g, "\\'")}')">
-              <span>Verify Deal Price</span>
-              <span>⚡</span>
-            </button>
-            <a class="tc-buy-direct-btn" href="${safeUrl}" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; justify-content: center; gap: 5px; padding: 7px; border-radius: var(--rad-sm); background: var(--bg-surface); border: 1px solid var(--border-hairline); color: var(--text-dim); font-size: 0.76rem; font-weight: 600; text-decoration: none; transition: all 0.2s ease;">
-              <span>Buy on ${store}</span>
-              <span>↗</span>
-            </a>
-          </div>
-        </div>
-      </div>
-    `;
+    const title = decodeHtmlEntities(deal.productName || deal.title), store = deal.storeName || 'Store', theme = STORE_THEMES[store] || { color: '#818cf8', icon: '🛍️' }, url = deal.productUrl || deal.url, price = deal.currentPrice || deal.price || 0, mrp = deal.originalPrice || deal.mrp || price;
+    const encodedUrl = encodeURIComponent(url).replace(/'/g, "\\'");
+    return `<div class="trending-card"><div class="tc-media"><img class="tc-img" src="${deal.imageUrl || deal.image}" alt="${title}" referrerpolicy="no-referrer" loading="lazy"><span class="tc-store-pill" style="color:${theme.color};border-color:${theme.color}">${theme.icon} ${store}</span><span class="tc-discount-pill">${deal.discountPercentage ? `${deal.discountPercentage}% OFF` : (deal.discount || 'Special Offer')}</span></div><div class="tc-body"><div class="tc-signal-tag">${deal.dealTag || deal.signal || '📈 Trending Deal'}</div><h3 class="tc-title" title="${title}">${title}</h3><div class="tc-price-row"><span class="tc-price">${formatINR(price)}</span><span class="tc-mrp">${formatINR(mrp)}</span></div><div class="tc-actions-stack"><button type="button" class="tc-scan-btn" onclick="fillAndAnalyze('${encodedUrl}')"><span>Verify Deal Price</span><span>⚡</span></button><button type="button" class="tc-buy-direct-btn" onclick="openDealUrl('${encodedUrl}')"><span>Buy on ${store}</span><span>↗</span></button></div></div></div>`;
   }).join('');
 }
 
@@ -1792,23 +1798,8 @@ function handleClientRoute() {
     setActiveNavTab('home');
   } else if (path === '/deals' || hash === 'deals' || path.startsWith('/deals/')) {
     setActiveNavTab('deals');
-    const emptyState = document.getElementById('emptyState');
-    if (emptyState) {
-      emptyState.style.display = 'block';
-      emptyState.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    openDealsView();
 
-    const parts = path.split('/');
-    if (parts[2]) {
-      const storeName = parts[2].toLowerCase();
-      const storeBtn = document.querySelector(`.store-filter-btn[data-store="${storeName}"]`);
-      if (storeBtn) {
-        document.querySelectorAll('.store-filter-btn').forEach(b => b.classList.remove('active'));
-        storeBtn.classList.add('active');
-        activeTrendingStore = storeName;
-        fetchTrendingDeals(storeName);
-      }
-    }
   } else if (path === '/tracker' || hash === 'tracker' || path === '/wishlist' || hash === 'wishlist') {
     setActiveNavTab('tracker');
     openWishlist();
@@ -1824,6 +1815,14 @@ function handleClientRoute() {
     if (isNavigatingViaClick) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+  }
+}
+
+function openDealsView() {
+  if (dashboard) dashboard.style.display = 'none';
+  if (emptyState) {
+    emptyState.style.display = 'flex';
+    setTimeout(() => emptyState.scrollIntoView({ behavior: 'smooth', block: 'start' }), 0);
   }
 }
 
@@ -1868,8 +1867,7 @@ function initRouter() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else if (routeName === 'deals') {
         setActiveNavTab('deals');
-        const emptyState = document.getElementById('emptyState');
-        if (emptyState) emptyState.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        openDealsView();
       } else if (routeName === 'tracker') {
         setActiveNavTab('tracker');
         openWishlist();
