@@ -928,11 +928,8 @@ function resetAuthModalSteps() {
 }
 
 if (closeLoginModalBtn) closeLoginModalBtn.addEventListener('click', closeLoginModal);
-if (loginModalOverlay) {
-  loginModalOverlay.addEventListener('click', (e) => {
-    if (e.target === loginModalOverlay) closeLoginModal();
-  });
-}
+// Keep authentication in progress safe from accidental outside clicks. The
+// explicit close button remains available when the user wants to cancel.
 
 // ─── CHROME EXTENSION SETUP GUIDE MODAL CONTROLLERS ─────────
 window.openExtensionModal = function () {
