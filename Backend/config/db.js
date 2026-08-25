@@ -15,7 +15,7 @@ async function connectDB() {
       serverSelectionTimeoutMS: 4000
     });
     isConnected = true;
-    console.log(`[Database] Connected to MongoDB: ${uri}`);
+    console.log(`[Database] Connected to MongoDB${uri.startsWith('mongodb+srv://') ? ' Atlas' : ''}.`);
   } catch (err) {
     isConnected = false;
     console.log(`[Database] MongoDB offline (${err.message}). Activating In-Memory / File-Persisted Deal Store mode.`);
