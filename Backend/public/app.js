@@ -112,6 +112,12 @@ const resetPasswordBtn = document.getElementById('resetPasswordBtn');
 const resetTargetEmail = document.getElementById('resetTargetEmail');
 const backToLoginBtn = document.getElementById('backToLoginBtn');
 const backToResetRequestBtn = document.getElementById('backToResetRequestBtn');
+const confirmModalOverlay = document.getElementById('confirmModalOverlay');
+const confirmModalIcon = document.getElementById('confirmModalIcon');
+const confirmModalTitle = document.getElementById('confirmModalTitle');
+const confirmModalMessage = document.getElementById('confirmModalMessage');
+const confirmCancelBtn = document.getElementById('confirmCancelBtn');
+const confirmAcceptBtn = document.getElementById('confirmAcceptBtn');
 const alertUserText = document.getElementById('alertUserText');
 
 // OTP Verification Step Elements
@@ -1342,10 +1348,15 @@ function initAccountEvents() {
     });
   }
   if (accountLogoutBtn) {
-    accountLogoutBtn.addEventListener('click', () => {
-      if (confirm('Are you sure you want to log out?')) {
-        logoutUser();
-      }
+    accountLogoutBtn.addEventListener('click', async () => {
+      const confirmed = await showConfirm({
+        title: 'Log out of buySmartly?',
+        message: 'Your saved wishlist and alerts will stay safely linked to your account.',
+        confirmLabel: 'Yes, log out',
+        tone: 'danger',
+        icon: '↪'
+      });
+      if (confirmed) logoutUser();
     });
   }
   if (accWishlistStat) {
@@ -1587,9 +1598,16 @@ window.removeWishlistItem = function (index) {
 };
 
 if (clearWishlistBtn) {
-  clearWishlistBtn.addEventListener('click', () => {
+  clearWishlistBtn.addEventListener('click', async () => {
     if (wishlist.length === 0) return;
-    if (confirm('Clear all items from your wishlist?')) {
+    const confirmed = await showConfirm({
+      title: 'Clear your wishlist?',
+      message: `${wishlist.length} saved ${wishlist.length === 1 ? 'item' : 'items'} will be removed from this browser.`,
+      confirmLabel: 'Clear wishlist',
+      tone: 'danger',
+      icon: '✦'
+    });
+    if (confirmed) {
       wishlist = [];
       localStorage.setItem('sba_wishlist', JSON.stringify(wishlist));
       updateWishlistUI();
@@ -1613,13 +1631,58 @@ if (closeWishlistBtn) closeWishlistBtn.addEventListener('click', closeWishlistDr
 if (wishlistOverlay) wishlistOverlay.addEventListener('click', closeWishlistDrawer);
 
 // ─── TOAST NOTIFICATIONS ────────────────────────────────────────
+function showConfirm({ title, message, confirmLabel = 'Continue', tone = 'default', icon = '!' }) {
+  return new Promise((resolve) => {
+    if (!confirmModalOverlay) return resolve(false);
+
+    confirmModalTitle.textContent = title;
+    confirmModalMessage.textContent = message;
+    confirmModalIcon.textContent = icon;
+    confirmAcceptBtn.textContent = confirmLabel;
+    confirmModalOverlay.dataset.tone = tone;
+    confirmModalOverlay.style.display = 'flex';
+    confirmAcceptBtn.focus();
+
+    const close = (approved) => {
+      confirmModalOverlay.style.display = 'none';
+      confirmModalOverlay.removeAttribute('data-tone');
+      confirmAcceptBtn.removeEventListener('click', accept);
+      confirmCancelBtn.removeEventListener('click', cancel);
+      confirmModalOverlay.removeEventListener('click', outside);
+      document.removeEventListener('keydown', onKeydown);
+      resolve(approved);
+    };
+    const accept = () => close(true);
+    const cancel = () => close(false);
+    const outside = (event) => { if (event.target === confirmModalOverlay) close(false); };
+    const onKeydown = (event) => { if (event.key === 'Escape') close(false); };
+    confirmAcceptBtn.addEventListener('click', accept);
+    confirmCancelBtn.addEventListener('click', cancel);
+    confirmModalOverlay.addEventListener('click', outside);
+    document.addEventListener('keydown', onKeydown);
+  });
+}
+
 function showToast(msg, icon = '✦') {
   const container = document.getElementById('toastContainer');
   if (!container) return;
 
   const toast = document.createElement('div');
   toast.className = 'toast-pill';
-  toast.innerHTML = `<span class="toast-icon">${icon}</span><span>${msg}</span>`;
+  toast.setAttribute('role', 'status');
+  const toastIcon = document.createElement('span');
+  toastIcon.className = 'toast-icon';
+  toastIcon.textContent = icon;
+  const toastMessage = document.createElement('span');
+  toastMessage.className = 'toast-message';
+  toastMessage.textContent = msg;
+  const closeButton = document.createElement('button');
+  closeButton.className = 'toast-close';
+  closeButton.type = 'button';
+  closeButton.setAttribute('aria-label', 'Dismiss notification');
+  closeButton.textContent = '×';
+  closeButton.addEventListener('click', () => toast.remove());
+  toast.append(toastIcon, toastMessage, closeButton);
   container.appendChild(toast);
 
   setTimeout(() => {

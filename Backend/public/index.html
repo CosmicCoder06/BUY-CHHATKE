@@ -704,6 +704,19 @@
     </div>
   </div>
 
+  <!-- Reusable branded confirmation dialog (replaces browser confirm popups) -->
+  <div class="modal-overlay confirm-overlay" id="confirmModalOverlay" style="display: none;" role="presentation">
+    <section class="modal-card confirm-modal-card" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle" aria-describedby="confirmModalMessage">
+      <div class="confirm-icon" id="confirmModalIcon" aria-hidden="true">!</div>
+      <h3 class="confirm-title" id="confirmModalTitle">Confirm action</h3>
+      <p class="confirm-message" id="confirmModalMessage">Are you sure you want to continue?</p>
+      <div class="confirm-actions">
+        <button type="button" class="confirm-cancel-btn" id="confirmCancelBtn">Cancel</button>
+        <button type="button" class="confirm-accept-btn" id="confirmAcceptBtn">Continue</button>
+      </div>
+    </section>
+  </div>
+
   <!-- ─── TOAST NOTIFICATION ──────────────────────────────────── -->
   <div class="toast-container" id="toastContainer"></div>
 
