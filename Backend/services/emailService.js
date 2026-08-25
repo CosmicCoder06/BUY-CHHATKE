@@ -140,7 +140,7 @@ async function sendOtpEmail({ to, name = 'Valued User', otp, type = 'verificatio
     const response = await axios.post('https://api.brevo.com/v3/smtp/email', {
       sender: { name: 'buySmartly', email: fromEmail },
       to: [{ email: to, name }],
-      subject: `${otp} is your buySmartly ${actionLabel} Code`,
+      subject: `buySmartly ${actionLabel}`,
       textContent,
       htmlContent
     }, {
@@ -157,7 +157,7 @@ async function sendOtpEmail({ to, name = 'Valued User', otp, type = 'verificatio
   const mailOptions = {
     from: fromAddress,
     to: to,
-    subject: `${otp} is your buySmartly ${actionLabel} Code`,
+    subject: `buySmartly ${actionLabel}`,
     text: textContent,
     html: htmlContent
   };
