@@ -957,6 +957,7 @@ if (tabLoginBtn && tabRegisterBtn) {
     authSubmitBtn.textContent = 'Sign In to Engine ↵';
     modalTitle.textContent = 'Access Price Intelligence';
     modalSub.textContent = 'Log in to sync your wishlist and receive automated price drop alerts.';
+    if (forgotPasswordBtn) forgotPasswordBtn.style.display = 'block';
     if (emailHint) emailHint.style.display = 'none';
   });
 
@@ -967,6 +968,7 @@ if (tabLoginBtn && tabRegisterBtn) {
     authSubmitBtn.textContent = 'Verify Email & Create Account ↵';
     modalTitle.textContent = 'Create Verified Account';
     modalSub.textContent = 'Only valid email accounts receive real-time price drops.';
+    if (forgotPasswordBtn) forgotPasswordBtn.style.display = 'none';
     if (emailHint) emailHint.style.display = 'none';
   });
 }
